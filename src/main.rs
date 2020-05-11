@@ -1,6 +1,7 @@
 use pico_args::Arguments;
 use rayon::prelude::*;
 use std::ffi::OsStr;
+use std::io::{stdout, Write};
 use std::path::PathBuf;
 use std::process::Command;
 use walkdir::WalkDir;
@@ -32,9 +33,9 @@ fn main() {
     let rustc_path = if args.clippy {
         "clippy-driver"
     } else {
-        //"rustc
+        "rustc"
         // assume CWD is src/test from rustc repo root
-        "../../build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
+        //"../../build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
     };
 
     // collect error by running on files in parallel
@@ -51,7 +52,8 @@ fn main() {
 
 fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
     let mut found_errors = false;
-    let mut output = file.display().to_string();
+    let mut output = String::from("Checking ");
+    output.push_str(&file.display().to_string());
     let cmd = if clippy {
         Command::new(rustc_path)
             .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
@@ -138,7 +140,16 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
             found_errors = true;
         }
     }
-    println!("{}", output);
+    if output.contains("ERROR") {
+        print!("\r");
+        println!("{output: <100}", output = output);
+        print!("\r");
+        let stdout = std::io::stdout().flush();
+    } else {
+        // let stdout = std::io::stdout().flush();
+        print!("\r {output: <100}", output = output);
+        let stdout = std::io::stdout().flush();
+    }
 
     found_errors
 }

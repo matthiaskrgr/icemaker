@@ -52,7 +52,7 @@ fn main() {
 
 fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
     let mut found_errors = false;
-    let mut output = file.display().to_string();
+    let output = file.display().to_string();
     let cmd = if clippy {
         Command::new(rustc_path)
             .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
@@ -115,13 +115,11 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
             || stderr.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
-            output.push_str("           ERROR! stderr");
             found_errors = true;
         } else if stdout.contains("internal compiler error:")
             || stdout.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
-            output.push_str("           ERROR! stderr");
             found_errors = true;
         }
     } else {
@@ -129,17 +127,15 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
             || stderr.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
-            output.push_str("           ERROR! stderr");
             found_errors = true;
         } else if stdout.contains("internal compiler error:")
             || stdout.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
-            output.push_str("           ERROR! stderr");
             found_errors = true;
         }
     }
-    if output.contains("ERROR") {
+    if found_errors {
         print!("\r");
         println!("ICE: {output: <100}", output = output);
         print!("\r");

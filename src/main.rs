@@ -52,8 +52,7 @@ fn main() {
 
 fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
     let mut found_errors = false;
-    let mut output = String::from("Checking ");
-    output.push_str(&file.display().to_string());
+    let mut output = file.display().to_string();
     let cmd = if clippy {
         Command::new(rustc_path)
             .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
@@ -142,12 +141,12 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
     }
     if output.contains("ERROR") {
         print!("\r");
-        println!("{output: <100}", output = output);
+        println!("ICE: {output: <100}", output = output);
         print!("\r");
         let stdout = std::io::stdout().flush();
     } else {
         // let stdout = std::io::stdout().flush();
-        print!("\r {output: <100}", output = output);
+        print!("\rChecking {output: <100}", output = output);
         let stdout = std::io::stdout().flush();
     }
 

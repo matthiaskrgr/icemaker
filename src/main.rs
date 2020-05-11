@@ -1,12 +1,23 @@
+use pico_args::Arguments;
 use rayon::prelude::*;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
 use walkdir::WalkDir;
 
-fn main() {
-    const CLIPPY: bool = false;
+struct Args {
+    clippy: bool,
+}
 
+fn main() {
+    // parse args
+    let mut args = Arguments::from_env();
+
+    let args = Args {
+        clippy: args.contains(["-c", "--clippy"]),
+    };
+
+    // search for rust files inside CWD
     let mut files = WalkDir::new(".")
         .into_iter()
         .filter(|entry| entry.is_ok())
@@ -15,9 +26,10 @@ fn main() {
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();
 
+    // sort by path
     files.sort();
 
-    let rustc_path = if CLIPPY {
+    let rustc_path = if args.clippy {
         "clippy-driver"
     } else {
         //"rustc
@@ -25,9 +37,10 @@ fn main() {
         "../../build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
     };
 
+    // collect error by running on files in parallel
     let mut errors: Vec<_> = files
         .par_iter()
-        .filter(|file| find_crashes(&file, rustc_path, CLIPPY))
+        .filter(|file| find_crashes(&file, rustc_path, args.clippy))
         .collect();
 
     errors.sort();
@@ -37,7 +50,7 @@ fn main() {
 }
 
 fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
-    let mut error = false;
+    let mut found_errors = false;
     let mut output = file.display().to_string();
     let cmd = if clippy {
         Command::new(rustc_path)
@@ -102,13 +115,13 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
             || stderr.contains("RUST_BACKTRACE")
         {
             output.push_str("           ERROR! stderr");
-            error = true;
+            found_errors = true;
         } else if stdout.contains("internal compiler error:")
             || stdout.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
             output.push_str("           ERROR! stderr");
-            error = true;
+            found_errors = true;
         }
     } else {
         if stderr.contains("internal compiler error:")
@@ -116,16 +129,16 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
             || stderr.contains("RUST_BACKTRACE")
         {
             output.push_str("           ERROR! stderr");
-            error = true;
+            found_errors = true;
         } else if stdout.contains("internal compiler error:")
             || stdout.contains("query stack during panic:")
             || stderr.contains("RUST_BACKTRACE")
         {
             output.push_str("           ERROR! stderr");
-            error = true;
+            found_errors = true;
         }
     }
     println!("{}", output);
 
-    error
+    found_errors
 }

@@ -1,9 +1,9 @@
 use pico_args::Arguments;
 use rayon::prelude::*;
 use std::ffi::OsStr;
-use std::io::{stdout, Write};
+use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Output};
 use walkdir::WalkDir;
 
 struct Args {
@@ -54,55 +54,9 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
     let mut found_errors = false;
     let output = file.display().to_string();
     let cmd = if clippy {
-        Command::new(rustc_path)
-            .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-            .arg(&file)
-            .arg("-Aclippy::cargo") // allow cargo lints
-            .arg("-Wclippy::internal")
-            .arg("-Wclippy::pedantic")
-            .arg("-Wclippy::nursery")
-            .arg("-Wmissing-doc-code-examples")
-            .arg("-Wabsolute-paths-not-starting-with-crate")
-            .arg("-Wbare-trait-objects")
-            .arg("-Wbox-pointers")
-            .arg("-Welided-lifetimes-in-paths")
-            .arg("-Wellipsis-inclusive-range-patterns")
-            .arg("-Wkeyword-idents")
-            .arg("-Wmacro-use-extern-crate")
-            .arg("-Wmissing-copy-implementations")
-            .arg("-Wmissing-debug-implementations")
-            .arg("-Wmissing-docs")
-            .arg("-Wsingle-use-lifetimes")
-            .arg("-Wtrivial-casts")
-            .arg("-Wtrivial-numeric-casts")
-            .arg("-Wunreachable-pub")
-            .arg("-Wunsafe-code")
-            .arg("-Wunstable-features")
-            .arg("-Wunused-extern-crates")
-            .arg("-Wunused-import-braces")
-            .arg("-Wunused-labels")
-            .arg("-Wunused-lifetimes")
-            .arg("-Wunused-qualifications")
-            .arg("-Wunused-results")
-            .arg("-Wvariant-size-differences")
-            .args(&["--cap-lints", "warn"])
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
-            .output()
-            .unwrap()
+        run_rustc(rustc_path, file)
     } else {
-        Command::new(rustc_path)
-            .arg(&file)
-            .args(&["-Zmir-opt-level=3"])
-            //.args(&["-Zparse-only"])
-            //.args(&["-Zdump-mir=all"])
-            .args(&["--emit", "mir"])
-            .args(&["-Zsave-analysis"])
-            // always keep these:
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
-            .output()
-            .unwrap()
+        run_clippy(rustc_path, file)
     };
 
     let cmd_output = cmd;
@@ -139,12 +93,66 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
         print!("\r");
         println!("ICE: {output: <100}", output = output);
         print!("\r");
-        let stdout = std::io::stdout().flush();
+        let _stdout = std::io::stdout().flush();
     } else {
         // let stdout = std::io::stdout().flush();
         print!("\rChecking {output: <100}", output = output);
-        let stdout = std::io::stdout().flush();
+        let _stdout = std::io::stdout().flush();
     }
 
     found_errors
+}
+
+fn run_clippy(executable: &str, file: &PathBuf) -> Output {
+    Command::new(executable)
+        .arg(&file)
+        .args(&["-Zmir-opt-level=3"])
+        //.args(&["-Zparse-only"])
+        //.args(&["-Zdump-mir=all"])
+        .args(&["--emit", "mir"])
+        .args(&["-Zsave-analysis"])
+        // always keep these:
+        .args(&["-o", "/dev/null"])
+        .args(&["-Zdump-mir-dir=/dev/null"])
+        .output()
+        .unwrap()
+}
+
+fn run_rustc(executable: &str, file: &PathBuf) -> Output {
+    Command::new(executable)
+        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .arg(&file)
+        .arg("-Aclippy::cargo") // allow cargo lints
+        .arg("-Wclippy::internal")
+        .arg("-Wclippy::pedantic")
+        .arg("-Wclippy::nursery")
+        .arg("-Wmissing-doc-code-examples")
+        .arg("-Wabsolute-paths-not-starting-with-crate")
+        .arg("-Wbare-trait-objects")
+        .arg("-Wbox-pointers")
+        .arg("-Welided-lifetimes-in-paths")
+        .arg("-Wellipsis-inclusive-range-patterns")
+        .arg("-Wkeyword-idents")
+        .arg("-Wmacro-use-extern-crate")
+        .arg("-Wmissing-copy-implementations")
+        .arg("-Wmissing-debug-implementations")
+        .arg("-Wmissing-docs")
+        .arg("-Wsingle-use-lifetimes")
+        .arg("-Wtrivial-casts")
+        .arg("-Wtrivial-numeric-casts")
+        .arg("-Wunreachable-pub")
+        .arg("-Wunsafe-code")
+        .arg("-Wunstable-features")
+        .arg("-Wunused-extern-crates")
+        .arg("-Wunused-import-braces")
+        .arg("-Wunused-labels")
+        .arg("-Wunused-lifetimes")
+        .arg("-Wunused-qualifications")
+        .arg("-Wunused-results")
+        .arg("-Wvariant-size-differences")
+        .args(&["--cap-lints", "warn"])
+        .args(&["-o", "/dev/null"])
+        .args(&["-Zdump-mir-dir=/dev/null"])
+        .output()
+        .unwrap()
 }

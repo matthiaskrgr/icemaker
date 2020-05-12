@@ -10,6 +10,13 @@ struct Args {
     clippy: bool,
 }
 
+#[derive(Debug)]
+struct ICE {
+    path: PathBuf,
+    executable: String,
+    args: String,
+}
+
 fn main() {
     // parse args
     let mut args = Arguments::from_env();
@@ -39,18 +46,18 @@ fn main() {
     };
 
     // collect error by running on files in parallel
-    let mut errors: Vec<_> = files
+    let mut errors: Vec<ICE> = files
         .par_iter()
-        .filter(|file| find_crashes(&file, rustc_path, args.clippy))
+        .filter_map(|file| find_crash(&file, rustc_path, args.clippy))
         .collect();
 
-    errors.sort();
+    errors.sort_by_key(|ice| ice.path.clone());
 
     println!("errors:\n");
     errors.iter().for_each(|f| println!("{:?}", f));
 }
 
-fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
+fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
     let output = file.display().to_string();
     let cmd_output = if clippy {
         run_rustc(rustc_path, file)
@@ -58,9 +65,9 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
         run_clippy(rustc_path, file)
     };
 
-    let found_errors = find_ICE(cmd_output);
+    let found_error: Option<String> = find_ICE(cmd_output);
 
-    if found_errors.is_some() {
+    if found_error.is_some() {
         print!("\r");
         println!("ICE: {output: <100}", output = output);
         print!("\r");
@@ -71,7 +78,14 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
         let _stdout = std::io::stdout().flush();
     }
 
-    found_errors.is_some()
+    if found_error.is_some() {
+        return Some(ICE {
+            path: file.to_owned(),
+            args: "FIXME".to_string(),
+            executable: rustc_path.to_string(),
+        });
+    }
+    None
 }
 
 #[allow(non_snake_case)]

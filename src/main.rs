@@ -51,45 +51,16 @@ fn main() {
 }
 
 fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
-    let mut found_errors = false;
     let output = file.display().to_string();
-    let cmd = if clippy {
+    let cmd_output = if clippy {
         run_rustc(rustc_path, file)
     } else {
         run_clippy(rustc_path, file)
     };
 
-    let cmd_output = cmd;
-    let _status = cmd_output.status;
-    let stderr = String::from_utf8_lossy(&cmd_output.stderr);
-    let stdout = String::from_utf8_lossy(&cmd_output.stdout);
+    let found_errors = find_ICE(cmd_output);
 
-    if clippy {
-        if stderr.contains("internal compiler error:")
-            || stderr.contains("query stack during panic:")
-            || stderr.contains("RUST_BACKTRACE")
-        {
-            found_errors = true;
-        } else if stdout.contains("internal compiler error:")
-            || stdout.contains("query stack during panic:")
-            || stderr.contains("RUST_BACKTRACE")
-        {
-            found_errors = true;
-        }
-    } else {
-        if stderr.contains("internal compiler error:")
-            || stderr.contains("query stack during panic:")
-            || stderr.contains("RUST_BACKTRACE")
-        {
-            found_errors = true;
-        } else if stdout.contains("internal compiler error:")
-            || stdout.contains("query stack during panic:")
-            || stderr.contains("RUST_BACKTRACE")
-        {
-            found_errors = true;
-        }
-    }
-    if found_errors {
+    if found_errors.is_some() {
         print!("\r");
         println!("ICE: {output: <100}", output = output);
         print!("\r");
@@ -100,7 +71,29 @@ fn find_crashes(file: &PathBuf, rustc_path: &str, clippy: bool) -> bool {
         let _stdout = std::io::stdout().flush();
     }
 
-    found_errors
+    found_errors.is_some()
+}
+
+#[allow(non_snake_case)]
+fn find_ICE(output: Output) -> Option<String> {
+    // let output = cmd.output().unwrap();
+    let _exit_status = output.status;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    let ice_keywords = vec![
+        "internal compiler error:",
+        "query stack during panic:",
+        "RUST_BACKTRACE",
+    ];
+
+    for kw in ice_keywords {
+        if stderr.contains(kw) || stdout.contains(kw) {
+            return Some(kw.into());
+        }
+    }
+
+    None
 }
 
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {

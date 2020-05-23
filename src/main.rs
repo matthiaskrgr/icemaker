@@ -101,6 +101,7 @@ fn find_ICE(output: Output) -> Option<String> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     let ice_keywords = vec![
+        "`delay_span_bug`",
         "query stack during panic:",
         "internal compiler error:",
         "RUST_BACKTRACE=",

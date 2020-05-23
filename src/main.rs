@@ -40,9 +40,9 @@ fn main() {
     let rustc_path = if args.clippy {
         "clippy-driver"
     } else {
-        "rustc"
+        //"rustc"
         // assume CWD is src/test from rustc repo root
-        //"../../build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
+        "build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
     };
 
     // collect error by running on files in parallel
@@ -98,7 +98,7 @@ fn find_ICE(output: Output) -> Option<String> {
     let ice_keywords = vec![
         "internal compiler error:",
         "query stack during panic:",
-        "RUST_BACKTRACE",
+        "RUST_BACKTRACE=",
     ];
 
     for kw in ice_keywords {

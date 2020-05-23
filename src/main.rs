@@ -45,6 +45,7 @@ fn main() {
         "build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
     };
 
+    println!("bin: {}\n\n", rustc_path);
     // collect error by running on files in parallel
     let mut errors: Vec<ICE> = files
         .par_iter()
@@ -69,19 +70,23 @@ fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
 
     if found_error.is_some() {
         print!("\r");
-        println!("ICE: {output: <100}", output = output);
+        println!(
+            "ICE: {output: <150} {msg}",
+            output = output,
+            msg = found_error.clone().unwrap()
+        );
         print!("\r");
         let _stdout = std::io::stdout().flush();
     } else {
         // let stdout = std::io::stdout().flush();
-        print!("\rChecking {output: <100}", output = output);
+        print!("\rChecking {output: <150}", output = output);
         let _stdout = std::io::stdout().flush();
     }
 
-    if found_error.is_some() {
+    if let Some(error_msg) = found_error {
         return Some(ICE {
             path: file.to_owned(),
-            args: "FIXME".to_string(),
+            args: error_msg,
             executable: rustc_path.to_string(),
         });
     }
@@ -96,8 +101,8 @@ fn find_ICE(output: Output) -> Option<String> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     let ice_keywords = vec![
-        "internal compiler error:",
         "query stack during panic:",
+        "internal compiler error:",
         "RUST_BACKTRACE=",
     ];
 

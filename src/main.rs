@@ -40,7 +40,7 @@ fn main() {
     let rustc_path = if args.clippy {
         "clippy-driver"
     } else {
-        //"rustc"
+        //  "rustc"
         // assume CWD is src/test from rustc repo root
         "build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
     };
@@ -120,9 +120,12 @@ fn find_ICE(output: Output) -> Option<String> {
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {
     Command::new(executable)
         .arg(&file)
+        .arg("-Zvalidate-mir")
+        .arg("-Zverify-llvm-ir=yes")
+        .arg("-Zincremental-verify-ich=yes")
         .args(&["-Zmir-opt-level=3"])
         //.args(&["-Zparse-only"])
-        //.args(&["-Zdump-mir=all"])
+        .args(&["-Zdump-mir=all"])
         .args(&["--emit", "mir"])
         .args(&["-Zsave-analysis"])
         // always keep these:

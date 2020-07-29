@@ -42,7 +42,7 @@ fn main() {
     } else {
         //  "rustc"
         // assume CWD is src/test from rustc repo root
-        "build/x86_64-unknown-linux-gnu/stage2/bin/rustc"
+        "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
     };
 
     println!("bin: {}\n\n", rustc_path);

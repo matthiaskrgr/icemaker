@@ -67,13 +67,15 @@ fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
     };
 
     let found_error: Option<String> = find_ICE(cmd_output);
+    let feature = if !uses_feature(file) { "no feat!" } else { "" };
 
     if found_error.is_some() {
         print!("\r");
         println!(
-            "ICE: {output: <150} {msg}",
+            "ICE: {output: <150} {msg} {feat}",
             output = output,
-            msg = found_error.clone().unwrap()
+            msg = found_error.clone().unwrap(),
+            feat = feature
         );
         print!("\r");
         let _stdout = std::io::stdout().flush();
@@ -91,6 +93,11 @@ fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
         });
     }
     None
+}
+
+fn uses_feature(file: &std::path::Path) -> bool {
+    let file: String = std::fs::read_to_string(&file).unwrap();
+    file.contains("feature(")
 }
 
 #[allow(non_snake_case)]

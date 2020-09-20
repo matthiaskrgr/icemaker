@@ -40,9 +40,10 @@ fn main() {
     let rustc_path = if args.clippy {
         "clippy-driver"
     } else {
-        //  "rustc"
+        // "rustc"
         // assume CWD is src/test from rustc repo root
-        "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
+        // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
+        "/home/matthias/vcs/github/rust/build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
     };
 
     println!("bin: {}\n\n", rustc_path);

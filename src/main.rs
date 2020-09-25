@@ -115,6 +115,8 @@ fn find_crash(
         let _stdout = std::io::stdout().flush();
     }
 
+    if found_error.is_some() {
+
     // rustc or clippy crashed, we have an ice
     // find out which flags are responsible
     // run rustc with the file on several flag combinations, if the first one ICEs, abort
@@ -144,6 +146,7 @@ fn find_crash(
             executable: rustc_path.to_string(),
         });
     }
+}
     None
 }
 

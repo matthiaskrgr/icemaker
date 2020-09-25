@@ -24,6 +24,9 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
         "-Zmir-opt-level=3",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=0",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zsave-analysis",
@@ -126,10 +129,12 @@ fn find_crash(
         let output = Command::new(rustc_path)
             .arg(&file)
             .args(&*flags)
+            // always pass these
+            .args(&["-o", "/dev/null"])
+            .args(&["-Zdump-mir-dir=/dev/null"])
             .output()
             .unwrap();
 
-        let found_error: Option<String> = find_ICE(output);
         if found_error.is_some() {
             // save the flags that the ICE repros with
             bad_flags = flags;

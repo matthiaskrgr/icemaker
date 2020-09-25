@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
 use std::ffi::OsStr;
@@ -14,10 +15,33 @@ struct Args {
 struct ICE {
     path: PathBuf,
     executable: String,
-    args: String,
+    args: Vec<String>,
+}
+
+fn get_flag_combinations() -> Vec<Vec<String>> {
+    let args = &[
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+        "-Zincremental-verify-ich=yes",
+        "-Zmir-opt-level=3",
+        "-Zdump-mir=all",
+        "--emit=mir",
+        "-Zsave-analysis",
+    ];
+
+    // get the power set : [a, b, c] => [a] [b] [c] , [ab], [ac] [ bc] [ a, b, c]
+    let mut combs = Vec::new();
+    for numb_comb in 0..=args.len() {
+        let combinations = args.iter().map(|s| s.to_string()).combinations(numb_comb);
+        combs.push(combinations);
+    }
+
+    let combs = combs.into_iter().flatten();
+    combs.collect()
 }
 
 fn main() {
+    let flags: Vec<Vec<String>> = get_flag_combinations();
     // parse args
     let mut args = Arguments::from_env();
 
@@ -50,7 +74,7 @@ fn main() {
     // collect error by running on files in parallel
     let mut errors: Vec<ICE> = files
         .par_iter()
-        .filter_map(|file| find_crash(&file, rustc_path, args.clippy))
+        .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
         .collect();
 
     errors.sort_by_key(|ice| ice.path.clone());
@@ -59,7 +83,12 @@ fn main() {
     errors.iter().for_each(|f| println!("{:?}", f));
 }
 
-fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
+fn find_crash(
+    file: &PathBuf,
+    rustc_path: &str,
+    clippy: bool,
+    compiler_flags: &Vec<Vec<String>>,
+) -> Option<ICE> {
     let output = file.display().to_string();
     let cmd_output = if clippy {
         run_rustc(rustc_path, file)
@@ -86,10 +115,32 @@ fn find_crash(file: &PathBuf, rustc_path: &str, clippy: bool) -> Option<ICE> {
         let _stdout = std::io::stdout().flush();
     }
 
+    // rustc or clippy crashed, we have an ice
+    // find out which flags are responsible
+    // run rustc with the file on several flag combinations, if the first one ICEs, abort
+    let mut bad_flags: &Vec<String> = &Vec::new();
+
+    compiler_flags.iter().any(|flags| {
+        let output = Command::new(rustc_path)
+            .arg(&file)
+            .args(&*flags)
+            .output()
+            .unwrap();
+
+        let found_error: Option<String> = find_ICE(output);
+        if found_error.is_some() {
+            // save the flags that the ICE repros with
+            bad_flags = flags;
+            true
+        } else {
+            false
+        }
+    });
+
     if let Some(error_msg) = found_error {
         return Some(ICE {
             path: file.to_owned(),
-            args: error_msg,
+            args: bad_flags.to_vec(),
             executable: rustc_path.to_string(),
         });
     }
@@ -108,7 +159,7 @@ fn find_ICE(output: Output) -> Option<String> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    let ice_keywords = vec![
+    let ice_keywords = [
         "LLVM ERROR",
         "`delay_span_bug`",
         "query stack during panic:",
@@ -116,9 +167,9 @@ fn find_ICE(output: Output) -> Option<String> {
         "RUST_BACKTRACE=",
     ];
 
-    for kw in ice_keywords {
+    for kw in &ice_keywords {
         if stderr.contains(kw) || stdout.contains(kw) {
-            return Some(kw.into());
+            return Some((*kw).into());
         }
     }
 

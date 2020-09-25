@@ -135,6 +135,7 @@ fn find_crash(
             .output()
             .unwrap();
 
+        let found_error = find_ICE(output);
         if found_error.is_some() {
             // save the flags that the ICE repros with
             bad_flags = flags;

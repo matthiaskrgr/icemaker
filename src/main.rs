@@ -1,3 +1,4 @@
+use home;
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
@@ -12,8 +13,31 @@ struct Args {
 }
 
 #[derive(Debug)]
+enum Regression {
+    Stable,
+    Beta,
+    Nightly,
+    Master,
+}
+
+impl std::fmt::Display for Regression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        let s = match self {
+            Regression::Stable => "stable",
+            Regression::Beta => "beta",
+            Regression::Nightly => "nightly",
+            Regression::Master => "master",
+        };
+
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug)]
 struct ICE {
-    path: PathBuf,
+    regresses_on: Regression,
+    needs_feature: bool,
+    file: PathBuf,
     executable: String,
     args: Vec<String>,
 }
@@ -23,10 +47,10 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
-        "-Zmir-opt-level=3",
-        "-Zmir-opt-level=2",
-        "-Zmir-opt-level=1",
         "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zsave-analysis",
@@ -80,7 +104,7 @@ fn main() {
         .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
         .collect();
 
-    errors.sort_by_key(|ice| ice.path.clone());
+    errors.sort_by_key(|ice| ice.file.clone());
 
     println!("errors:\n");
     errors.iter().for_each(|f| println!("{:?}", f));
@@ -100,7 +124,7 @@ fn find_crash(
     };
 
     let found_error: Option<String> = find_ICE(cmd_output);
-    let feature = if !uses_feature(file) { "no feat!" } else { "" };
+    let uses_feature: bool = uses_feature(file);
 
     if found_error.is_some() {
         print!("\r");
@@ -108,7 +132,7 @@ fn find_crash(
             "ICE: {output: <150} {msg} {feat}",
             output = output,
             msg = found_error.clone().unwrap(),
-            feat = feature
+            feat = if uses_feature { "" } else { "no feat!" },
         );
         print!("\r");
         let _stdout = std::io::stdout().flush();
@@ -119,40 +143,105 @@ fn find_crash(
     }
 
     if found_error.is_some() {
+        // rustc or clippy crashed, we have an ice
+        // find out which flags are responsible
+        // run rustc with the file on several flag combinations, if the first one ICEs, abort
+        let mut bad_flags: &Vec<String> = &Vec::new();
 
-    // rustc or clippy crashed, we have an ice
-    // find out which flags are responsible
-    // run rustc with the file on several flag combinations, if the first one ICEs, abort
-    let mut bad_flags: &Vec<String> = &Vec::new();
+        compiler_flags.iter().any(|flags| {
+            let output = Command::new(rustc_path)
+                .arg(&file)
+                .args(&*flags)
+                // always pass these
+                .args(&["-o", "/dev/null"])
+                .args(&["-Zdump-mir-dir=/dev/null"])
+                .output()
+                .unwrap();
 
-    compiler_flags.iter().any(|flags| {
-        let output = Command::new(rustc_path)
-            .arg(&file)
-            .args(&*flags)
-            // always pass these
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
-            .output()
-            .unwrap();
-
-        let found_error = find_ICE(output);
-        if found_error.is_some() {
-            // save the flags that the ICE repros with
-            bad_flags = flags;
-            true
-        } else {
-            false
-        }
-    });
-
-    if let Some(error_msg) = found_error {
-        return Some(ICE {
-            path: file.to_owned(),
-            args: bad_flags.to_vec(),
-            executable: rustc_path.to_string(),
+            let found_error = find_ICE(output);
+            if found_error.is_some() {
+                // save the flags that the ICE repros with
+                bad_flags = flags;
+                true
+            } else {
+                false
+            }
         });
+
+        // find out if this is a beta/stable/nightly regression
+
+        let toolchain_home: PathBuf = {
+            let mut p = home::rustup_home().unwrap();
+            p.push("toolchains");
+            p
+        };
+
+        let mut nightly_path = toolchain_home.clone();
+        nightly_path.push("nightly-x86_64-unknown-linux-gnu");
+        nightly_path.push("bin");
+        nightly_path.push("rustc");
+        let mut beta_path = toolchain_home.clone();
+        beta_path.push("beta-x86_64-unknown-linux-gnu");
+        beta_path.push("bin");
+        beta_path.push("rustc");
+        let mut stable_path = toolchain_home.clone();
+        stable_path.push("stable-x86_64-unknown-linux-gnu");
+        stable_path.push("bin");
+        stable_path.push("rustc");
+
+        let stable_ice: bool = find_ICE(
+            Command::new(stable_path)
+                .arg(&file)
+                .args(bad_flags)
+                .args(&["-o", "/dev/null"])
+                .args(&["-Zdump-mir-dir=/dev/null"])
+                .output()
+                .unwrap(),
+        )
+        .is_some();
+
+        let beta_ice: bool = find_ICE(
+            Command::new(beta_path)
+                .arg(&file)
+                .args(bad_flags)
+                .args(&["-o", "/dev/null"])
+                .args(&["-Zdump-mir-dir=/dev/null"])
+                .output()
+                .unwrap(),
+        )
+        .is_some();
+
+        let nightly_ice: bool = find_ICE(
+            Command::new(nightly_path)
+                .arg(&file)
+                .args(bad_flags)
+                .args(&["-o", "/dev/null"])
+                .args(&["-Zdump-mir-dir=/dev/null"])
+                .output()
+                .unwrap(),
+        )
+        .is_some();
+
+        let comp_channel: Regression = if stable_ice {
+            Regression::Stable
+        } else if beta_ice {
+            Regression::Beta
+        } else if nightly_ice {
+            Regression::Nightly
+        } else {
+            Regression::Master
+        };
+
+        if let Some(error_msg) = found_error {
+            return Some(ICE {
+                regresses_on: comp_channel,
+                needs_feature: uses_feature,
+                file: file.to_owned(),
+                args: bad_flags.to_vec(),
+                executable: rustc_path.to_string(),
+            });
+        }
     }
-}
     None
 }
 

@@ -75,6 +75,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "home"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2456aef2e6b6a9784192ae780c0f15bc57df0e918585282325e8c8ac27737654"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
 name = "itertools"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -154,6 +163,7 @@ dependencies = [
 name = "rustc_testrunner"
 version = "0.1.0"
 dependencies = [
+ "home",
  "itertools",
  "pico-args",
  "rayon",

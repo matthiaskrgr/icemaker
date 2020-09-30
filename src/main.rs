@@ -82,8 +82,8 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
 
 fn main() {
     let flags: Vec<Vec<String>> = get_flag_combinations();
-   // println!("flags:\n");
-   // flags.iter().for_each(|x| println!("{:?}", x));
+    // println!("flags:\n");
+    // flags.iter().for_each(|x| println!("{:?}", x));
     // parse args
     let mut args = Arguments::from_env();
 
@@ -172,7 +172,6 @@ fn find_crash(
                 .args(&["-Zdump-mir-dir=/dev/null"])
                 .output()
                 .unwrap();
-
             let found_error = find_ICE(output);
             if found_error.is_some() {
                 // save the flags that the ICE repros with
@@ -185,71 +184,11 @@ fn find_crash(
 
         // find out if this is a beta/stable/nightly regression
 
-        let toolchain_home: PathBuf = {
-            let mut p = home::rustup_home().unwrap();
-            p.push("toolchains");
-            p
-        };
-
-        let mut nightly_path = toolchain_home.clone();
-        nightly_path.push("nightly-x86_64-unknown-linux-gnu");
-        nightly_path.push("bin");
-        nightly_path.push("rustc");
-        let mut beta_path = toolchain_home.clone();
-        beta_path.push("beta-x86_64-unknown-linux-gnu");
-        beta_path.push("bin");
-        beta_path.push("rustc");
-        let mut stable_path = toolchain_home.clone();
-        stable_path.push("stable-x86_64-unknown-linux-gnu");
-        stable_path.push("bin");
-        stable_path.push("rustc");
-
-        let stable_ice: bool = find_ICE(
-            Command::new(stable_path)
-                .arg(&file)
-                .args(bad_flags)
-                .args(&["-o", "/dev/null"])
-                .args(&["-Zdump-mir-dir=/dev/null"])
-                .output()
-                .unwrap(),
-        )
-        .is_some();
-
-        let beta_ice: bool = find_ICE(
-            Command::new(beta_path)
-                .arg(&file)
-                .args(bad_flags)
-                .args(&["-o", "/dev/null"])
-                .args(&["-Zdump-mir-dir=/dev/null"])
-                .output()
-                .unwrap(),
-        )
-        .is_some();
-
-        let nightly_ice: bool = find_ICE(
-            Command::new(nightly_path)
-                .arg(&file)
-                .args(bad_flags)
-                .args(&["-o", "/dev/null"])
-                .args(&["-Zdump-mir-dir=/dev/null"])
-                .output()
-                .unwrap(),
-        )
-        .is_some();
-
-        let comp_channel: Regression = if stable_ice {
-            Regression::Stable
-        } else if beta_ice {
-            Regression::Beta
-        } else if nightly_ice {
-            Regression::Nightly
-        } else {
-            Regression::Master
-        };
+        let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
             return Some(ICE {
-                regresses_on: comp_channel,
+                regresses_on: regressing_channel,
                 needs_feature: uses_feature,
                 file: file.to_owned(),
                 args: bad_flags.to_vec(),
@@ -258,6 +197,70 @@ fn find_crash(
         }
     }
     None
+}
+
+fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regression {
+    let toolchain_home: PathBuf = {
+        let mut p = home::rustup_home().unwrap();
+        p.push("toolchains");
+        p
+    };
+
+    let mut nightly_path = toolchain_home.clone();
+    nightly_path.push("nightly-x86_64-unknown-linux-gnu");
+    nightly_path.push("bin");
+    nightly_path.push("rustc");
+    let mut beta_path = toolchain_home.clone();
+    beta_path.push("beta-x86_64-unknown-linux-gnu");
+    beta_path.push("bin");
+    beta_path.push("rustc");
+    let mut stable_path = toolchain_home.clone();
+    stable_path.push("stable-x86_64-unknown-linux-gnu");
+    stable_path.push("bin");
+    stable_path.push("rustc");
+
+    let stable_ice: bool = find_ICE(
+        Command::new(stable_path)
+            .arg(&file)
+            .args(bad_flags)
+            .args(&["-o", "/dev/null"])
+            .args(&["-Zdump-mir-dir=/dev/null"])
+            .output()
+            .unwrap(),
+    )
+    .is_some();
+
+    let beta_ice: bool = find_ICE(
+        Command::new(beta_path)
+            .arg(&file)
+            .args(bad_flags)
+            .args(&["-o", "/dev/null"])
+            .args(&["-Zdump-mir-dir=/dev/null"])
+            .output()
+            .unwrap(),
+    )
+    .is_some();
+
+    let nightly_ice: bool = find_ICE(
+        Command::new(nightly_path)
+            .arg(&file)
+            .args(bad_flags)
+            .args(&["-o", "/dev/null"])
+            .args(&["-Zdump-mir-dir=/dev/null"])
+            .output()
+            .unwrap(),
+    )
+    .is_some();
+
+    if stable_ice {
+        Regression::Stable
+    } else if beta_ice {
+        Regression::Beta
+    } else if nightly_ice {
+        Regression::Nightly
+    } else {
+        Regression::Master
+    }
 }
 
 fn uses_feature(file: &std::path::Path) -> bool {

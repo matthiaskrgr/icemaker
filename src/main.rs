@@ -35,6 +35,9 @@ impl std::fmt::Display for Regression {
     }
 }
 
+const RUSTC_PATH: &str =
+    "/home/matthias/vcs/github/rust/build/x86_64-unknown-linux-gnu/stage1/bin/rustc";
+
 const RUSTC_FLAGS: &[&str] = &[
     "-Zvalidate-mir",
     "-Zverify-llvm-ir=yes",
@@ -79,6 +82,8 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
 
 fn main() {
     let flags: Vec<Vec<String>> = get_flag_combinations();
+   // println!("flags:\n");
+   // flags.iter().for_each(|x| println!("{:?}", x));
     // parse args
     let mut args = Arguments::from_env();
 
@@ -104,7 +109,7 @@ fn main() {
         // "rustc"
         // assume CWD is src/test from rustc repo root
         // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
-        "/home/matthias/vcs/github/rust/build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
+        RUSTC_PATH
     };
 
     println!("bin: {}\n\n", rustc_path);

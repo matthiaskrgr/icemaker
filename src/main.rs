@@ -8,10 +8,12 @@ use std::path::PathBuf;
 use std::process::{Command, Output};
 use walkdir::WalkDir;
 
+// if we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
 }
 
+// in what channel a regression starts occurring
 #[derive(Debug)]
 enum Regression {
     Stable,
@@ -33,33 +35,41 @@ impl std::fmt::Display for Regression {
     }
 }
 
+const RUSTC_FLAGS: &[&str] = &[
+    "-Zvalidate-mir",
+    "-Zverify-llvm-ir=yes",
+    "-Zincremental-verify-ich=yes",
+    "-Zmir-opt-level=0",
+    "-Zmir-opt-level=1",
+    "-Zmir-opt-level=2",
+    "-Zmir-opt-level=3",
+    "-Zdump-mir=all",
+    "--emit=mir",
+    "-Zsave-analysis",
+];
+
+// data for an ICE
 #[derive(Debug)]
 struct ICE {
     regresses_on: Regression,
+    // do we need any special features for that ICE
     needs_feature: bool,
+    // file that reproduces the ice
     file: PathBuf,
+    // path to the rustc binary
     executable: String,
+    // args that are needed to crash rustc
     args: Vec<String>,
 }
 
 fn get_flag_combinations() -> Vec<Vec<String>> {
-    let args = &[
-        "-Zvalidate-mir",
-        "-Zverify-llvm-ir=yes",
-        "-Zincremental-verify-ich=yes",
-        "-Zmir-opt-level=0",
-        "-Zmir-opt-level=1",
-        "-Zmir-opt-level=2",
-        "-Zmir-opt-level=3",
-        "-Zdump-mir=all",
-        "--emit=mir",
-        "-Zsave-analysis",
-    ];
-
     // get the power set : [a, b, c] => [a] [b] [c] , [ab], [ac] [ bc] [ a, b, c]
     let mut combs = Vec::new();
-    for numb_comb in 0..=args.len() {
-        let combinations = args.iter().map(|s| s.to_string()).combinations(numb_comb);
+    for numb_comb in 0..=RUSTC_FLAGS.len() {
+        let combinations = RUSTC_FLAGS
+            .iter()
+            .map(|s| s.to_string())
+            .combinations(numb_comb);
         combs.push(combinations);
     }
 
@@ -232,7 +242,7 @@ fn find_crash(
             Regression::Master
         };
 
-        if let Some(error_msg) = found_error {
+        if found_error.is_some() {
             return Some(ICE {
                 regresses_on: comp_channel,
                 needs_feature: uses_feature,
@@ -277,14 +287,7 @@ fn find_ICE(output: Output) -> Option<String> {
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {
     Command::new(executable)
         .arg(&file)
-        .arg("-Zvalidate-mir")
-        .arg("-Zverify-llvm-ir=yes")
-        .arg("-Zincremental-verify-ich=yes")
-        .args(&["-Zmir-opt-level=3"])
-        //.args(&["-Zparse-only"])
-        .args(&["-Zdump-mir=all"])
-        .args(&["--emit", "mir"])
-        .args(&["-Zsave-analysis"])
+        .args(RUSTC_FLAGS)
         // always keep these:
         .args(&["-o", "/dev/null"])
         .args(&["-Zdump-mir-dir=/dev/null"])

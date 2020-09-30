@@ -134,9 +134,9 @@ fn find_crash(
 ) -> Option<ICE> {
     let output = file.display().to_string();
     let cmd_output = if clippy {
-        run_rustc(rustc_path, file)
-    } else {
         run_clippy(rustc_path, file)
+    } else {
+        run_rustc(rustc_path, file)
     };
 
     let found_error: Option<String> = find_ICE(cmd_output);
@@ -306,7 +306,7 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_clippy(executable: &str, file: &PathBuf) -> Output {
+fn run_rustc(executable: &str, file: &PathBuf) -> Output {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
     let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -325,7 +325,7 @@ fn run_clippy(executable: &str, file: &PathBuf) -> Output {
     output
 }
 
-fn run_rustc(executable: &str, file: &PathBuf) -> Output {
+fn run_clippy(executable: &str, file: &PathBuf) -> Output {
     Command::new(executable)
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .arg(&file)

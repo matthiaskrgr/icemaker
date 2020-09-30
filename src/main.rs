@@ -6,6 +6,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Output};
+use tempdir::TempDir;
 use walkdir::WalkDir;
 
 // if we run clippy or rustc (default: rustc)
@@ -164,15 +165,21 @@ fn find_crash(
         let mut bad_flags: &Vec<String> = &Vec::new();
 
         compiler_flags.iter().any(|flags| {
+            let tempdir = TempDir::new("tmpdir").unwrap();
+            let tempdir_path = tempdir.path();
+            let output_file = format!("-o{}/file1", tempdir_path.display());
+            let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+
             let output = Command::new(rustc_path)
                 .arg(&file)
                 .args(&*flags)
-                // always pass these
-                .args(&["-o", "/dev/null"])
-                .args(&["-Zdump-mir-dir=/dev/null"])
+                .arg(output_file)
+                .arg(dump_mir_dir)
                 .output()
                 .unwrap();
             let found_error = find_ICE(output);
+            // remove the tempdir
+            tempdir.close().unwrap();
             if found_error.is_some() {
                 // save the flags that the ICE repros with
                 bad_flags = flags;
@@ -206,6 +213,11 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
         p
     };
 
+    let tempdir = TempDir::new("tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+    let output_file = format!("-o{}/file1", tempdir_path.display());
+    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+
     let mut nightly_path = toolchain_home.clone();
     nightly_path.push("nightly-x86_64-unknown-linux-gnu");
     nightly_path.push("bin");
@@ -223,8 +235,8 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
         Command::new(stable_path)
             .arg(&file)
             .args(bad_flags)
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
+            .arg(&output_file)
+            .arg(&dump_mir_dir)
             .output()
             .unwrap(),
     )
@@ -234,8 +246,8 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
         Command::new(beta_path)
             .arg(&file)
             .args(bad_flags)
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
+            .arg(&output_file)
+            .arg(&dump_mir_dir)
             .output()
             .unwrap(),
     )
@@ -245,12 +257,14 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
         Command::new(nightly_path)
             .arg(&file)
             .args(bad_flags)
-            .args(&["-o", "/dev/null"])
-            .args(&["-Zdump-mir-dir=/dev/null"])
+            .arg(&output_file)
+            .arg(&dump_mir_dir)
             .output()
             .unwrap(),
     )
     .is_some();
+    // remove tempdir
+    tempdir.close().unwrap();
 
     if stable_ice {
         Regression::Stable
@@ -293,14 +307,22 @@ fn find_ICE(output: Output) -> Option<String> {
 }
 
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {
-    Command::new(executable)
+    let tempdir = TempDir::new("tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+    let output_file = format!("-o{}/file1", tempdir_path.display());
+    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+
+    let output = Command::new(executable)
         .arg(&file)
         .args(RUSTC_FLAGS)
         // always keep these:
-        .args(&["-o", "/dev/null"])
-        .args(&["-Zdump-mir-dir=/dev/null"])
+        .arg(&output_file)
+        .arg(&dump_mir_dir)
         .output()
-        .unwrap()
+        .unwrap();
+    // remove tempdir
+    tempdir.close().unwrap();
+    output
 }
 
 fn run_rustc(executable: &str, file: &PathBuf) -> Output {

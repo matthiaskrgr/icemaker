@@ -6,7 +6,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Output};
-use tempdir::TempDir;
+use tempfile::tempdir_in;
 use walkdir::WalkDir;
 
 // if we run clippy or rustc (default: rustc)
@@ -165,7 +165,7 @@ fn find_crash(
         let mut bad_flags: &Vec<String> = &Vec::new();
 
         compiler_flags.iter().any(|flags| {
-            let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+            let tempdir = tempdir_in(".").unwrap();
             let tempdir_path = tempdir.path();
             let output_file = format!("-o{}/file1", tempdir_path.display());
             let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
@@ -213,7 +213,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
         p
     };
 
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = tempdir_in(".").unwrap();
     let tempdir_path = tempdir.path();
     let output_file = format!("-o{}/file1", tempdir_path.display());
     let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
@@ -307,7 +307,7 @@ fn find_ICE(output: Output) -> Option<String> {
 }
 
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = tempdir_in(".").unwrap();
     let tempdir_path = tempdir.path();
     let output_file = format!("-o{}/file1", tempdir_path.display());
     let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());

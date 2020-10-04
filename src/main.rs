@@ -114,9 +114,29 @@ fn main() {
     };
 
     println!("bin: {}\n\n", rustc_path);
+
+    // files that take too long to check or cause other problems
+    let EXCEPTION_LIST: Vec<PathBuf> = [
+        // runtime
+        "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
+        "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
+        // memory
+        "./src/test/ui/issues/issue-50811.rs",
+        "./src/test/ui/issues/issue-29466.rs",
+        "./src/tools/miri/tests/run-pass/float.rs",
+        "./src/test/ui/numbers-arithmetic/saturating-float-casts-wasm.rs",
+        "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
+        "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
+        "./src/test/ui/wrapping-int-combinations.rs",
+    ]
+    .iter()
+    .map(PathBuf::from)
+    .collect();
+
     // collect error by running on files in parallel
     let mut errors: Vec<ICE> = files
-        .par_iter()
+        .iter()
+        .filter(|file| !EXCEPTION_LIST.contains(file))
         .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
         .collect();
 
@@ -153,6 +173,8 @@ fn find_crash(
         print!("\r");
         let _stdout = std::io::stdout().flush();
     } else {
+        //@FIXME this only advances the checking once the files has already been checked!
+
         // let stdout = std::io::stdout().flush();
         print!("\rChecking {output: <150}", output = output);
         let _stdout = std::io::stdout().flush();

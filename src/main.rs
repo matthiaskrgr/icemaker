@@ -9,12 +9,12 @@ use std::process::{Command, Output};
 use tempdir::TempDir;
 use walkdir::WalkDir;
 
-// if we run clippy or rustc (default: rustc)
+// whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
 }
 
-// in what channel a regression starts occurring
+// in what channel a regression is first noticed?
 #[derive(Debug)]
 enum Regression {
     Stable,
@@ -61,7 +61,7 @@ struct ICE {
     // file that reproduces the ice
     file: PathBuf,
     // path to the rustc binary
-    executable: String,
+    //    executable: String,
     // args that are needed to crash rustc
     args: Vec<String>,
 }
@@ -135,7 +135,7 @@ fn main() {
 
     // collect error by running on files in parallel
     let mut errors: Vec<ICE> = files
-        .iter()
+        .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
         .collect();
@@ -221,7 +221,7 @@ fn find_crash(
                 needs_feature: uses_feature,
                 file: file.to_owned(),
                 args: bad_flags.to_vec(),
-                executable: rustc_path.to_string(),
+                // executable: rustc_path.to_string(),
             });
         }
     }
@@ -331,8 +331,8 @@ fn find_ICE(output: Output) -> Option<String> {
 fn run_rustc(executable: &str, file: &PathBuf) -> Output {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
-    let output_file = format!("-o{}/file1", tempdir_path.display());
-    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+    let output_file = format!("-o/dev/null");
+    let dump_mir_dir = format!("-Zdump-mir-dir=/dev/null");
 
     let output = Command::new(executable)
         .arg(&file)

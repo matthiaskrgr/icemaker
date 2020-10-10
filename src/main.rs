@@ -1,4 +1,3 @@
-use home;
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
@@ -117,6 +116,7 @@ fn main() {
     println!("bin: {}\n\n", rustc_path);
 
     // files that take too long to check or cause other problems
+    #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = [
         // runtime
         "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
@@ -151,7 +151,7 @@ fn find_crash(
     file: &PathBuf,
     rustc_path: &str,
     clippy: bool,
-    compiler_flags: &Vec<Vec<String>>,
+    compiler_flags: &[Vec<String>],
 ) -> Option<ICE> {
     let output = file.display().to_string();
     let cmd_output = if clippy {
@@ -229,7 +229,7 @@ fn find_crash(
     None
 }
 
-fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regression {
+fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression {
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
         p.push("toolchains");
@@ -249,7 +249,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<String>, file: &PathBuf) -> Regress
     beta_path.push("beta-x86_64-unknown-linux-gnu");
     beta_path.push("bin");
     beta_path.push("rustc");
-    let mut stable_path = toolchain_home.clone();
+    let mut stable_path = toolchain_home;
     stable_path.push("stable-x86_64-unknown-linux-gnu");
     stable_path.push("bin");
     stable_path.push("rustc");
@@ -330,10 +330,10 @@ fn find_ICE(output: Output) -> Option<String> {
 }
 
 fn run_rustc(executable: &str, file: &PathBuf) -> Output {
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-    let tempdir_path = tempdir.path();
-    let output_file = format!("-o/dev/null");
-    let dump_mir_dir = format!("-Zdump-mir-dir=/dev/null");
+    //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    //let tempdir_path = tempdir.path();
+    let output_file = String::from("-o/dev/null");
+    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
     let output = Command::new(executable)
         .arg(&file)
@@ -344,7 +344,7 @@ fn run_rustc(executable: &str, file: &PathBuf) -> Output {
         .output()
         .unwrap();
     // remove tempdir
-    tempdir.close().unwrap();
+    //tempdir.close().unwrap();
     output
 }
 

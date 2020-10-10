@@ -50,6 +50,7 @@ const RUSTC_FLAGS: &[&str] = &[
     "-Zdump-mir=all",
     "--emit=mir",
     "-Zsave-analysis",
+    "-Zprint-mono-items=full"
 ];
 
 // data for an ICE

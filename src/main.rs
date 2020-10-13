@@ -49,7 +49,7 @@ const RUSTC_FLAGS: &[&str] = &[
     "-Zdump-mir=all",
     "--emit=mir",
     "-Zsave-analysis",
-    "-Zprint-mono-items=full"
+    "-Zprint-mono-items=full",
 ];
 
 // data for an ICE
@@ -64,6 +64,23 @@ struct ICE {
     //    executable: String,
     // args that are needed to crash rustc
     args: Vec<String>,
+}
+
+impl std::fmt::Display for ICE {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "'rustc {} {}' ICEs on {}, {}",
+            self.file.display(),
+            self.args.join(" "),
+            self.regresses_on,
+            if self.needs_feature {
+                "and uses features"
+            } else {
+                "without features!"
+            }
+        )
+    }
 }
 
 fn get_flag_combinations() -> Vec<Vec<String>> {
@@ -144,7 +161,7 @@ fn main() {
     errors.sort_by_key(|ice| ice.file.clone());
 
     println!("errors:\n");
-    errors.iter().for_each(|f| println!("{:?}", f));
+    errors.iter().for_each(|f| println!("{}", f));
 }
 
 fn find_crash(

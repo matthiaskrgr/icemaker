@@ -52,11 +52,12 @@ const RUSTC_FLAGS: &[&str] = &[
     "-Zprint-mono-items=full",
 ];
 
-// data for an ICE
+// represents a crash
 #[derive(Debug)]
 struct ICE {
+    // what release channel did we crash on?
     regresses_on: Regression,
-    // do we need any special features for that ICE
+    // do we need any special features for that ICE?
     needs_feature: bool,
     // file that reproduces the ice
     file: PathBuf,
@@ -84,7 +85,7 @@ impl std::fmt::Display for ICE {
 }
 
 fn get_flag_combinations() -> Vec<Vec<String>> {
-    // get the power set : [a, b, c] => [a] [b] [c] , [ab], [ac] [ bc] [ a, b, c]
+    // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
     let mut combs = Vec::new();
     for numb_comb in 0..=RUSTC_FLAGS.len() {
         let combinations = RUSTC_FLAGS
@@ -132,7 +133,7 @@ fn main() {
 
     println!("bin: {}\n\n", rustc_path);
 
-    // files that take too long to check or cause other problems
+    // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = [
         // runtime
@@ -146,12 +147,15 @@ fn main() {
         "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
         "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
         "./src/test/ui/wrapping-int-combinations.rs",
+        // glacier/memory:
+        "fixed/23600.rs",
+        "23600.rs",
     ]
     .iter()
     .map(PathBuf::from)
     .collect();
 
-    // collect error by running on files in parallel
+    // collect errors by running on files in parallel
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
@@ -160,6 +164,7 @@ fn main() {
 
     errors.sort_by_key(|ice| ice.file.clone());
 
+    // if we are done, print all errors
     println!("errors:\n");
     errors.iter().for_each(|f| println!("{}", f));
 }

@@ -65,13 +65,15 @@ struct ICE {
     //    executable: String,
     // args that are needed to crash rustc
     args: Vec<String>,
+    // part of the error message
+    error_reason: String,
 }
 
 impl std::fmt::Display for ICE {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(
             f,
-            "'rustc {} {}' ICEs on {}, {}",
+            "'rustc {} {}' ICEs on {}, {} with: {}",
             self.file.display(),
             self.args.join(" "),
             self.regresses_on,
@@ -79,7 +81,8 @@ impl std::fmt::Display for ICE {
                 "and uses features"
             } else {
                 "without features!"
-            }
+            },
+            self.error_reason,
         )
     }
 }
@@ -203,7 +206,7 @@ fn find_crash(
         let _stdout = std::io::stdout().flush();
     }
 
-    if found_error.is_some() {
+    if let Some(error_reason) = found_error.clone() {
         // rustc or clippy crashed, we have an ice
         // find out which flags are responsible
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
@@ -245,6 +248,7 @@ fn find_crash(
                 file: file.to_owned(),
                 args: bad_flags.to_vec(),
                 // executable: rustc_path.to_string(),
+                error_reason,
             });
         }
     }

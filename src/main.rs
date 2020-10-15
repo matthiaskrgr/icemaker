@@ -67,13 +67,15 @@ struct ICE {
     args: Vec<String>,
     // part of the error message
     error_reason: String,
+    // ice message
+    ice_msg: String,
 }
 
 impl std::fmt::Display for ICE {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(
             f,
-            "'rustc {} {}' ICEs on {}, {} with: {}",
+            "'rustc {} {}' ICEs on {}, {} with: {} / '{}'",
             self.file.display(),
             self.args.join(" "),
             self.regresses_on,
@@ -83,6 +85,7 @@ impl std::fmt::Display for ICE {
                 "without features!"
             },
             self.error_reason,
+            self.ice_msg,
         )
     }
 }
@@ -185,7 +188,15 @@ fn find_crash(
         run_rustc(rustc_path, file)
     };
 
+    // find out the ice message
+    let ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
+        .lines()
+        .find(|line| line.contains("error: internal compiler error: "))
+        .unwrap_or_default()
+        .into();
+
     let found_error: Option<String> = find_ICE(cmd_output);
+    // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
     if found_error.is_some() {
@@ -249,6 +260,7 @@ fn find_crash(
                 args: bad_flags.to_vec(),
                 // executable: rustc_path.to_string(),
                 error_reason,
+                ice_msg,
             });
         }
     }

@@ -189,11 +189,14 @@ fn find_crash(
     };
 
     // find out the ice message
-    let ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
+    let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
         .lines()
         .find(|line| line.contains("error: internal compiler error: "))
         .unwrap_or_default()
-        .into();
+        .to_string();
+
+        ice_msg.truncate(150);
+
 
     let found_error: Option<String> = find_ICE(cmd_output);
     // check if the file enables any compiler features

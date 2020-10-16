@@ -36,7 +36,7 @@ impl std::fmt::Display for Regression {
 }
 
 const RUSTC_PATH: &str =
-    "/home/matthias/vcs/github/rust/build/x86_64-unknown-linux-gnu/stage1/bin/rustc";
+    "/home/matthias/.rustup/toolchains/master/bin/rustc";
 
 const RUSTC_FLAGS: &[&str] = &[
     "-Zvalidate-mir",

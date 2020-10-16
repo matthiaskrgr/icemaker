@@ -51,6 +51,7 @@ const RUSTC_FLAGS: &[&str] = &[
     "-Zsave-analysis",
     "-Zprint-mono-items=full",
 ];
+// -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 
 // represents a crash
 #[derive(Debug)]
@@ -195,8 +196,7 @@ fn find_crash(
         .unwrap_or_default()
         .to_string();
 
-        ice_msg.truncate(150);
-
+    ice_msg.truncate(150);
 
     let found_error: Option<String> = find_ICE(cmd_output);
     // check if the file enables any compiler features

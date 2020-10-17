@@ -154,9 +154,11 @@ fn main() {
         "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
         "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
         "./src/test/ui/wrapping-int-combinations.rs",
-        // glacier/memory:
+        // glacier/memory/time:
         "fixed/23600.rs",
         "23600.rs",
+        "fixed/71699.rs",
+        "71699.rs",
     ]
     .iter()
     .map(PathBuf::from)

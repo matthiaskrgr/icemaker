@@ -35,8 +35,7 @@ impl std::fmt::Display for Regression {
     }
 }
 
-const RUSTC_PATH: &str =
-    "/home/matthias/.rustup/toolchains/master/bin/rustc";
+
 
 const RUSTC_FLAGS: &[&str] = &[
     "-Zvalidate-mir",
@@ -107,6 +106,16 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
 }
 
 fn main() {
+    #[allow(non_snake_case)]
+    let RUSTC_PATH: &str = {
+        let mut p = home::rustup_home().unwrap();
+        p.push("toolchains");
+        p.push("master");
+        p.push("bin");
+        p.push("rustc");
+        &p.display().to_string()
+    };
+
     let flags: Vec<Vec<String>> = get_flag_combinations();
     // println!("flags:\n");
     // flags.iter().for_each(|x| println!("{:?}", x));
@@ -135,7 +144,7 @@ fn main() {
         // "rustc"
         // assume CWD is src/test from rustc repo root
         // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
-        RUSTC_PATH
+        &RUSTC_PATH
     };
 
     println!("bin: {}\n\n", rustc_path);

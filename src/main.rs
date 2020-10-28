@@ -35,8 +35,6 @@ impl std::fmt::Display for Regression {
     }
 }
 
-
-
 const RUSTC_FLAGS: &[&str] = &[
     "-Zvalidate-mir",
     "-Zverify-llvm-ir=yes",
@@ -181,7 +179,9 @@ fn main() {
         .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
         .collect();
 
+    // sort by filename first and then by ice so that identical ICS are sorted by filename?
     errors.sort_by_key(|ice| ice.file.clone());
+    errors.sort_by_key(|ice| ice.ice_msg.clone());
 
     // if we are done, print all errors
     println!("errors:\n");

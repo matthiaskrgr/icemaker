@@ -115,6 +115,16 @@ fn main() {
         &p.display().to_string()
     };
 
+    #[allow(non_snake_case)]
+    let CLIPPY_DRIVER: &str = {
+        let mut p = home::rustup_home().unwrap();
+        p.push("toolchains");
+        p.push("master");
+        p.push("bin");
+        p.push("clippy-driver");
+        &p.display().to_string()
+    };
+
     let flags: Vec<Vec<String>> = get_flag_combinations();
     // println!("flags:\n");
     // flags.iter().for_each(|x| println!("{:?}", x));
@@ -138,7 +148,7 @@ fn main() {
     files.sort();
 
     let rustc_path = if args.clippy {
-        "clippy-driver"
+        &CLIPPY_DRIVER
     } else {
         // "rustc"
         // assume CWD is src/test from rustc repo root

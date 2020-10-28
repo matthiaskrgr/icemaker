@@ -206,6 +206,7 @@ fn find_crash(
 ) -> Option<ICE> {
     let output = file.display().to_string();
     let cmd_output = if clippy {
+        // @FIXME if we find a clippy ice, we try to reduce it with rustc args later, this should not happen
         run_clippy(rustc_path, file)
     } else {
         run_rustc(rustc_path, file)

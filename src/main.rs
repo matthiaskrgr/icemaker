@@ -414,6 +414,7 @@ fn run_rustc(executable: &str, file: &PathBuf) -> Output {
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {
     Command::new(executable)
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("-Aclippy::cargo") // allow cargo lints
         .arg("-Wclippy::internal")

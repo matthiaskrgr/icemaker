@@ -156,7 +156,8 @@ fn main() {
         &RUSTC_PATH
     };
 
-    println!("bin: {}\n\n", rustc_path);
+    println!("bin: {}", rustc_path);
+    println!("checking: {} files\n\n", files.len());
 
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]

@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
@@ -8,13 +9,14 @@ use std::process::{Command, Output};
 use tempdir::TempDir;
 use walkdir::WalkDir;
 
+use diff;
 // whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
 }
 
 // in what channel a regression is first noticed?
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 enum Regression {
     Stable,
     Beta,
@@ -52,7 +54,7 @@ const RUSTC_FLAGS: &[&str] = &[
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 
 // represents a crash
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct ICE {
     // what release channel did we crash on?
     regresses_on: Regression,
@@ -105,6 +107,17 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
 }
 
 fn main() {
+    // read in existing errors
+    let errors_before: String = if std::path::PathBuf::from("errors.json").exists() {
+        serde_json::from_str(&std::fs::read_to_string("errors.json").
+        
+        unwrap()).
+        
+        unwrap()
+    } else {
+        String::new()
+    };
+
     #[allow(non_snake_case)]
     let RUSTC_PATH: &str = {
         let mut p = home::rustup_home().unwrap();
@@ -197,6 +210,18 @@ fn main() {
     // if we are done, print all errors
     println!("errors:\n");
     errors.iter().for_each(|f| println!("{}", f));
+
+    // in the end, save all the errors to a file
+    let errors_new = serde_json::to_string(&errors).unwrap();
+    std::fs::write("errors.json", &errors_new).expect("failed to write to file");
+
+     diff::lines(&errors_before, &errors_new).iter().for_each(|diff|  {
+        match diff {
+            diff::Result::Left(l)    => println!("-{}", l),
+            diff::Result::Both(l, _) => println!(" {}", l),
+            diff::Result::Right(r)   => println!("+{}", r)
+        }
+     } )
 }
 
 fn find_crash(

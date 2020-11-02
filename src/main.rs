@@ -108,14 +108,11 @@ fn get_flag_combinations() -> Vec<Vec<String>> {
 
 fn main() {
     // read in existing errors
-    let errors_before: String = if std::path::PathBuf::from("errors.json").exists() {
-        serde_json::from_str(&std::fs::read_to_string("errors.json").
-        
-        unwrap()).
-        
-        unwrap()
+    // read the string INTO Vec<ICE>
+    let errors_before: Vec<ICE> = if std::path::PathBuf::from("errors.json").exists() {
+        serde_json::from_str(&std::fs::read_to_string("errors.json").unwrap()).unwrap()
     } else {
-        String::new()
+        Vec::new()
     };
 
     #[allow(non_snake_case)]
@@ -215,13 +212,14 @@ fn main() {
     let errors_new = serde_json::to_string(&errors).unwrap();
     std::fs::write("errors.json", &errors_new).expect("failed to write to file");
 
-     diff::lines(&errors_before, &errors_new).iter().for_each(|diff|  {
-        match diff {
-            diff::Result::Left(l)    => println!("-{}", l),
+    println!("\ndiff: \n");
+    diff::lines(&serde_json::to_string(&errors_before).unwrap(), &errors_new)
+        .iter()
+        .for_each(|diff| match diff {
+            diff::Result::Left(l) => println!("-{}", l),
             diff::Result::Both(l, _) => println!(" {}", l),
-            diff::Result::Right(r)   => println!("+{}", r)
-        }
-     } )
+            diff::Result::Right(r) => println!("+{}", r),
+        })
 }
 
 fn find_crash(

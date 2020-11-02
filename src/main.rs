@@ -209,11 +209,11 @@ fn main() {
     errors.iter().for_each(|f| println!("{}", f));
 
     // in the end, save all the errors to a file
-    let errors_new = serde_json::to_string(&errors).unwrap();
+    let errors_new = serde_json::to_string_pretty(&errors).unwrap();
     std::fs::write("errors.json", &errors_new).expect("failed to write to file");
 
     println!("\ndiff: \n");
-    diff::lines(&serde_json::to_string(&errors_before).unwrap(), &errors_new)
+    diff::lines(&serde_json::to_string_pretty(&errors_before).unwrap(), &errors_new)
         .iter()
         .for_each(|diff| match diff {
             diff::Result::Left(l) => println!("-{}", l),

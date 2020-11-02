@@ -243,6 +243,8 @@ fn find_crash(
         .unwrap_or_default()
         .to_string();
 
+    ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
+
     ice_msg.truncate(150);
 
     let found_error: Option<String> = find_ICE(cmd_output);

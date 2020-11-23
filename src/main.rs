@@ -9,7 +9,6 @@ use std::process::{Command, Output};
 use tempdir::TempDir;
 use walkdir::WalkDir;
 
-use diff;
 // whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
@@ -213,13 +212,16 @@ fn main() {
     std::fs::write("errors.json", &errors_new).expect("failed to write to file");
 
     println!("\ndiff: \n");
-    diff::lines(&serde_json::to_string_pretty(&errors_before).unwrap(), &errors_new)
-        .iter()
-        .for_each(|diff| match diff {
-            diff::Result::Left(l) => println!("-{}", l),
-            diff::Result::Both(l, _) => println!(" {}", l),
-            diff::Result::Right(r) => println!("+{}", r),
-        })
+    diff::lines(
+        &serde_json::to_string_pretty(&errors_before).unwrap(),
+        &errors_new,
+    )
+    .iter()
+    .for_each(|diff| match diff {
+        diff::Result::Left(l) => println!("-{}", l),
+        diff::Result::Both(l, _) => println!(" {}", l),
+        diff::Result::Right(r) => println!("+{}", r),
+    })
 }
 
 fn find_crash(
@@ -275,38 +277,43 @@ fn find_crash(
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: &Vec<String> = &Vec::new();
 
-        compiler_flags.iter().any(|flags| {
-            let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-            let tempdir_path = tempdir.path();
-            let output_file = format!("-o{}/file1", tempdir_path.display());
-            let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+        if !clippy {
+            compiler_flags.iter().any(|flags| {
+                let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                let tempdir_path = tempdir.path();
+                let output_file = format!("-o{}/file1", tempdir_path.display());
+                let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-            let output = Command::new(rustc_path)
-                .arg(&file)
-                .args(&*flags)
-                .arg(output_file)
-                .arg(dump_mir_dir)
-                .output()
-                .unwrap();
-            let found_error = find_ICE(output);
-            // remove the tempdir
-            tempdir.close().unwrap();
-            if found_error.is_some() {
-                // save the flags that the ICE repros with
-                bad_flags = flags;
-                true
-            } else {
-                false
-            }
-        });
+                let output = Command::new(rustc_path)
+                    .arg(&file)
+                    .args(&*flags)
+                    .arg(output_file)
+                    .arg(dump_mir_dir)
+                    .output()
+                    .unwrap();
+                let found_error = find_ICE(output);
+                // remove the tempdir
+                tempdir.close().unwrap();
+                if found_error.is_some() {
+                    // save the flags that the ICE repros with
+                    bad_flags = flags;
+                    true
+                } else {
+                    false
+                }
+            });
 
-        // find out if this is a beta/stable/nightly regression
-
+            // find out if this is a beta/stable/nightly regression
+        }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
             return Some(ICE {
-                regresses_on: regressing_channel,
+                regresses_on: if clippy {
+                    Regression::Master
+                } else {
+                    regressing_channel
+                },
                 needs_feature: uses_feature,
                 file: file.to_owned(),
                 args: bad_flags.to_vec(),

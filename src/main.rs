@@ -12,6 +12,7 @@ use walkdir::WalkDir;
 // whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
+    rustdoc: bool,
 }
 
 // in what channel a regression is first noticed?
@@ -33,6 +34,43 @@ impl std::fmt::Display for Regression {
         };
 
         write!(f, "{}", s)
+    }
+}
+
+enum Executable {
+    Rustc,
+    Clippy,
+    Rustdoc,
+}
+
+impl Executable {
+    fn path(&self) -> String {
+        match self {
+            Executable::Rustc => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("rustc");
+                p.display().to_string()
+            }
+            Executable::Clippy => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("clippy-driver");
+                p.display().to_string()
+            }
+            Executable::Rustdoc => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("rustdoc");
+                p.display().to_string()
+            }
+        }
     }
 }
 
@@ -114,26 +152,6 @@ fn main() {
         Vec::new()
     };
 
-    #[allow(non_snake_case)]
-    let RUSTC_PATH: &str = {
-        let mut p = home::rustup_home().unwrap();
-        p.push("toolchains");
-        p.push("master");
-        p.push("bin");
-        p.push("rustc");
-        &p.display().to_string()
-    };
-
-    #[allow(non_snake_case)]
-    let CLIPPY_DRIVER: &str = {
-        let mut p = home::rustup_home().unwrap();
-        p.push("toolchains");
-        p.push("master");
-        p.push("bin");
-        p.push("clippy-driver");
-        &p.display().to_string()
-    };
-
     let flags: Vec<Vec<String>> = get_flag_combinations();
     // println!("flags:\n");
     // flags.iter().for_each(|x| println!("{:?}", x));
@@ -142,6 +160,15 @@ fn main() {
 
     let args = Args {
         clippy: args.contains(["-c", "--clippy"]),
+        rustdoc: args.contains(["-r", "--rustdoc"]),
+    };
+
+    let executable: Executable = if args.clippy {
+        Executable::Clippy
+    } else if args.rustdoc {
+        Executable::Rustdoc
+    } else {
+        Executable::Rustc
     };
 
     // search for rust files inside CWD
@@ -156,16 +183,13 @@ fn main() {
     // sort by path
     files.sort();
 
-    let rustc_path = if args.clippy {
-        &CLIPPY_DRIVER
-    } else {
-        // "rustc"
-        // assume CWD is src/test from rustc repo root
-        // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
-        &RUSTC_PATH
-    };
+    let exec_path = executable.path();
 
-    println!("bin: {}", rustc_path);
+    // "rustc"
+    // assume CWD is src/test from rustc repo root
+    // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
+
+    println!("bin: {}", exec_path);
     println!("checking: {} files\n\n", files.len());
 
     // files that take too long (several minutes) to check or cause other problems
@@ -196,7 +220,7 @@ fn main() {
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
-        .filter_map(|file| find_crash(&file, rustc_path, args.clippy, &flags))
+        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags))
         .collect();
 
     // sort by filename first and then by ice so that identical ICS are sorted by filename?
@@ -226,16 +250,15 @@ fn main() {
 
 fn find_crash(
     file: &PathBuf,
-    rustc_path: &str,
-    clippy: bool,
+    exec_path: &str,
+    executable: &Executable,
     compiler_flags: &[Vec<String>],
 ) -> Option<ICE> {
     let output = file.display().to_string();
-    let cmd_output = if clippy {
-        // @FIXME if we find a clippy ice, we try to reduce it with rustc args later, this should not happen
-        run_clippy(rustc_path, file)
-    } else {
-        run_rustc(rustc_path, file)
+    let cmd_output = match executable {
+        Executable::Clippy => run_clippy(exec_path, file),
+        Executable::Rustc => run_rustc(exec_path, file),
+        Executable::Rustdoc => run_rustdoc(exec_path, file),
     };
 
     // find out the ice message
@@ -277,43 +300,46 @@ fn find_crash(
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: &Vec<String> = &Vec::new();
 
-        if !clippy {
-            compiler_flags.iter().any(|flags| {
-                let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-                let tempdir_path = tempdir.path();
-                let output_file = format!("-o{}/file1", tempdir_path.display());
-                let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+        match executable {
+            Executable::Rustc => {
+                compiler_flags.iter().any(|flags| {
+                    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                    let tempdir_path = tempdir.path();
+                    let output_file = format!("-o{}/file1", tempdir_path.display());
+                    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-                let output = Command::new(rustc_path)
-                    .arg(&file)
-                    .args(&*flags)
-                    .arg(output_file)
-                    .arg(dump_mir_dir)
-                    .output()
-                    .unwrap();
-                let found_error = find_ICE(output);
-                // remove the tempdir
-                tempdir.close().unwrap();
-                if found_error.is_some() {
-                    // save the flags that the ICE repros with
-                    bad_flags = flags;
-                    true
-                } else {
-                    false
-                }
-            });
+                    let output = Command::new(exec_path)
+                        .arg(&file)
+                        .args(&*flags)
+                        .arg(output_file)
+                        .arg(dump_mir_dir)
+                        .output()
+                        .unwrap();
+                    let found_error = find_ICE(output);
+                    // remove the tempdir
+                    tempdir.close().unwrap();
+                    if found_error.is_some() {
+                        // save the flags that the ICE repros with
+                        bad_flags = flags;
+                        true
+                    } else {
+                        false
+                    }
+                });
 
-            // find out if this is a beta/stable/nightly regression
+                // find out if this is a beta/stable/nightly regression
+            }
+            Executable::Clippy | Executable::Rustdoc => {}
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
             return Some(ICE {
-                regresses_on: if clippy {
-                    Regression::Master
-                } else {
-                    regressing_channel
+                regresses_on: match executable {
+                    Executable::Clippy => Regression::Master,
+                    _ => regressing_channel,
                 },
+
                 needs_feature: uses_feature,
                 file: file.to_owned(),
                 args: bad_flags.to_vec(),
@@ -480,7 +506,17 @@ fn run_clippy(executable: &str, file: &PathBuf) -> Output {
         .arg("-Wvariant-size-differences")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"])
-        .args(&["-Zdump-mir-dir=/dev/null"])
+        .output()
+        .unwrap()
+}
+
+fn run_rustdoc(executable: &str, file: &PathBuf) -> Output {
+    Command::new(executable)
+        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .arg(&file)
+        .args(&["--cap-lints", "warn"])
+        .args(&["-o", "/dev/null"])
         .output()
         .unwrap()
 }

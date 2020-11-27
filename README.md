@@ -1,5 +1,6 @@
 Trophy case:
 
+https://github.com/rust-lang/rust/issues/79461
 https://github.com/rust-lang/rust/issues/79099
 https://github.com/rust-lang/rust/issues/79066
 https://github.com/rust-lang/rust/issues/78628

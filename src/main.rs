@@ -515,6 +515,8 @@ fn run_rustdoc(executable: &str, file: &PathBuf) -> Output {
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
+        .arg("--document-private-items")
+        .arg("--document-hidden-items")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"])
         .output()

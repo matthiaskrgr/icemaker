@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::process::{Command, Output};
 use tempdir::TempDir;
 use walkdir::WalkDir;
-
+use std::time::Instant;
 // whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
@@ -198,7 +198,7 @@ fn main() {
         // runtime
         "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
         "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
-        "./library/stdarch/crates/core_arch/src/mod.rs" //10+ mins
+        "./library/stdarch/crates/core_arch/src/mod.rs", //10+ mins
         // memory
         "./src/test/ui/issues/issue-50811.rs",
         "./src/test/ui/issues/issue-29466.rs",
@@ -255,12 +255,21 @@ fn find_crash(
     executable: &Executable,
     compiler_flags: &[Vec<String>],
 ) -> Option<ICE> {
+
+    let thread_start = Instant::now();
+
     let output = file.display().to_string();
     let cmd_output = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
     };
+
+    let time_elapsed = thread_start.elapsed().as_secs() / 60_u64;
+    const MINUTE_LIMIT: u64 = 5;
+    if time_elapsed > MINUTE_LIMIT {
+        println!("{} running for more ({}) than {} minute", file.display(),time_elapsed, MINUTE_LIMIT );
+    }
 
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)

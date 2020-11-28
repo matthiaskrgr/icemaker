@@ -6,9 +6,9 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Output};
+use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
-use std::time::Instant;
 // whether we run clippy or rustc (default: rustc)
 struct Args {
     clippy: bool,
@@ -230,7 +230,12 @@ fn main() {
 
     // if we are done, print all errors
     println!("errors:\n");
-    errors.iter().for_each(|f| println!("{}", f));
+
+    errors.iter().for_each(|f| {
+        let mut debug = format!("{:?}", f);
+        debug.truncate(300);
+        println!("{}", debug);
+    });
 
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();
@@ -255,7 +260,6 @@ fn find_crash(
     executable: &Executable,
     compiler_flags: &[Vec<String>],
 ) -> Option<ICE> {
-
     let thread_start = Instant::now();
 
     let output = file.display().to_string();
@@ -268,7 +272,12 @@ fn find_crash(
     let time_elapsed = thread_start.elapsed().as_secs() / 60_u64;
     const MINUTE_LIMIT: u64 = 5;
     if time_elapsed > MINUTE_LIMIT {
-        println!("\n{} running for more ({}) than {} minutes\n", file.display(),time_elapsed, MINUTE_LIMIT );
+        println!(
+            "\n{} running for more ({}) than {} minutes\n",
+            file.display(),
+            time_elapsed,
+            MINUTE_LIMIT
+        );
     }
 
     // find out the ice message
@@ -279,8 +288,6 @@ fn find_crash(
         .to_string();
 
     ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
-
-    ice_msg.truncate(150);
 
     let found_error: Option<String> = find_ICE(cmd_output);
     // check if the file enables any compiler features

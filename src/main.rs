@@ -269,9 +269,9 @@ fn find_crash(
         Executable::Rustdoc => run_rustdoc(exec_path, file),
     };
 
-    let time_elapsed = thread_start.elapsed().as_secs() / 60_u64;
-    const MINUTE_LIMIT: u64 = 5;
-    if time_elapsed > MINUTE_LIMIT {
+    let time_elapsed = thread_start.elapsed().as_secs();
+    const MINUTE_LIMIT: u64 = 1;
+    if time_elapsed > (MINUTE_LIMIT*60) {
         println!(
             "\n{} running for more ({}) than {} minutes\n",
             file.display(),

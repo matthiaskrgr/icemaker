@@ -268,7 +268,7 @@ fn find_crash(
     let time_elapsed = thread_start.elapsed().as_secs() / 60_u64;
     const MINUTE_LIMIT: u64 = 5;
     if time_elapsed > MINUTE_LIMIT {
-        println!("{} running for more ({}) than {} minute", file.display(),time_elapsed, MINUTE_LIMIT );
+        println!("\n{} running for more ({}) than {} minutes\n", file.display(),time_elapsed, MINUTE_LIMIT );
     }
 
     // find out the ice message

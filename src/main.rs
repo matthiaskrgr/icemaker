@@ -198,6 +198,7 @@ fn main() {
         // runtime
         "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
         "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
+        "./library/stdarch/crates/core_arch/src/mod.rs" //10+ mins
         // memory
         "./src/test/ui/issues/issue-50811.rs",
         "./src/test/ui/issues/issue-29466.rs",

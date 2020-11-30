@@ -87,6 +87,7 @@ const RUSTC_FLAGS: &[&str] = &[
     "--emit=mir",
     "-Zsave-analysis",
     "-Zprint-mono-items=full",
+    "-Zinstrument-coverage",
 ];
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 

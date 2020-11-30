@@ -274,7 +274,7 @@ fn find_crash(
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
         .lines()
-        .find(|line| line.contains("error: internal compiler error: "))
+        .find(|line| line.contains("panicked at") || line.contains("error: internal compiler error: "))
         .unwrap_or_default()
         .to_string();
 
@@ -459,6 +459,7 @@ fn find_ICE(output: Output) -> Option<String> {
 
     let ice_keywords = [
         "LLVM ERROR",
+        "panicked at:",
         "`delay_span_bug`",
         "query stack during panic:",
         "internal compiler error:",

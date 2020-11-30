@@ -269,17 +269,6 @@ fn find_crash(
         Executable::Rustdoc => run_rustdoc(exec_path, file),
     };
 
-    let time_elapsed = thread_start.elapsed().as_secs();
-    const MINUTE_LIMIT: u64 = 1;
-    if time_elapsed > (MINUTE_LIMIT*60) {
-        println!(
-            "\n{} running for more ({}) than {} minutes\n",
-            file.display(),
-            time_elapsed,
-            MINUTE_LIMIT
-        );
-    }
-
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
         .lines()
@@ -311,6 +300,7 @@ fn find_crash(
         let _stdout = std::io::stdout().flush();
     }
 
+    let mut ret = None;
     if let Some(error_reason) = found_error.clone() {
         // rustc or clippy crashed, we have an ice
         // find out which flags are responsible
@@ -351,7 +341,7 @@ fn find_crash(
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
-            return Some(ICE {
+            ret = Some(ICE {
                 regresses_on: match executable {
                     Executable::Clippy => Regression::Master,
                     _ => regressing_channel,
@@ -363,10 +353,23 @@ fn find_crash(
                 // executable: rustc_path.to_string(),
                 error_reason,
                 ice_msg,
-            });
+            })
         }
+    };
+
+    let seconds_elapsed = thread_start.elapsed().as_secs();
+    let minutes_elapsed: u64 = seconds_elapsed / 60;
+    const MINUTE_LIMIT: u64 = 1;
+    if minutes_elapsed > (MINUTE_LIMIT) {
+        println!(
+            "\n{} running for more ({} minutes) than {} minute\n",
+            file.display(),
+            seconds_elapsed / 60,
+            MINUTE_LIMIT
+        );
     }
-    None
+
+    ret
 }
 
 fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression {

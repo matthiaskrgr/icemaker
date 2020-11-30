@@ -2,6 +2,7 @@ Program to find ICEs (Internal Compiler Errors) in the rust compiler
 
 Trophy case:
 
+https://github.com/rust-lang/rust/issues/79569
 https://github.com/rust-lang/rust/issues/79566
 https://github.com/rust-lang/rust/issues/79565
 https://github.com/rust-lang/rust/issues/79497

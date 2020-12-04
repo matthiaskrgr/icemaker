@@ -16,7 +16,7 @@ struct Args {
 }
 
 // in what channel a regression is first noticed?
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 enum Regression {
     Stable,
     Beta,
@@ -93,7 +93,7 @@ const RUSTC_FLAGS: &[&str] = &[
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 
 // represents a crash
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 struct ICE {
     // what release channel did we crash on?
     regresses_on: Regression,
@@ -244,16 +244,27 @@ fn main() {
     std::fs::write("errors.json", &errors_new).expect("failed to write to file");
 
     println!("\ndiff: \n");
-    diff::lines(
+    // get the diff
+    let diff = diff::lines(
         &serde_json::to_string_pretty(&errors_before).unwrap(),
         &errors_new,
     )
     .iter()
-    .for_each(|diff| match diff {
-        diff::Result::Left(l) => println!("-{}", l),
-        diff::Result::Both(l, _) => println!(" {}", l),
-        diff::Result::Right(r) => println!("+{}", r),
+    .map(|diff| match diff {
+        diff::Result::Left(l) => format!("-{}\n", l),
+        diff::Result::Both(l, _) => format!(" {}\n", l),
+        diff::Result::Right(r) => format!("+{}\n", r),
     })
+    .collect::<String>();
+
+    println!("{}", diff);
+
+    let new_ices = errors
+        .iter()
+        .filter(|new_ice| !errors_before.contains(new_ice))
+        .collect::<Vec<&ICE>>();
+    // TODO do the same for removed ices
+    println!("NEW ICES:\n{:#?}", new_ices);
 }
 
 fn find_crash(
@@ -274,7 +285,9 @@ fn find_crash(
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
         .lines()
-        .find(|line| line.contains("panicked at") || line.contains("error: internal compiler error: "))
+        .find(|line| {
+            line.contains("panicked at") || line.contains("error: internal compiler error: ")
+        })
         .unwrap_or_default()
         .to_string();
 

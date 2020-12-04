@@ -1,6 +1,9 @@
-Program to find ICEs (Internal Compiler Errors) in the rust compiler
+Maker of ICE (Internal Compiler Error).
 
-Trophy case:
+A small program to automatically find crashes in the rust compiler
+using rustcs own tests and different feature flags.
+
+Trophy case (50+):
 https://github.com/rust-lang/rust/issues/79669
 https://github.com/rust-lang/rust/issues/79569
 https://github.com/rust-lang/rust/issues/79566

@@ -9,7 +9,7 @@ use std::process::{Command, Output};
 use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
-// whether we run clippy or rustc (default: rustc)
+// whether we run clippy or rustc or rustdoc (default: rustc)
 struct Args {
     clippy: bool,
     rustdoc: bool,
@@ -226,7 +226,7 @@ fn main() {
         .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags))
         .collect();
 
-    // sort by filename first and then by ice so that identical ICS are sorted by filename?
+    // sort by filename first and then by ice so that identical ICS are grouped up
     errors.sort_by_key(|ice| ice.file.clone());
     errors.sort_by_key(|ice| ice.ice_msg.clone());
 
@@ -263,7 +263,7 @@ fn main() {
         .iter()
         .filter(|new_ice| !errors_before.contains(new_ice))
         .collect::<Vec<&ICE>>();
-    // TODO do the same for removed ices
+    // TODO do the same for removed ices?
     println!("NEW ICES:\n{:#?}", new_ices);
 }
 
@@ -356,7 +356,7 @@ fn find_crash(
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
-            ret = Some(ICE {
+             let ret2 = ICE {
                 regresses_on: match executable {
                     Executable::Clippy => Regression::Master,
                     _ => regressing_channel,
@@ -368,10 +368,12 @@ fn find_crash(
                 // executable: rustc_path.to_string(),
                 error_reason,
                 ice_msg,
-            })
+            };
+            ret = Some(ret2);
         }
     };
 
+    // print a warning if a file takes longer than X to process
     let seconds_elapsed = thread_start.elapsed().as_secs();
     let minutes_elapsed: u64 = seconds_elapsed / 60;
     const MINUTE_LIMIT: u64 = 1;
@@ -388,6 +390,7 @@ fn find_crash(
 }
 
 fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression {
+    // simply check if we crasn on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
         p.push("toolchains");

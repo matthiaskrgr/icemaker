@@ -356,7 +356,7 @@ fn find_crash(
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
         if found_error.is_some() {
-             let ret2 = ICE {
+            let ret2 = ICE {
                 regresses_on: match executable {
                     Executable::Clippy => Regression::Master,
                     _ => regressing_channel,

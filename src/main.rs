@@ -1,3 +1,10 @@
+/// Run rustc its own tests with different parameters
+/// If an ICE (internal compiler error/crash/panic) is found, find out
+/// the smallest combination of responsible flags and save data about the crash
+///
+/// The programm is not limited to run rustc, but can also run clippy or rustdoc
+/// (-c or -r respectively)
+
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
@@ -9,7 +16,7 @@ use std::process::{Command, Output};
 use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
-// whether we run clippy or rustc or rustdoc (default: rustc)
+// whether we run clippy, rustdoc or rustc (default: rustc)
 struct Args {
     clippy: bool,
     rustdoc: bool,

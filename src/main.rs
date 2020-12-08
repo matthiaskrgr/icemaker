@@ -4,7 +4,6 @@
 ///
 /// The programm is not limited to run rustc, but can also run clippy or rustdoc
 /// (-c or -r respectively)
-
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
@@ -12,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
@@ -20,6 +19,7 @@ use walkdir::WalkDir;
 struct Args {
     clippy: bool,
     rustdoc: bool,
+    analyzer: bool, // rla
 }
 
 // in what channel a regression is first noticed?
@@ -48,6 +48,7 @@ enum Executable {
     Rustc,
     Clippy,
     Rustdoc,
+    RustAnalyzer,
 }
 
 impl Executable {
@@ -75,6 +76,14 @@ impl Executable {
                 p.push("master");
                 p.push("bin");
                 p.push("rustdoc");
+                p.display().to_string()
+            }
+            Executable::RustAnalyzer => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("rust-analyzer");
                 p.display().to_string()
             }
         }
@@ -170,12 +179,15 @@ fn main() {
     let args = Args {
         clippy: args.contains(["-c", "--clippy"]),
         rustdoc: args.contains(["-r", "--rustdoc"]),
+        analyzer: args.contains(["-a", "--analyzer"]),
     };
 
     let executable: Executable = if args.clippy {
         Executable::Clippy
     } else if args.rustdoc {
         Executable::Rustdoc
+    } else if args.analyzer {
+        Executable::RustAnalyzer
     } else {
         Executable::Rustc
     };
@@ -287,6 +299,7 @@ fn find_crash(
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
+        Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
     };
 
     // find out the ice message
@@ -358,7 +371,7 @@ fn find_crash(
 
                 // find out if this is a beta/stable/nightly regression
             }
-            Executable::Clippy | Executable::Rustdoc => {}
+            Executable::Clippy | Executable::Rustdoc | Executable::RustAnalyzer => {}
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
@@ -568,4 +581,25 @@ fn run_rustdoc(executable: &str, file: &PathBuf) -> Output {
         .args(&["-o", "/dev/null"])
         .output()
         .unwrap()
+}
+
+fn run_rust_analyzer(executable: &str, file: &PathBuf) -> Output {
+    let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
+
+    let mut process = Command::new(executable)
+        .arg("highlight")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    let stdin = &mut process.stdin.as_mut().unwrap();
+    stdin.write_all(file_content.as_bytes()).unwrap();
+    process.wait_with_output().unwrap()
+
+    /*
+    let output = process.wait_with_output().unwrap();
+    println!("\n\n{:?}\n\n", output);
+    output
+    */
 }

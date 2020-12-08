@@ -587,7 +587,7 @@ fn run_rust_analyzer(executable: &str, file: &PathBuf) -> Output {
     let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
 
     let mut process = Command::new(executable)
-        .arg("highlight")
+        .arg("symbols")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()

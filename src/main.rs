@@ -20,6 +20,7 @@ struct Args {
     clippy: bool,
     rustdoc: bool,
     analyzer: bool, // rla
+    rustfmt: bool,
 }
 
 // in what channel a regression is first noticed?
@@ -49,6 +50,7 @@ enum Executable {
     Clippy,
     Rustdoc,
     RustAnalyzer,
+    Rustfmt,
 }
 
 impl Executable {
@@ -84,6 +86,14 @@ impl Executable {
                 p.push("master");
                 p.push("bin");
                 p.push("rust-analyzer");
+                p.display().to_string()
+            }
+            Executable::Rustfmt => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("rustfmt");
                 p.display().to_string()
             }
         }
@@ -180,6 +190,7 @@ fn main() {
         clippy: args.contains(["-c", "--clippy"]),
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),
+        rustfmt: args.contains(["-f", "--rustfmt"]),
     };
 
     let executable: Executable = if args.clippy {
@@ -188,6 +199,8 @@ fn main() {
         Executable::Rustdoc
     } else if args.analyzer {
         Executable::RustAnalyzer
+    } else if args.rustfmt {
+        Executable::Rustfmt
     } else {
         Executable::Rustc
     };
@@ -300,6 +313,7 @@ fn find_crash(
         Executable::Rustc => run_rustc(exec_path, file),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
+        Executable::Rustfmt => run_rustfmt(exec_path, file),
     };
 
     // find out the ice message
@@ -371,7 +385,10 @@ fn find_crash(
 
                 // find out if this is a beta/stable/nightly regression
             }
-            Executable::Clippy | Executable::Rustdoc | Executable::RustAnalyzer => {}
+            Executable::Clippy
+            | Executable::Rustdoc
+            | Executable::RustAnalyzer
+            | Executable::Rustfmt => {}
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
@@ -602,4 +619,14 @@ fn run_rust_analyzer(executable: &str, file: &PathBuf) -> Output {
     println!("\n\n{:?}\n\n", output);
     output
     */
+}
+
+fn run_rustfmt(executable: &str, file: &PathBuf) -> Output {
+    Command::new(executable)
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .arg(&file)
+        .arg("--check")
+        .args(&["--edition", "2018"])
+        .output()
+        .unwrap()
 }

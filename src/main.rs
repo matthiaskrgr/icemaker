@@ -331,6 +331,8 @@ fn find_crash(
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
+
+    // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
     if found_error.is_some() {
         print!("\r");
         println!(

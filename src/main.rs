@@ -331,7 +331,6 @@ fn find_crash(
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
-
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
     if found_error.is_some() {
         print!("\r");
@@ -352,7 +351,7 @@ fn find_crash(
     }
 
     let mut ret = None;
-    if let Some(error_reason) = found_error.clone() {
+    if let Some(error_reason) = found_error {
         // rustc or clippy crashed, we have an ice
         // find out which flags are responsible
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
@@ -373,10 +372,10 @@ fn find_crash(
                         .arg(dump_mir_dir)
                         .output()
                         .unwrap();
-                    let found_error = find_ICE(output);
+                    let found_error2 = find_ICE(output);
                     // remove the tempdir
                     tempdir.close().unwrap();
-                    if found_error.is_some() {
+                    if found_error2.is_some() {
                         // save the flags that the ICE repros with
                         bad_flags = flags;
                         true
@@ -394,22 +393,20 @@ fn find_crash(
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
 
-        if found_error.is_some() {
-            let ret2 = ICE {
-                regresses_on: match executable {
-                    Executable::Clippy => Regression::Master,
-                    _ => regressing_channel,
-                },
+        let ret2 = ICE {
+            regresses_on: match executable {
+                Executable::Clippy => Regression::Master,
+                _ => regressing_channel,
+            },
 
-                needs_feature: uses_feature,
-                file: file.to_owned(),
-                args: bad_flags.to_vec(),
-                // executable: rustc_path.to_string(),
-                error_reason,
-                ice_msg,
-            };
-            ret = Some(ret2);
-        }
+            needs_feature: uses_feature,
+            file: file.to_owned(),
+            args: bad_flags.to_vec(),
+            // executable: rustc_path.to_string(),
+            error_reason,
+            ice_msg,
+        };
+        ret = Some(ret2);
     };
 
     // print a warning if a file takes longer than X to process

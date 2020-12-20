@@ -501,7 +501,7 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
 }
 
 fn uses_feature(file: &std::path::Path) -> bool {
-    let file: String = std::fs::read_to_string(&file).unwrap();
+    let file: String = std::fs::read_to_string(&file).unwrap_or_else(|_| panic!("Failed to read '{}'", file.display()));
     file.contains("feature(")
 }
 

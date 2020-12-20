@@ -113,6 +113,7 @@ const RUSTC_FLAGS: &[&str] = &[
     "--emit=mir",
     "-Zsave-analysis",
     "-Zprint-mono-items=full",
+    //"-Zchalk=yes",
     //"-Zinstrument-coverage",
     //"-Cprofile-generate=/tmp/icemaker_pgo/", // incompatible with Zinstr-cov
 ];

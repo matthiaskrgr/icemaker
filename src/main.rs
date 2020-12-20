@@ -434,6 +434,8 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
         p
     };
 
+    let bad_but_no_nightly_flags: Vec<&String> = bad_flags.iter().filter(|flag| !flag.starts_with("-Z")).collect();
+
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
     let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -455,9 +457,9 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
     let stable_ice: bool = find_ICE(
         Command::new(stable_path)
             .arg(&file)
-            .args(bad_flags)
+            .args(&bad_but_no_nightly_flags)
             .arg(&output_file)
-            .arg(&dump_mir_dir)
+            //.arg(&dump_mir_dir)
             .output()
             .unwrap(),
     )
@@ -466,9 +468,9 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
     let beta_ice: bool = find_ICE(
         Command::new(beta_path)
             .arg(&file)
-            .args(bad_flags)
+            .args(&bad_but_no_nightly_flags)
             .arg(&output_file)
-            .arg(&dump_mir_dir)
+            //.arg(&dump_mir_dir)
             .output()
             .unwrap(),
     )

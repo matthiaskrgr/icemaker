@@ -2,8 +2,13 @@
 /// If an ICE (internal compiler error/crash/panic) is found, find out
 /// the smallest combination of responsible flags and save data about the crash
 ///
-/// The programm is not limited to run rustc, but can also run clippy or rustdoc
-/// (-c or -r respectively)
+/// The programm is not limited to run rustc, but can also run clippy or rustdoc:
+/// rustc:         icemaker
+/// clippy:        icemaker -c
+/// rustfmt:       icemaker -f
+/// rust-analyzer: icemaker -a
+/// rustdoc:       icemaker -r
+
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;

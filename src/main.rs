@@ -25,6 +25,7 @@ struct Args {
     rustdoc: bool,
     analyzer: bool, // rla
     rustfmt: bool,
+    incremental: bool // incremental compilation
 }
 
 // in what channel a regression is first noticed?
@@ -196,6 +197,7 @@ fn main() {
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),
+        incremental: args.contains(["-i", "--incremental"])
     };
 
     let executable: Executable = if args.clippy {
@@ -251,6 +253,7 @@ fn main() {
         "./23600.rs",
         "./fixed/71699.rs",
         "./71699.rs",
+        // runtime 
     ]
     .iter()
     .map(PathBuf::from)
@@ -260,7 +263,7 @@ fn main() {
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
-        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags))
+        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags,  args.incremental))
         .collect();
 
     // sort by filename first and then by ice so that identical ICS are grouped up
@@ -309,13 +312,14 @@ fn find_crash(
     exec_path: &str,
     executable: &Executable,
     compiler_flags: &[Vec<String>],
+    incremental: bool,
 ) -> Option<ICE> {
     let thread_start = Instant::now();
 
     let output = file.display().to_string();
     let cmd_output = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
-        Executable::Rustc => run_rustc(exec_path, file),
+        Executable::Rustc => run_rustc(exec_path, file, incremental),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
         Executable::Rustfmt => run_rustfmt(exec_path, file),
@@ -538,7 +542,7 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_rustc(executable: &str, file: &PathBuf) -> Output {
+fn run_rustc(executable: &str, file: &PathBuf, _incremental: bool) -> Output {
     // if the file contains no "main", run with "--crate-type lib"
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()

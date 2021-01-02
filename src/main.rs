@@ -254,6 +254,8 @@ fn main() {
         "./fixed/71699.rs",
         "./71699.rs",
         // runtime 
+        "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
+        "./library/stdarch/crates/core_arch/src/x86/mod.rs",
     ]
     .iter()
     .map(PathBuf::from)

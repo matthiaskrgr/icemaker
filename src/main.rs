@@ -25,7 +25,7 @@ struct Args {
     rustdoc: bool,
     analyzer: bool, // rla
     rustfmt: bool,
-    incremental: bool // incremental compilation
+    incremental: bool, // incremental compilation
 }
 
 // in what channel a regression is first noticed?
@@ -197,7 +197,7 @@ fn main() {
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),
-        incremental: args.contains(["-i", "--incremental"])
+        incremental: args.contains(["-i", "--incremental"]),
     };
 
     let executable: Executable = if args.clippy {
@@ -253,7 +253,7 @@ fn main() {
         "./23600.rs",
         "./fixed/71699.rs",
         "./71699.rs",
-        // runtime 
+        // runtime
         "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
         "./library/stdarch/crates/core_arch/src/x86/mod.rs",
     ]
@@ -265,7 +265,7 @@ fn main() {
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
-        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags,  args.incremental))
+        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags, args.incremental))
         .collect();
 
     // sort by filename first and then by ice so that identical ICS are grouped up
@@ -544,7 +544,11 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_rustc(executable: &str, file: &PathBuf, _incremental: bool) -> Output {
+fn run_rustc(executable: &str, file: &PathBuf, incremental: bool) -> Output {
+    if incremental {
+        // only run incremental compilation tests
+        return run_rustc_incremental(executable, file);
+    }
     // if the file contains no "main", run with "--crate-type lib"
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
@@ -570,6 +574,37 @@ fn run_rustc(executable: &str, file: &PathBuf, _incremental: bool) -> Output {
     output.output().unwrap()
     // remove tempdir
     //tempdir.close().unwrap();
+}
+
+fn run_rustc_incremental(executable: &str, file: &PathBuf) -> Output {
+    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let has_main = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .contains("fn main(");
+
+    let mut output = None;
+    for i in &[0, 1] {
+        let mut command = Command::new(executable);
+        if !has_main {
+            command.args(&["--crate-type", "lib"]);
+        }
+        let command = command
+            .arg(&file)
+            // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
+            .arg(format!("-o{}/{}", tempdir_path.display(), i))
+            .arg(format!("-Cincremental={}", tempdir_path.display()))
+            .arg("-Zincremental-verify-ich=yes");
+
+        output = Some(command.output());
+    }
+
+    let output = output.map(|output| output.unwrap()).unwrap();
+
+    tempdir.close().unwrap();
+    //dbg!(&output);
+    output
 }
 
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {

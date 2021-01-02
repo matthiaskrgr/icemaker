@@ -8,7 +8,6 @@
 /// rustfmt:       icemaker -f
 /// rust-analyzer: icemaker -a
 /// rustdoc:       icemaker -r
-
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
@@ -439,7 +438,10 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
         p
     };
 
-    let bad_but_no_nightly_flags: Vec<&String> = bad_flags.iter().filter(|flag| !flag.starts_with("-Z")).collect();
+    let bad_but_no_nightly_flags: Vec<&String> = bad_flags
+        .iter()
+        .filter(|flag| !flag.starts_with("-Z"))
+        .collect();
 
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
@@ -506,7 +508,8 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression
 }
 
 fn uses_feature(file: &std::path::Path) -> bool {
-    let file: String = std::fs::read_to_string(&file).unwrap_or_else(|_| panic!("Failed to read '{}'", file.display()));
+    let file: String = std::fs::read_to_string(&file)
+        .unwrap_or_else(|_| panic!("Failed to read '{}'", file.display()));
     file.contains("feature(")
 }
 
@@ -536,22 +539,31 @@ fn find_ICE(output: Output) -> Option<String> {
 }
 
 fn run_rustc(executable: &str, file: &PathBuf) -> Output {
+    // if the file contains no "main", run with "--crate-type lib"
+    let has_main = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .contains("fn main(");
+
     //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     //let tempdir_path = tempdir.path();
     let output_file = String::from("-o/dev/null");
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
-    let output = Command::new(executable)
+    let mut output = Command::new(executable);
+    output
         .arg(&file)
         .args(RUSTC_FLAGS)
         // always keep these:
         .arg(&output_file)
-        .arg(&dump_mir_dir)
-        .output()
-        .unwrap();
+        .arg(&dump_mir_dir);
+    if !has_main {
+        output.args(&["--crate-type", "lib"]);
+    }
+    //dbg!(&output);
+    // run the command
+    output.output().unwrap()
     // remove tempdir
     //tempdir.close().unwrap();
-    output
 }
 
 fn run_clippy(executable: &str, file: &PathBuf) -> Output {

@@ -361,6 +361,22 @@ fn find_crash(
         let _stdout = std::io::stdout().flush();
     }
 
+    if incremental && found_error.is_some() {
+        return Some(ICE {
+            regresses_on: Regression::Nightly,
+
+            needs_feature: uses_feature,
+            file: file.to_owned(),
+            args: vec![
+                "-Z incremental-verify-ich=yes".into(),
+                "-C incremental   ???".into(),
+            ],
+            // executable: rustc_path.to_string(),
+            error_reason: found_error.clone().unwrap_or_default(),
+            ice_msg,
+        });
+    }
+
     let mut ret = None;
     if let Some(error_reason) = found_error {
         // rustc or clippy crashed, we have an ice

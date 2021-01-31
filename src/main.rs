@@ -587,7 +587,10 @@ fn run_rustc(executable: &str, file: &PathBuf, incremental: bool) -> Output {
     }
     //dbg!(&output);
     // run the command
-    output.output().unwrap()
+    output.output().expect(&format!(
+        "Error: {:?}, executable: {:?}",
+        output, executable
+    ))
     // remove tempdir
     //tempdir.close().unwrap();
 }

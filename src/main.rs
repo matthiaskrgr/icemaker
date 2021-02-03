@@ -8,6 +8,7 @@
 /// rustfmt:       icemaker -f
 /// rust-analyzer: icemaker -a
 /// rustdoc:       icemaker -r
+/// incr comp      icemaker -i
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;

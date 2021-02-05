@@ -273,7 +273,7 @@ fn main() {
         .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags, args.incremental))
         .collect();
 
-    // sort by filename first and then by ice so that identical ICS are grouped up
+    // sort by filename first and then by ice so that identical ICES are grouped up
     errors.sort_by_key(|ice| ice.file.clone());
     errors.sort_by_key(|ice| ice.ice_msg.clone());
 

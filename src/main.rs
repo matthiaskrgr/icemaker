@@ -223,8 +223,9 @@ fn main() {
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();
 
-    // sort by path
-    files.sort();
+    // check biggest files first
+    files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
+    files.reverse();
 
     let exec_path = executable.path();
 

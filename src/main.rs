@@ -263,6 +263,9 @@ fn main() {
     .map(PathBuf::from)
     .collect();
 
+    // how long did we take?
+    let start_time = Instant::now();
+
     // collect errors by running on files in parallel
     let mut errors: Vec<ICE> = files
         .par_iter()
@@ -309,6 +312,17 @@ fn main() {
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{:#?}", new_ices);
+
+    // print a warning if a file takes longer than X to process
+    let seconds_elapsed = start_time.elapsed().as_secs();
+    let files_number = files.len();
+    let files_per_second = files_number / seconds_elapsed as usize;
+    println!(
+        "\nChecked {} files in {:.2} minutes, {} files/second",
+        files_number,
+        seconds_elapsed as f64 / 60_f64,
+        files_per_second
+    );
 }
 
 fn find_crash(

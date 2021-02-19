@@ -17,6 +17,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
@@ -267,11 +268,23 @@ fn main() {
     // how long did we take?
     let start_time = Instant::now();
 
+    let counter = std::sync::atomic::AtomicUsize::new(0);
+
     // collect errors by running on files in parallel
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
-        .filter_map(|file| find_crash(&file, &exec_path, &executable, &flags, args.incremental))
+        .filter_map(|file| {
+            find_crash(
+                &file,
+                &exec_path,
+                &executable,
+                &flags,
+                args.incremental,
+                &counter,
+                files.len(),
+            )
+        })
         .collect();
 
     // sort by filename first and then by ice so that identical ICES are grouped up
@@ -332,9 +345,12 @@ fn find_crash(
     executable: &Executable,
     compiler_flags: &[Vec<String>],
     incremental: bool,
+    counter: &AtomicUsize,
+    total_number_of_files: usize,
 ) -> Option<ICE> {
     let thread_start = Instant::now();
 
+    let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
     let cmd_output = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
@@ -374,7 +390,15 @@ fn find_crash(
         //@FIXME this only advances the checking once the files has already been checked!
 
         // let stdout = std::io::stdout().flush();
-        print!("\rChecking {output: <150}", output = output);
+
+        let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
+        print!(
+            "\r[{idx}/{total} {perc}%] Checking {output: <150}",
+            output = output,
+            idx = index,
+            total = total_number_of_files,
+            perc = perc
+        );
         let _stdout = std::io::stdout().flush();
     }
 

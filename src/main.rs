@@ -9,16 +9,17 @@
 /// rust-analyzer: icemaker -a
 /// rustdoc:       icemaker -r
 /// incr comp      icemaker -i
+use std::ffi::OsStr;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Instant;
+
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::ffi::OsStr;
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::{Command, Output, Stdio};
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::time::Instant;
 use tempdir::TempDir;
 use walkdir::WalkDir;
 // whether we run clippy, rustdoc or rustc (default: rustc)
@@ -340,7 +341,7 @@ fn main() {
 }
 
 fn find_crash(
-    file: &PathBuf,
+    file: &Path,
     exec_path: &str,
     executable: &Executable,
     compiler_flags: &[Vec<String>],
@@ -493,7 +494,7 @@ fn find_crash(
     ret
 }
 
-fn find_out_crashing_channel(bad_flags: &[String], file: &PathBuf) -> Regression {
+fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     // simply check if we crasn on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
@@ -601,7 +602,7 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_rustc(executable: &str, file: &PathBuf, incremental: bool) -> Output {
+fn run_rustc(executable: &str, file: &Path, incremental: bool) -> Output {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -628,15 +629,14 @@ fn run_rustc(executable: &str, file: &PathBuf, incremental: bool) -> Output {
     }
     //dbg!(&output);
     // run the command
-    output.output().expect(&format!(
-        "Error: {:?}, executable: {:?}",
-        output, executable
-    ))
+    output
+        .output()
+        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable))
     // remove tempdir
     //tempdir.close().unwrap();
 }
 
-fn run_rustc_incremental(executable: &str, file: &PathBuf) -> Output {
+fn run_rustc_incremental(executable: &str, file: &Path) -> Output {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
@@ -667,7 +667,7 @@ fn run_rustc_incremental(executable: &str, file: &PathBuf) -> Output {
     output
 }
 
-fn run_clippy(executable: &str, file: &PathBuf) -> Output {
+fn run_clippy(executable: &str, file: &Path) -> Output {
     Command::new(executable)
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
@@ -706,7 +706,7 @@ fn run_clippy(executable: &str, file: &PathBuf) -> Output {
         .unwrap()
 }
 
-fn run_rustdoc(executable: &str, file: &PathBuf) -> Output {
+fn run_rustdoc(executable: &str, file: &Path) -> Output {
     Command::new(executable)
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
@@ -720,7 +720,7 @@ fn run_rustdoc(executable: &str, file: &PathBuf) -> Output {
         .unwrap()
 }
 
-fn run_rust_analyzer(executable: &str, file: &PathBuf) -> Output {
+fn run_rust_analyzer(executable: &str, file: &Path) -> Output {
     let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
 
     let mut process = Command::new(executable)
@@ -740,8 +740,7 @@ fn run_rust_analyzer(executable: &str, file: &PathBuf) -> Output {
     output
     */
 }
-
-fn run_rustfmt(executable: &str, file: &PathBuf) -> Output {
+fn run_rustfmt(executable: &str, file: &Path) -> Output {
     Command::new(executable)
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)

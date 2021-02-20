@@ -128,6 +128,25 @@ const RUSTC_FLAGS: &[&str] = &[
 ];
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 
+const RUSTC_FLAGS_2: &[&[&str]] = &[
+    &[
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+        "-Zincremental-verify-ich=yes",
+        "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zunsound-mir-opts",
+        "-Zdump-mir=all",
+        "--emit=mir",
+        "-Zsave-analysis",
+        "-Zprint-mono-items=full",
+        "-Zpolymorphize=on",
+    ],
+    &["-Zinstrument-coverage"],
+];
+
 // represents a crash
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 struct ICE {
@@ -166,14 +185,11 @@ impl std::fmt::Display for ICE {
     }
 }
 
-fn get_flag_combinations() -> Vec<Vec<String>> {
+fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
     let mut combs = Vec::new();
-    for numb_comb in 0..=RUSTC_FLAGS.len() {
-        let combinations = RUSTC_FLAGS
-            .iter()
-            .map(|s| s.to_string())
-            .combinations(numb_comb);
+    for numb_comb in 0..=flags.len() {
+        let combinations = flags.iter().map(|s| s.to_string()).combinations(numb_comb);
         combs.push(combinations);
     }
 
@@ -190,7 +206,7 @@ fn main() {
         Vec::new()
     };
 
-    let flags: Vec<Vec<String>> = get_flag_combinations();
+    //let flags: Vec<Vec<String>> = get_flag_combinations();
     // println!("flags:\n");
     // flags.iter().for_each(|x| println!("{:?}", x));
     // parse args
@@ -272,25 +288,55 @@ fn main() {
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
     // collect errors by running on files in parallel
+    /*   let mut errors: Vec<ICE> = files
+    .par_iter()
+    .filter(|file| !EXCEPTION_LIST.contains(file))
+    .filter_map(|file| {
+        find_crash(
+            &file,
+            &exec_path,
+            &executable,
+            &flags,
+            args.incremental,
+            &counter,
+            files.len(),
+        )
+    })
+    .collect(); */
+
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
-        .filter_map(|file| {
-            find_crash(
-                &file,
-                &exec_path,
-                &executable,
-                &flags,
-                args.incremental,
-                &counter,
-                files.len(),
-            )
+        .map(|file| {
+            //@TODO get rid of this vec
+            let mut v = Vec::new();
+
+            // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
+            for flag_combination in RUSTC_FLAGS_2 {
+                let x = find_crash(
+                    &file,
+                    &exec_path,
+                    &executable,
+                    &flag_combination,
+                    args.incremental,
+                    &counter,
+                    files.len() * RUSTC_FLAGS_2.len(),
+                );
+                v.push(x);
+            }
+            v
         })
+        .flatten()
+        .filter(|opt_ice| opt_ice.is_some())
+        .map(|ice| ice.unwrap())
         .collect();
+
+    errors.dedup();
 
     // sort by filename first and then by ice so that identical ICES are grouped up
     errors.sort_by_key(|ice| ice.file.clone());
     errors.sort_by_key(|ice| ice.ice_msg.clone());
+    errors.dedup();
 
     // if we are done, print all errors
     println!("errors:\n");
@@ -344,7 +390,7 @@ fn find_crash(
     file: &Path,
     exec_path: &str,
     executable: &Executable,
-    compiler_flags: &[Vec<String>],
+    compiler_flags: &[&str],
     incremental: bool,
     counter: &AtomicUsize,
     total_number_of_files: usize,
@@ -426,9 +472,11 @@ fn find_crash(
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: &Vec<String> = &Vec::new();
 
+        let flag_combinations = get_flag_combination(compiler_flags);
+
         match executable {
             Executable::Rustc => {
-                compiler_flags.iter().any(|flags| {
+                flag_combinations.iter().any(|flag_combination| {
                     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
                     let tempdir_path = tempdir.path();
                     let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -436,7 +484,7 @@ fn find_crash(
 
                     let output = Command::new(exec_path)
                         .arg(&file)
-                        .args(&*flags)
+                        .args(flag_combination)
                         .arg(output_file)
                         .arg(dump_mir_dir)
                         .output()
@@ -446,7 +494,7 @@ fn find_crash(
                     tempdir.close().unwrap();
                     if found_error2.is_some() {
                         // save the flags that the ICE repros with
-                        bad_flags = flags;
+                        bad_flags = flag_combination;
                         true
                     } else {
                         false

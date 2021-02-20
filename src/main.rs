@@ -108,27 +108,9 @@ impl Executable {
     }
 }
 
-const RUSTC_FLAGS: &[&str] = &[
-    "-Zvalidate-mir",
-    "-Zverify-llvm-ir=yes",
-    "-Zincremental-verify-ich=yes",
-    "-Zmir-opt-level=0",
-    "-Zmir-opt-level=1",
-    "-Zmir-opt-level=2",
-    "-Zmir-opt-level=3",
-    "-Zunsound-mir-opts",
-    "-Zdump-mir=all",
-    "--emit=mir",
-    "-Zsave-analysis",
-    "-Zprint-mono-items=full",
-    "-Zpolymorphize=on",
-    //"-Zchalk=yes",
-    //"-Zinstrument-coverage",
-    //"-Cprofile-generate=/tmp/icemaker_pgo/", // incompatible with Zinstr-cov
-];
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 
-const RUSTC_FLAGS_2: &[&[&str]] = &[
+const RUSTC_FLAGS: &[&[&str]] = &[
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -145,6 +127,7 @@ const RUSTC_FLAGS_2: &[&[&str]] = &[
         "-Zpolymorphize=on",
     ],
     &["-Zinstrument-coverage"],
+    //&["-Cprofile-generate=/tmp/icemaker_pgo/"],
 ];
 
 // represents a crash
@@ -252,7 +235,11 @@ fn main() {
     // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
 
     println!("bin: {}", exec_path);
-    println!("checking: {} files\n\n", files.len());
+    println!(
+        "checking: {} files x {} flags\n\n",
+        files.len(),
+        RUSTC_FLAGS.len()
+    );
 
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
@@ -312,7 +299,7 @@ fn main() {
             let mut v = Vec::new();
 
             // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
-            for flag_combination in RUSTC_FLAGS_2 {
+            for flag_combination in RUSTC_FLAGS {
                 let x = find_crash(
                     &file,
                     &exec_path,
@@ -320,7 +307,7 @@ fn main() {
                     &flag_combination,
                     args.incremental,
                     &counter,
-                    files.len() * RUSTC_FLAGS_2.len(),
+                    files.len() * RUSTC_FLAGS.len(),
                 );
                 v.push(x);
             }
@@ -331,11 +318,14 @@ fn main() {
         .map(|ice| ice.unwrap())
         .collect();
 
+    // dedupe equal ICEs, before sorting
     errors.dedup();
 
     // sort by filename first and then by ice so that identical ICES are grouped up
     errors.sort_by_key(|ice| ice.file.clone());
+    errors.dedup();
     errors.sort_by_key(|ice| ice.ice_msg.clone());
+    // dedupe equal ICEs
     errors.dedup();
 
     // if we are done, print all errors
@@ -401,7 +391,7 @@ fn find_crash(
     let output = file.display().to_string();
     let cmd_output = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
-        Executable::Rustc => run_rustc(exec_path, file, incremental),
+        Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
         Executable::Rustfmt => run_rustfmt(exec_path, file),
@@ -650,7 +640,7 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_rustc(executable: &str, file: &Path, incremental: bool) -> Output {
+fn run_rustc(executable: &str, file: &Path, incremental: bool, rustc_flags: &[&str]) -> Output {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -668,7 +658,7 @@ fn run_rustc(executable: &str, file: &Path, incremental: bool) -> Output {
     let mut output = Command::new(executable);
     output
         .arg(&file)
-        .args(RUSTC_FLAGS)
+        .args(rustc_flags)
         // always keep these:
         .arg(&output_file)
         .arg(&dump_mir_dir);

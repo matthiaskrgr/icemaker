@@ -127,7 +127,12 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zpolymorphize=on",
     ],
     &["-Zinstrument-coverage"],
-    //&["-Cprofile-generate=/tmp/icemaker_pgo/"],
+    &["-Cprofile-generate=/tmp/icemaker_pgo/"],
+    &["-Zunpretty=expanded,hygiene"],
+    &["-Zunpretty=everybody_loops"],
+    &["-Zunpretty=hir,typed"],
+    &["-Zunpretty=mir"],
+    //&["-Zunpretty=mir-cfg"], // too many ICEs
 ];
 
 // represents a crash
@@ -170,14 +175,19 @@ impl std::fmt::Display for ICE {
 
 fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
+
     let mut combs = Vec::new();
     for numb_comb in 0..=flags.len() {
         let combinations = flags.iter().map(|s| s.to_string()).combinations(numb_comb);
         combs.push(combinations);
     }
 
-    let combs = combs.into_iter().flatten();
-    combs.collect()
+    let combs: Vec<Vec<String>> = combs.into_iter().flatten().collect();
+    // add an empty "" flag so start with, in case an ice does not require any flags
+    let mut tmp = vec![vec![String::new()]];
+    tmp.extend(combs);
+    //dbg!(&x);
+    tmp
 }
 
 fn main() {
@@ -298,18 +308,31 @@ fn main() {
             //@TODO get rid of this vec
             let mut v = Vec::new();
 
-            // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
-            for flag_combination in RUSTC_FLAGS {
-                let x = find_crash(
+            if let Executable::Rustc = executable {
+                // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
+                for flag_combination in RUSTC_FLAGS {
+                    let ice = find_crash(
+                        &file,
+                        &exec_path,
+                        &executable,
+                        &flag_combination,
+                        args.incremental,
+                        &counter,
+                        files.len() * RUSTC_FLAGS.len(),
+                    );
+                    v.push(ice);
+                }
+            } else {
+                // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
+                v.push(find_crash(
                     &file,
                     &exec_path,
                     &executable,
-                    &flag_combination,
+                    &[],
                     args.incremental,
                     &counter,
                     files.len() * RUSTC_FLAGS.len(),
-                );
-                v.push(x);
+                ));
             }
             v
         })

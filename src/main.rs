@@ -439,10 +439,15 @@ fn find_crash(
     if found_error.is_some() {
         print!("\r");
         println!(
-            "ICE: {output: <150} {msg} {feat}",
+            "ICE: {output: <150} {msg: <30} {feat}     {flags}",
             output = output,
             msg = found_error.clone().unwrap(),
-            feat = if uses_feature { "" } else { "no feat!" },
+            feat = if uses_feature { "        " } else { "no feat!" },
+            flags = {
+                let mut s = format!("{:?}", compiler_flags);
+                s.truncate(100);
+                s
+            }
         );
         print!("\r");
         let _stdout = std::io::stdout().flush();

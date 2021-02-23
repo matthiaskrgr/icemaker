@@ -132,7 +132,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=everybody_loops"],
     &["-Zunpretty=hir,typed"],
     &["-Zunpretty=mir"],
-    //&["-Zunpretty=mir-cfg"], // too many ICEs
+    &["-Zunpretty=mir-cfg"], // too many ICEs
 ];
 
 // represents a crash

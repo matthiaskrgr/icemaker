@@ -551,7 +551,7 @@ fn find_crash(
     if minutes_elapsed > (MINUTE_LIMIT) {
         print!("\r");
         println!(
-            "{} running for more ({} minutes) than {} minute\n",
+            "{} running for more ({} minutes) than {} minute",
             file.display(),
             seconds_elapsed / 60,
             MINUTE_LIMIT

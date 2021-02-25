@@ -245,11 +245,15 @@ fn main() {
     // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
 
     println!("bin: {}", exec_path);
-    println!(
-        "checking: {} files x {} flags\n\n",
-        files.len(),
-        RUSTC_FLAGS.len()
-    );
+    if matches!(executable, Executable::Rustc) {
+        println!(
+            "checking: {} files x {} flags\n\n",
+            files.len(),
+            RUSTC_FLAGS.len()
+        );
+    } else {
+        println!("checking: {} files\n", files.len(),);
+    }
 
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
@@ -331,7 +335,7 @@ fn main() {
                     &[],
                     args.incremental,
                     &counter,
-                    files.len() * RUSTC_FLAGS.len(),
+                    files.len(),
                 ));
             }
             v

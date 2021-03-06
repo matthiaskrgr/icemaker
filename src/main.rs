@@ -228,8 +228,6 @@ fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     tmp2.sort();
     // remove duplicates that occurred due to removed mir opt levels
     tmp2.dedup();
-
-    dbg!(&tmp2);
     tmp2
 }
 

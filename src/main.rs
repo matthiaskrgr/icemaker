@@ -119,6 +119,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
+        "-Zmir-opt-level=4",
 //        "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",

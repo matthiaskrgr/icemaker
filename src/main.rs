@@ -53,6 +53,7 @@ impl std::fmt::Display for Regression {
     }
 }
 
+#[derive(PartialEq, Eq)]
 enum Executable {
     Rustc,
     Clippy,
@@ -120,7 +121,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
         "-Zmir-opt-level=4",
-//        "-Zunsound-mir-opts",
+        // "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zsave-analysis",
@@ -135,7 +136,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     //&["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
-
 ];
 
 // represents a crash
@@ -315,7 +315,7 @@ fn main() {
             //@TODO get rid of this vec
             let mut v = Vec::new();
 
-            if let Executable::Rustc = executable {
+            if Executable::Rustc == executable && !args.incremental {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 for flag_combination in RUSTC_FLAGS {
                     let ice = find_crash(

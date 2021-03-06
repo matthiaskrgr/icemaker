@@ -277,7 +277,6 @@ fn main() {
 
     // check biggest files first
     files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
-    files.reverse();
 
     let exec_path = executable.path();
 

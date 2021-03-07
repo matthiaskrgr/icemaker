@@ -318,6 +318,8 @@ fn main() {
         // runtime
         "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
         "./library/stdarch/crates/core_arch/src/x86/mod.rs",
+        // 3.5 hours when reporting errors :(
+        "./library/stdarch/crates/core_arch/src/lib.rs",
     ]
     .iter()
     .map(PathBuf::from)

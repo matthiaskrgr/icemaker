@@ -136,7 +136,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     //&["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
-    &["-Zunpretty=thir-tree"],
+   //&["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
 ];
 
 // represents a crash

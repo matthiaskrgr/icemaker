@@ -27,3 +27,9 @@ jobs:
           use-tool-cache: true
       - name: install master toolchain
         run: rustup-toolchain-install-master -f -n master  -c rustc-dev llvm-tools rust-src clippy rust-analyzer
+      - name: install nightly toolchain
+        run: rustup install nightly --profile minimal
+      - name: install nightly beta
+        run: rustup install beta --profile minimal
+      - name: install nightly stable
+        run: rustup install stable --profile minimal

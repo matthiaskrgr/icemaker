@@ -29,6 +29,7 @@ struct Args {
     analyzer: bool, // rla
     rustfmt: bool,
     incremental: bool, // incremental compilation
+    silent: bool,
 }
 
 // in what channel a regression is first noticed?
@@ -136,7 +137,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     //&["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
-   //&["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
+    //&["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
 ];
 
 // represents a crash
@@ -253,6 +254,7 @@ fn main() {
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),
         incremental: args.contains(["-i", "--incremental"]),
+        silent: args.contains(["-s", "--silent"]),
     };
 
     let executable: Executable = if args.clippy {
@@ -366,6 +368,7 @@ fn main() {
                         args.incremental,
                         &counter,
                         files.len() * RUSTC_FLAGS.len(),
+                        args.silent,
                     );
                     v.push(ice);
                 }
@@ -379,6 +382,7 @@ fn main() {
                     args.incremental,
                     &counter,
                     files.len(),
+                    args.silent,
                 ));
             }
             v
@@ -454,6 +458,7 @@ fn find_crash(
     incremental: bool,
     counter: &AtomicUsize,
     total_number_of_files: usize,
+    silent: bool,
 ) -> Option<ICE> {
     let thread_start = Instant::now();
 
@@ -498,7 +503,7 @@ fn find_crash(
         );
         print!("\r");
         let _stdout = std::io::stdout().flush();
-    } else {
+    } else if !silent {
         //@FIXME this only advances the checking once the files has already been checked!
 
         // let stdout = std::io::stdout().flush();

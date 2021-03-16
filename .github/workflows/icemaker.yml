@@ -36,5 +36,5 @@ jobs:
       - name: clone glacier
         run: git clone https://github.com/rust-lang/glacier --depth 10
       - name: run icemaker on glacier
-        run: icemaker
+        run: icemaker --silent
         working-directory: glacier/fixed

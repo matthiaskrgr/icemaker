@@ -19,6 +19,8 @@ jobs:
         with:
           path: |
             ~/.cargo/bin
+            glacier/fixed/errors.json
+            rustc/errors.json
           key: ${{ runner.os }}
       - name: install rustup-toolchain-install-master
         # don't throw an error if it is already installed
@@ -37,4 +39,9 @@ jobs:
         run: git clone https://github.com/rust-lang/glacier --depth 10
       - name: run icemaker on glacier
         run: icemaker --silent
-        working-directory: glacier/fixed
+        working-directory: glacier/fixed/
+      - name: clone rustc
+        run: git clone https://github.com/rust-lang/rust --depth 10
+      - name: run icemaker on rustc
+        run: icemaker --silent
+        working-directory: rustc/

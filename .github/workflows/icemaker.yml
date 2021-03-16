@@ -21,12 +21,13 @@ jobs:
             ~/.cargo/bin
           key: ${{ runner.os }}
       - name: install rustup-toolchain-install-master
-        run: cargo install rustup-toolchain-install-master
+        # don't throw an error if it is already installed
+        run: cargo install rustup-toolchain-install-master || true
       - name: install master toolchain
         run: rustup-toolchain-install-master -f -n master  -c rustc-dev llvm-tools rust-src clippy rust-analyzer
       - name: install nightly toolchain
         run: rustup install nightly --profile minimal
-      - name: install nightly beta
+      - name: install beta toolchain
         run: rustup install beta --profile minimal
-      - name: install nightly stable
+      - name: install stable toolchain
         run: rustup install stable --profile minimal

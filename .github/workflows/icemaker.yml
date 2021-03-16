@@ -19,5 +19,6 @@ jobs:
         with:
           crate: rustup-toolchain-install-master
           version: latest
+          use-tool-cache: true
       - name: run RTIM
         run: rustup-toolchain-install-master

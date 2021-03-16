@@ -20,11 +20,8 @@ jobs:
           path: |
             ~/.cargo/bin
           key: ${{ runner.os }}
-      - uses: actions-rs/install@v0.1
-        with:
-          crate: rustup-toolchain-install-master
-          version: latest
-          use-tool-cache: true
+      - name: install rustup-toolchain-install-master
+        run: cargo install rustup-toolchain-install-master
       - name: install master toolchain
         run: rustup-toolchain-install-master -f -n master  -c rustc-dev llvm-tools rust-src clippy rust-analyzer
       - name: install nightly toolchain

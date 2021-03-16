@@ -32,9 +32,9 @@ jobs:
       - name: install stable toolchain
         run: rustup install stable --profile minimal
       - name: install Icemaker
-        run: cargo install --path .
+        run: cargo install --path . --force
       - name: clone glacier
-        run: git clone github.com/rust-lang/glacier --depth = 10
+        run: git clone https://github.com/rust-lang/glacier --depth 10
       - name: run icemaker on glacier
         run: icemaker
         working-directory: glacier/fixed

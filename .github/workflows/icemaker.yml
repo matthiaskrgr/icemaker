@@ -20,5 +20,5 @@ jobs:
           crate: rustup-toolchain-install-master
           version: latest
           use-tool-cache: true
-      - name: run RTIM
-        run: rustup-toolchain-install-master
+      - name: install master toolchain
+        run: rustup-toolchain-install-master -f -n master  -c rustc-dev llvm-tools rust-src clippy rust-analyzer

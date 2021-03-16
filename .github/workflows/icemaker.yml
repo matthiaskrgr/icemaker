@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  icemaker:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
           path: |
             ~/.cargo/bin
             glacier/fixed/errors.json
-            rustc/errors.json
+            rust/errors.json
           key: ${{ runner.os }}
       - name: install rustup-toolchain-install-master
         # don't throw an error if it is already installed
@@ -34,10 +34,8 @@ jobs:
       - name: install stable toolchain
         run: rustup install stable --profile minimal
 
-
       - name: install Icemaker
         run: cargo install --path . --force
-
 
       - name: clone glacier
         run: git clone https://github.com/rust-lang/glacier --depth 10
@@ -45,9 +43,8 @@ jobs:
         run: icemaker --silent
         working-directory: glacier/fixed/
 
-
       - name: clone rustc
         run: git clone https://github.com/rust-lang/rust --depth 10
       - name: run icemaker on rustc
         run: icemaker --silent
-        working-directory: rustc/
+        working-directory: rust/

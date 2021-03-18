@@ -19,8 +19,8 @@ jobs:
         with:
           path: |
             ~/.cargo/bin
-            glacier/fixed/glacier_errros.json
-            rust_errors.json
+            glacier/fixed/errros.json
+          #            rust_errors.json
           key: ${{ runner.os }}
       - name: install rustup-toolchain-install-master
         # don't throw an error if it is already installed
@@ -46,8 +46,6 @@ jobs:
           git fetch --depth 5
           git checkout -t origin/master
 
-      #      - name: copy glacier log
-      #        run: cp -f glacier_errors.json glacier/fixed/errors.json || true
       - name: run icemaker on glacier
         run: icemaker --silent
         working-directory: glacier/fixed/

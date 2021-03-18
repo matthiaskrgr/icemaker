@@ -19,7 +19,7 @@ jobs:
         with:
           path: |
             ~/.cargo/bin
-            glacier/fixed/errros.json
+            ~/glacier/fixed/errros.json
           #            rust_errors.json
           key: ${{ runner.os }}
       - name: install rustup-toolchain-install-master

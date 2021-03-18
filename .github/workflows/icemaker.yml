@@ -21,7 +21,7 @@ jobs:
             ~/.cargo/bin
             ~/glacier/fixed/errros.json
           #            rust_errors.json
-          key: ${{ runner.os }}
+          key: cache
       - name: install rustup-toolchain-install-master
         # don't throw an error if it is already installed
         run: cargo install rustup-toolchain-install-master || true

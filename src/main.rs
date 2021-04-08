@@ -441,7 +441,11 @@ fn main() {
     // print a warning if a file takes longer than X to process
     let seconds_elapsed = start_time.elapsed().as_secs();
     let files_number = files.len();
-    let files_per_second = files_number / std::cmp::max(seconds_elapsed, 1) as usize;
+    if seconds_elapsed == 0 {
+        println!("Checked {} files in <1 second", files_number);
+        return;
+    }
+    let files_per_second = files_number / seconds_elapsed as usize;
     println!(
         "\nChecked {} files in {:.2} minutes, {} files/second",
         files_number,

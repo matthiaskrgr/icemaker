@@ -276,7 +276,7 @@ fn main() {
         .into_iter()
         .filter(|entry| entry.is_ok())
         .map(|e| e.unwrap())
-        .filter(|f| f.path().extension() == Some(&OsStr::new("rs")))
+        .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();
 
@@ -363,10 +363,10 @@ fn main() {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 for flag_combination in RUSTC_FLAGS {
                     let ice = find_crash(
-                        &file,
+                        file,
                         &exec_path,
                         &executable,
-                        &flag_combination,
+                        flag_combination,
                         args.incremental,
                         &counter,
                         files.len() * RUSTC_FLAGS.len(),
@@ -377,7 +377,7 @@ fn main() {
             } else {
                 // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
                 v.push(find_crash(
-                    &file,
+                    file,
                     &exec_path,
                     &executable,
                     &[],
@@ -584,7 +584,7 @@ fn find_crash(
             | Executable::RustAnalyzer
             | Executable::Rustfmt => {}
         }
-        let regressing_channel = find_out_crashing_channel(&bad_flags, file);
+        let regressing_channel = find_out_crashing_channel(bad_flags, file);
 
         let ret2 = ICE {
             regresses_on: match executable {

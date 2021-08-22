@@ -134,11 +134,12 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=everybody_loops"],
     &["-Zunpretty=hir,typed"],
-    //&["-Zunpretty=mir"],
+    &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
-    // &["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
+    &["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
     &["-Zthir-unsafeck=yes"],
+    //&["-Zunstable-options", "--edition", "2021"],
 ];
 
 // represents a crash

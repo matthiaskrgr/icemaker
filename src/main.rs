@@ -9,6 +9,9 @@
 /// rust-analyzer: icemaker -a
 /// rustdoc:       icemaker -r
 /// incr comp      icemaker -i
+// convert glacier scripts into .rs files:
+//
+// for i in `rg EOF  | grep -o "^.*.sh"`; do ; CONTENT=`tac $i | awk '/.*<<.*EOF.*/ {exit} {print}' | tac | sed s/EOF//` ; echo $CONTENT >| $i.rs ; done
 use std::ffi::OsStr;
 use std::io::Write;
 use std::path::{Path, PathBuf};

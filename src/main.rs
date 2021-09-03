@@ -285,7 +285,7 @@ fn main() {
 
     // check biggest files first
     files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
-    files.reverse()
+    files.reverse();
 
     let exec_path = executable.path();
 
@@ -360,27 +360,27 @@ fn main() {
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
-            //@TODO get rid of this vec
-            let mut v = Vec::new();
-
             if Executable::Rustc == executable && !args.incremental {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
-                for flag_combination in RUSTC_FLAGS {
-                    let ice = find_crash(
-                        file,
-                        &exec_path,
-                        &executable,
-                        flag_combination,
-                        args.incremental,
-                        &counter,
-                        files.len() * RUSTC_FLAGS.len(),
-                        args.silent,
-                    );
-                    v.push(ice);
-                }
+                // process flags in parallel as well (can this be dangerous in relation to ram usage?)
+                RUSTC_FLAGS
+                    .par_iter()
+                    .map(|flag_combination| {
+                        find_crash(
+                            file,
+                            &exec_path,
+                            &executable,
+                            flag_combination,
+                            args.incremental,
+                            &counter,
+                            files.len() * RUSTC_FLAGS.len(),
+                            args.silent,
+                        )
+                    })
+                    .collect::<Vec<Option<ICE>>>()
             } else {
                 // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
-                v.push(find_crash(
+                vec![find_crash(
                     file,
                     &exec_path,
                     &executable,
@@ -389,9 +389,8 @@ fn main() {
                     &counter,
                     files.len(),
                     args.silent,
-                ));
+                )]
             }
-            v
         })
         .flatten()
         .filter(|opt_ice| opt_ice.is_some())

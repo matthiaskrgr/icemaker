@@ -229,7 +229,6 @@ fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
         let mut vfinal: Vec<String> = vtemp;
         vfinal.reverse();
         vfinal
-        //
     });
 
     let mut tmp2 = tmp2.collect::<Vec<Vec<String>>>();
@@ -286,6 +285,7 @@ fn main() {
 
     // check biggest files first
     files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
+    files.reverse()
 
     let exec_path = executable.path();
 

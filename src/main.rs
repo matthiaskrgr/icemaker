@@ -143,6 +143,8 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=thir-tree"], // many crashes (delay_span_bug)
     &["-Zthir-unsafeck=yes"],
     &["-Copt-level=z"],
+    &["-Zsanitizer=address"],
+    &["-Zsanitizer=memory"],
     //&["-Zunstable-options", "--edition", "2021"],
 ];
 

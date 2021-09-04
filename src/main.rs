@@ -339,23 +339,6 @@ fn main() {
 
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
-    // collect errors by running on files in parallel
-    /*   let mut errors: Vec<ICE> = files
-    .par_iter()
-    .filter(|file| !EXCEPTION_LIST.contains(file))
-    .filter_map(|file| {
-        find_crash(
-            &file,
-            &exec_path,
-            &executable,
-            &flags,
-            args.incremental,
-            &counter,
-            files.len(),
-        )
-    })
-    .collect(); */
-
     let mut errors: Vec<ICE> = files
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))

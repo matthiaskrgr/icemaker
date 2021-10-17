@@ -244,7 +244,8 @@ fn main() {
     // read in existing errors
     // read the string INTO Vec<ICE>
     let errors_before: Vec<ICE> = if std::path::PathBuf::from("errors.json").exists() {
-        serde_json::from_str(&std::fs::read_to_string("errors.json").unwrap()).unwrap()
+        serde_json::from_str(&std::fs::read_to_string("errors.json").unwrap())
+            .expect("Failed to parse errors.json, is it a json file?")
     } else {
         Vec::new()
     };

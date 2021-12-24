@@ -394,6 +394,20 @@ fn main() {
     // dedupe equal ICEs, before sorting
     errors.dedup();
 
+    let flagless_ices = errors
+        .iter()
+        .filter(|ice| ice.args.is_empty())
+        .cloned()
+        .collect::<Vec<ICE>>();
+
+    flagless_ices.iter().for_each(|flglice| {
+        // if we have an ICE where the msg and the file is equal to a flagless ice (but the ice is not the flagless ice), assume that the flags are unrelated
+        // remove the ice from "errors"
+        errors.retain(|ice| {
+            !(ice.file == flglice.file && ice.ice_msg == flglice.ice_msg && !ice.args.is_empty())
+        });
+    });
+
     // sort by filename first and then by ice so that identical ICES are grouped up
     errors.sort_by_key(|ice| ice.file.clone());
     errors.dedup();

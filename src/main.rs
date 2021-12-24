@@ -8,7 +8,6 @@
 /// rustfmt:       icemaker -f
 /// rust-analyzer: icemaker -a
 /// rustdoc:       icemaker -r
-/// incr comp      icemaker -i
 // convert glacier scripts into .rs files:
 //
 // for i in `rg EOF . | grep -o "^.*.sh"`; do ; CONTENT=` cat $i | pcregrep --no-messages -M  '.*<<.*EOF:*(\n|.)*EOF'  | grep -v ".*EOF.*"` ; echo $CONTENT >| `echo $i | sed -e s/\.sh/\.rs/` ; done
@@ -31,7 +30,6 @@ struct Args {
     rustdoc: bool,
     analyzer: bool, // rla
     rustfmt: bool,
-    incremental: bool, // incremental compilation
     silent: bool,
 }
 
@@ -261,7 +259,6 @@ fn main() {
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),
-        incremental: args.contains(["-i", "--incremental"]),
         silent: args.contains(["-s", "--silent"]),
     };
 
@@ -301,7 +298,7 @@ fn main() {
         println!(
             "checking: {} files x {} flags\n\n",
             files.len(),
-            RUSTC_FLAGS.len()
+            RUSTC_FLAGS.len() + 2 // incremental
         );
     } else {
         println!("checking: {} files\n", files.len(),);
@@ -346,24 +343,35 @@ fn main() {
         .par_iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
-            if Executable::Rustc == executable && !args.incremental {
+            if Executable::Rustc == executable {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 // process flags in parallel as well (can this be dangerous in relation to ram usage?)
-                RUSTC_FLAGS
+                let mut v1 = RUSTC_FLAGS
                     .par_iter()
                     .map(|flag_combination| {
                         find_crash(
                             file,
                             &exec_path,
                             &executable,
-                            flag_combination,
-                            args.incremental,
+                            &flag_combination,
+                            false,
                             &counter,
-                            files.len() * RUSTC_FLAGS.len(),
+                            files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
                             args.silent,
                         )
                     })
-                    .collect::<Vec<Option<ICE>>>()
+                    .collect::<Vec<Option<ICE>>>();
+                v1.push(find_crash(
+                    file,
+                    &exec_path,
+                    &executable,
+                    &[],
+                    true,
+                    &counter,
+                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                    args.silent,
+                ));
+                v1
             } else {
                 // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
                 vec![find_crash(
@@ -371,7 +379,7 @@ fn main() {
                     &exec_path,
                     &executable,
                     &[],
-                    args.incremental,
+                    false,
                     &counter,
                     files.len(),
                     args.silent,
@@ -522,7 +530,7 @@ fn find_crash(
             file: file.to_owned(),
             args: vec![
                 "-Z incremental-verify-ich=yes".into(),
-                "-C incremental   ???".into(),
+                "-C incremental=<dir>".into(),
             ],
             // executable: rustc_path.to_string(),
             error_reason: found_error.clone().unwrap_or_default(),

@@ -140,6 +140,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=ast,expanded"],
     &["-Zunpretty=thir-tree"],
     &["-Zthir-unsafeck=yes"],
+    &["INCR_COMP"],
     //&["-Copt-level=z"],
     //&["-Zsanitizer=address"],
     //&["-Zsanitizer=memory"],
@@ -346,7 +347,7 @@ fn main() {
             if Executable::Rustc == executable {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 // process flags in parallel as well (can this be dangerous in relation to ram usage?)
-                let mut v1 = RUSTC_FLAGS
+                RUSTC_FLAGS
                     .par_iter()
                     .map(|flag_combination| {
                         find_crash(
@@ -360,18 +361,7 @@ fn main() {
                             args.silent,
                         )
                     })
-                    .collect::<Vec<Option<ICE>>>();
-                v1.push(find_crash(
-                    file,
-                    &exec_path,
-                    &executable,
-                    &[],
-                    true,
-                    &counter,
-                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                    args.silent,
-                ));
-                v1
+                    .collect::<Vec<Option<ICE>>>()
             } else {
                 // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
                 vec![find_crash(
@@ -478,6 +468,11 @@ fn find_crash(
     silent: bool,
 ) -> Option<ICE> {
     let thread_start = Instant::now();
+
+    let mut incremental = incremental;
+    if compiler_flags == &["INCR_COMP"] {
+        incremental = true
+    }
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();

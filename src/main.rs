@@ -703,9 +703,13 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
 }
 
 fn uses_feature(file: &std::path::Path) -> bool {
-    let file: String = std::fs::read_to_string(&file)
-        .unwrap_or_else(|_| panic!("Failed to read '{}'", file.display()));
-    file.contains("feature(")
+    match std::fs::read_to_string(&file) {
+        Ok(file) => file.contains("feature("),
+        _ => {
+            eprintln!("Failed to read '{}'", file.display());
+            false
+        }
+    }
 }
 
 #[allow(non_snake_case)]

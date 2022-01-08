@@ -132,6 +132,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     ],
     // all allow-by-default lints
     &[
+        // must_not_suspend and non_exhaustive_omitted_patterns are unstable :(
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
         "-Wdeprecated-in-future",
@@ -144,9 +145,9 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Wmissing-copy-implementations",
         "-Wmissing-debug-implementations",
         "-Wmissing-docs",
-        "-Wmust-not-suspend",
+        // "-Wmust-not-suspend",
         "-Wnon-ascii-idents",
-        "-Wnon-exhaustive-omitted-patterns",
+        // "-Wnon-exhaustive-omitted-patterns",
         "-Wnoop-method-call",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",

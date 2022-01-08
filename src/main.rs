@@ -130,7 +130,8 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
     ],
-    // all allow-by-default lints
+    // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
+    // I might fix this at some point by making it work lists of &str instead of String
     &[
         // must_not_suspend and non_exhaustive_omitted_patterns are unstable :(
         "-Wabsolute-paths-not-starting-with-crate",
@@ -151,6 +152,8 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Wnoop-method-call",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
+    ],
+    &[
         "-Wrust-2021-incompatible-or-patterns",
         "-Wrust-2021-prefixes-incompatible-syntax",
         "-Wrust-2021-prelude-collisions",

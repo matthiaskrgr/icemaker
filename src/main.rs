@@ -803,7 +803,15 @@ fn run_rustc_incremental(executable: &str, file: &Path) -> Output {
 }
 
 fn run_clippy(executable: &str, file: &Path) -> Output {
-    Command::new(executable)
+    let has_main = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .contains("fn main(");
+    let mut output = Command::new(executable);
+
+    if !has_main {
+        output.args(&["--crate-type", "lib"]);
+    }
+    output
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
@@ -836,9 +844,8 @@ fn run_clippy(executable: &str, file: &Path) -> Output {
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
         .args(&["--cap-lints", "warn"])
-        .args(&["-o", "/dev/null"])
-        .output()
-        .unwrap()
+        .args(&["-o", "/dev/null"]);
+    output.output().unwrap()
 }
 
 fn run_rustdoc(executable: &str, file: &Path) -> Output {

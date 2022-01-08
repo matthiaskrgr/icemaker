@@ -808,7 +808,7 @@ fn run_clippy(executable: &str, file: &Path) -> Output {
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("-Aclippy::cargo") // allow cargo lints
-        .arg("-Wclippy::internal")
+        //.arg("-Wclippy::internal")
         .arg("-Wclippy::pedantic")
         .arg("-Wclippy::nursery")
         .arg("-Wmissing-doc-code-examples")

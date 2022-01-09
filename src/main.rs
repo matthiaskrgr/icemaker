@@ -372,6 +372,8 @@ fn main() {
         "./library/stdarch/crates/core_arch/src/x86/mod.rs",
         // 3.5 hours when reporting errors :(
         "./library/stdarch/crates/core_arch/src/lib.rs",
+        // memory 2.0
+        "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
     ]
     .iter()
     .map(PathBuf::from)
@@ -390,7 +392,9 @@ fn main() {
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 // process flags in parallel as well (can this be dangerous in relation to ram usage?)
                 RUSTC_FLAGS
-                    .par_iter()
+                    // do not par_iter() here in order to reduce peak memory load
+                    // if one file needed launch several threads for it at the same time
+                    .iter()
                     .map(|flag_combination| {
                         find_crash(
                             file,

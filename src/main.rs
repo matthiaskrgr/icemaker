@@ -394,7 +394,8 @@ fn main() {
                 RUSTC_FLAGS
                     // do not par_iter() here in order to reduce peak memory load
                     // if one file needed launch several threads for it at the same time
-                    .iter()
+                    // it also makes the program slower apparently
+                    .par_iter()
                     .map(|flag_combination| {
                         find_crash(
                             file,

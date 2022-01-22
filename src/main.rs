@@ -112,7 +112,8 @@ impl Executable {
 }
 
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
-
+//&q["-Zcrate-attr=feature(generic_associated_types)"],
+// git grep -o  "unstable(feature = \"[A-Za-z_-]*"   | grep -o "\ .*$" | grep -o "\".*" | sed s/\"// | sort -n | uniq | grep "...."
 const RUSTC_FLAGS: &[&[&str]] = &[
     &[
         "-Zvalidate-mir",

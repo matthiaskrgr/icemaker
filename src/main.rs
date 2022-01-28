@@ -31,6 +31,7 @@ struct Args {
     analyzer: bool, // rla
     rustfmt: bool,
     silent: bool,
+    threads: usize,
 }
 
 // in what channel a regression is first noticed?
@@ -304,7 +305,13 @@ fn main() {
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),
         silent: args.contains(["-s", "--silent"]),
+        threads: args.value_from_str("-j").unwrap_or(0),
     };
+
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(args.threads)
+        .build_global()
+        .unwrap();
 
     let executable: Executable = if args.clippy {
         Executable::Clippy

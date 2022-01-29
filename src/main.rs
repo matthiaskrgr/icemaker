@@ -208,6 +208,8 @@ struct ICE {
     error_reason: String,
     // ice message
     ice_msg: String,
+    // the full command that we used to reproduce the crash
+    cmd: String,
 }
 
 impl std::fmt::Display for ICE {
@@ -531,7 +533,7 @@ fn find_crash(
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
-    let cmd_output = match executable {
+    let (cmd_output, cmd) = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
@@ -599,6 +601,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason: found_error.clone().unwrap_or_default(),
             ice_msg,
+            cmd,
         });
     }
 
@@ -659,6 +662,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason,
             ice_msg,
+            cmd,
         };
         ret = Some(ret2);
     };
@@ -792,7 +796,23 @@ fn find_ICE(output: Output) -> Option<String> {
     None
 }
 
-fn run_rustc(executable: &str, file: &Path, incremental: bool, rustc_flags: &[&str]) -> Output {
+fn get_cmd_string(cmd: &std::process::Command) -> String {
+    let envs: String = cmd
+        .get_envs()
+        .filter(|(_, y)| y.is_some())
+        .map(|(x, y)| format!("{}={}", x.to_string_lossy(), y.unwrap().to_string_lossy()))
+        .collect::<Vec<String>>()
+        .join(" ");
+    let command = format!("{:?}", cmd);
+    format!("\"{}\" {}", envs, command).replace("\"", "")
+}
+
+fn run_rustc(
+    executable: &str,
+    file: &Path,
+    incremental: bool,
+    rustc_flags: &[&str],
+) -> (Output, String) {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -819,14 +839,17 @@ fn run_rustc(executable: &str, file: &Path, incremental: bool, rustc_flags: &[&s
     }
     //dbg!(&output);
     // run the command
-    output
-        .output()
-        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable))
+    (
+        output
+            .output()
+            .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable)),
+        get_cmd_string(&output),
+    )
     // remove tempdir
     //tempdir.close().unwrap();
 }
 
-fn run_rustc_incremental(executable: &str, file: &Path) -> Output {
+fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, String) {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
@@ -834,13 +857,14 @@ fn run_rustc_incremental(executable: &str, file: &Path) -> Output {
         .unwrap_or_default()
         .contains("fn main(");
 
+    let mut cmd = Command::new("DUMMY");
     let mut output = None;
     for i in &[0, 1] {
         let mut command = Command::new(executable);
         if !has_main {
             command.args(&["--crate-type", "lib"]);
         }
-        let command = command
+        command
             .arg(&file)
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
@@ -848,26 +872,26 @@ fn run_rustc_incremental(executable: &str, file: &Path) -> Output {
             .arg("-Zincremental-verify-ich=yes");
 
         output = Some(command.output());
+        cmd = command;
     }
 
     let output = output.map(|output| output.unwrap()).unwrap();
 
     tempdir.close().unwrap();
     //dbg!(&output);
-    output
+    (output, get_cmd_string(&cmd))
 }
 
-fn run_clippy(executable: &str, file: &Path) -> Output {
+fn run_clippy(executable: &str, file: &Path) -> (Output, String) {
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
         .contains("fn main(");
-    let mut output = Command::new(executable);
+    let mut cmd = Command::new(executable);
 
     if !has_main {
-        output.args(&["--crate-type", "lib"]);
+        cmd.args(&["--crate-type", "lib"]);
     }
-    output
-        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("-Aclippy::cargo") // allow cargo lints
@@ -900,36 +924,39 @@ fn run_clippy(executable: &str, file: &Path) -> Output {
         .arg("-Wvariant-size-differences")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
-    output.output().unwrap()
+    (cmd.output().unwrap(), get_cmd_string(&cmd))
 }
 
-fn run_rustdoc(executable: &str, file: &Path) -> Output {
-    Command::new(executable)
-        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+fn run_rustdoc(executable: &str, file: &Path) -> (Output, String) {
+    let mut cmd = Command::new(executable);
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("-Zunstable-options")
         .arg("--document-private-items")
         .arg("--document-hidden-items")
         .args(&["--cap-lints", "warn"])
-        .args(&["-o", "/dev/null"])
-        .output()
-        .unwrap()
+        .args(&["-o", "/dev/null"]);
+    let output = cmd.output().unwrap();
+    (output, get_cmd_string(&cmd))
 }
 
-fn run_rust_analyzer(executable: &str, file: &Path) -> Output {
+fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, String) {
     let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
 
-    let mut process = Command::new(executable)
+    let mut cmd = Command::new(executable)
         .arg("symbols")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
         .unwrap();
 
-    let stdin = &mut process.stdin.as_mut().unwrap();
+    let stdin = &mut cmd.stdin.as_mut().unwrap();
     stdin.write_all(file_content.as_bytes()).unwrap();
-    process.wait_with_output().unwrap()
+    (
+        cmd.wait_with_output().unwrap(),
+        get_cmd_string(Command::new("rust-analyer").arg("symbols")),
+    )
 
     /*
     let output = process.wait_with_output().unwrap();
@@ -937,12 +964,12 @@ fn run_rust_analyzer(executable: &str, file: &Path) -> Output {
     output
     */
 }
-fn run_rustfmt(executable: &str, file: &Path) -> Output {
-    Command::new(executable)
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+fn run_rustfmt(executable: &str, file: &Path) -> (Output, String) {
+    let mut cmd = Command::new(executable);
+    cmd.env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("--check")
-        .args(&["--edition", "2018"])
-        .output()
-        .unwrap()
+        .args(&["--edition", "2018"]);
+    let output = cmd.output().unwrap();
+    (output, get_cmd_string(&cmd))
 }

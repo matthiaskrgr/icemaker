@@ -461,6 +461,8 @@ fn main() {
     errors.sort_by_key(|ice| ice.ice_msg.clone());
     // dedupe equal ICEs
     errors.dedup();
+    // sort by command
+    errors.sort_by_key(|ice| ice.cmd.clone());
 
     // if we are done, print all errors
     println!("errors:\n");

@@ -209,7 +209,7 @@ struct ICE {
     // ice message
     ice_msg: String,
     // the full command that we used to reproduce the crash
-    cmd: String,
+    //cmd: String,
 }
 
 impl std::fmt::Display for ICE {
@@ -462,7 +462,7 @@ fn main() {
     // dedupe equal ICEs
     errors.dedup();
     // sort by command
-    errors.sort_by_key(|ice| ice.cmd.clone());
+    // errors.sort_by_key(|ice| ice.cmd.clone());
 
     // if we are done, print all errors
     println!("errors:\n");
@@ -603,7 +603,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason: found_error.clone().unwrap_or_default(),
             ice_msg,
-            cmd,
+            //cmd,
         });
     }
 
@@ -664,7 +664,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason,
             ice_msg,
-            cmd,
+            //cmd,
         };
         ret = Some(ret2);
     };

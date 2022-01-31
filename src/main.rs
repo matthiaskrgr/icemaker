@@ -396,6 +396,7 @@ fn main() {
 
     let mut errors: Vec<ICE> = files
         .par_iter()
+        .panic_fuse()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
             if Executable::Rustc == executable {
@@ -406,6 +407,7 @@ fn main() {
                     // if one file needed launch several threads for it at the same time
                     // it also makes the program slower apparently
                     .par_iter()
+                    .panic_fuse()
                     .map(|flag_combination| {
                         find_crash(
                             file,

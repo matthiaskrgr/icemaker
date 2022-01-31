@@ -242,9 +242,11 @@ fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
 
     let combs: Vec<Vec<String>> = combs.into_iter().flatten().collect();
 
+    // UPDATE: special cased in par_iter loop
     // add an empty "" flag so start with, in case an ice does not require any flags
-    let mut tmp = vec![vec![String::new()]];
-    tmp.extend(combs);
+    //   let mut tmp = vec![vec![String::new()]];
+    //  tmp.extend(combs);
+    let mut tmp = combs;
     //dbg!(&x);
 
     // we may have a lot of    Zmiroptlvl1 .. 2 .. 3 ,   1, 3 ..   1, 4 .. combinations, dedupe these to only keep the last one
@@ -400,6 +402,22 @@ fn main() {
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
             if Executable::Rustc == executable {
+                let no_flags = find_crash(
+                    file,
+                    &exec_path,
+                    &executable,
+                    &[""],
+                    false,
+                    &counter,
+                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                    args.silent,
+                );
+
+                // if we crash without flags we don't need to check any further
+                if no_flags.is_some() {
+                    return vec![no_flags];
+                }
+
                 // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
                 // process flags in parallel as well (can this be dangerous in relation to ram usage?)
                 RUSTC_FLAGS

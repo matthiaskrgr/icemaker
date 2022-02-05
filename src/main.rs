@@ -154,6 +154,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Wnoop-method-call",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
+        "--emit=metadata", // no codegen
     ],
     &[
         "-Wrust-2021-incompatible-or-patterns",
@@ -173,6 +174,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-qualifications",
         "-Wunused-results",
         "-Wvariant-size-differences",
+        "--emit=metadata", // no codegen
     ],
     &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
@@ -183,7 +185,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
     &["-Zunpretty=thir-tree"],
-    &["-Zthir-unsafeck=yes"],
+    &["-Zthir-unsafeck=yes", "--emit=mir"],
     &["INCR_COMP"],
     //&["-Copt-level=z"],
     //&["-Zsanitizer=address"],

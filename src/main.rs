@@ -174,7 +174,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-results",
         "-Wvariant-size-differences",
     ],
-    &["-Zinstrument-coverage"],
+    &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=everybody_loops"],

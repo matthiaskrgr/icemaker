@@ -230,7 +230,7 @@ impl std::fmt::Display for ICE {
         )
     }
 }
-
+/// from a list of flags, get the powerset of flags so we can easily find out which flags out of a set actually cause the crash
 fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
@@ -844,10 +844,12 @@ fn run_rustc(
         .unwrap_or_default()
         .contains("fn main(");
 
-    //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-    //let tempdir_path = tempdir.path();
-    let output_file = String::from("-o/dev/null");
-    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
+    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+    let output_file = format!("-o{}/file1", tempdir_path.display());
+    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+    //let output_file = String::from("-o/dev/null");
+    //let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
     let mut output = Command::new(executable);
     output

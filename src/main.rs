@@ -26,7 +26,6 @@ use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
-use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
 use tempdir::TempDir;
@@ -120,61 +119,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     ],
 ];
 
-fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
-    // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
-    let mut combs = Vec::new();
-    for numb_comb in 0..=flags.len() {
-        let combinations = flags.iter().map(|s| s.to_string()).combinations(numb_comb);
-        combs.push(combinations);
-    }
-
-    let combs: Vec<Vec<String>> = combs.into_iter().flatten().collect();
-
-    // UPDATE: special cased in par_iter loop
-    // add an empty "" flag so start with, in case an ice does not require any flags
-    //   let mut tmp = vec![vec![String::new()]];
-    //  tmp.extend(combs);
-    let mut tmp = combs;
-    //dbg!(&x);
-
-    // we may have a lot of    Zmiroptlvl1 .. 2 .. 3 ,   1, 3 ..   1, 4 .. combinations, dedupe these to only keep the last one
-
-    let tmp2 = tmp.iter_mut().map(|vec| {
-        // reverse
-        let vec_reversed: Vec<String> = {
-            let mut v = vec.clone();
-            v.reverse();
-            v
-        };
-
-        // have we seen a mir-opt-level already?
-        let mut seen: bool = false;
-
-        // check the reversed vec for the first -Zmir and skip all other -Zmirs afterwards
-        let vtemp: Vec<String> = vec_reversed
-            .into_iter()
-            .filter(|flag| {
-                let cond = seen && flag.contains("-Zmir-opt-level");
-                if flag.contains("-Zmir-opt-level") {
-                    seen = true;
-                }
-                !cond
-            })
-            .collect();
-
-        // now reverse again, so in the end we only kept the last -Zmir-opt-level
-        let mut vfinal: Vec<String> = vtemp;
-        vfinal.reverse();
-        vfinal
-    });
-
-    let mut tmp2 = tmp2.collect::<Vec<Vec<String>>>();
-    tmp2.sort();
-    // remove duplicates that occurred due to removed mir opt levels
-    tmp2.dedup();
-    tmp2
-}
 
 fn main() {
     // read in existing errors
@@ -672,15 +617,6 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     }
 }
 
-fn uses_feature(file: &std::path::Path) -> bool {
-    match std::fs::read_to_string(&file) {
-        Ok(file) => file.contains("feature("),
-        _ => {
-            eprintln!("Failed to read '{}'", file.display());
-            false
-        }
-    }
-}
 
 #[allow(non_snake_case)]
 fn find_ICE(output: Output) -> Option<String> {

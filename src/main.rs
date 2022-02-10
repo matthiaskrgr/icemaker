@@ -11,8 +11,12 @@
 // convert glacier scripts into .rs files:
 //
 // for i in `rg EOF . | grep -o "^.*.sh"`; do ; CONTENT=` cat $i | pcregrep --no-messages -M  '.*<<.*EOF:*(\n|.)*EOF'  | grep -v ".*EOF.*"` ; echo $CONTENT >| `echo $i | sed -e s/\.sh/\.rs/` ; done
+
+///
+mod lib;
 mod run_commands;
 
+use crate::lib::*;
 use crate::run_commands::*;
 
 use std::ffi::OsStr;
@@ -25,96 +29,9 @@ use std::time::Instant;
 use itertools::Itertools;
 use pico_args::Arguments;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use tempdir::TempDir;
 use walkdir::WalkDir;
 // whether we run clippy, rustdoc or rustc (default: rustc)
-struct Args {
-    clippy: bool,
-    rustdoc: bool,
-    analyzer: bool, // rla
-    rustfmt: bool,
-    silent: bool,
-    threads: usize,
-}
-
-// in what channel a regression is first noticed?
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-enum Regression {
-    Stable,
-    Beta,
-    Nightly,
-    Master,
-}
-
-impl std::fmt::Display for Regression {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        let s = match self {
-            Regression::Stable => "stable",
-            Regression::Beta => "beta",
-            Regression::Nightly => "nightly",
-            Regression::Master => "master",
-        };
-
-        write!(f, "{}", s)
-    }
-}
-
-#[derive(PartialEq, Eq)]
-enum Executable {
-    Rustc,
-    Clippy,
-    Rustdoc,
-    RustAnalyzer,
-    Rustfmt,
-}
-
-impl Executable {
-    fn path(&self) -> String {
-        match self {
-            Executable::Rustc => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustc");
-                p.display().to_string()
-            }
-            Executable::Clippy => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("clippy-driver");
-                p.display().to_string()
-            }
-            Executable::Rustdoc => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustdoc");
-                p.display().to_string()
-            }
-            Executable::RustAnalyzer => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rust-analyzer");
-                p.display().to_string()
-            }
-            Executable::Rustfmt => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustfmt");
-                p.display().to_string()
-            }
-        }
-    }
-}
 
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 //&q["-Zcrate-attr=feature(generic_associated_types)"],
@@ -202,46 +119,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zverify-llvm-ir=yes",
     ],
 ];
-
-// represents a crash
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-struct ICE {
-    // what release channel did we crash on?
-    regresses_on: Regression,
-    // do we need any special features for that ICE?
-    needs_feature: bool,
-    // file that reproduces the ice
-    file: PathBuf,
-    // path to the rustc binary
-    //    executable: String,
-    // args that are needed to crash rustc
-    args: Vec<String>,
-    // part of the error message
-    error_reason: String,
-    // ice message
-    ice_msg: String,
-    // the full command that we used to reproduce the crash
-    //cmd: String,
-}
-
-impl std::fmt::Display for ICE {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(
-            f,
-            "'rustc {} {}' ICEs on {}, {} with: {} / '{}'",
-            self.file.display(),
-            self.args.join(" "),
-            self.regresses_on,
-            if self.needs_feature {
-                "and uses features"
-            } else {
-                "without features!"
-            },
-            self.error_reason,
-            self.ice_msg,
-        )
-    }
-}
 
 fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]

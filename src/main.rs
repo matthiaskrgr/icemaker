@@ -119,8 +119,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     ],
 ];
 
-
-
 fn main() {
     // read in existing errors
     // read the string INTO Vec<ICE>
@@ -370,6 +368,7 @@ fn main() {
     );
 }
 
+/// find out if a file crashes rustc with the given flags
 fn find_crash(
     file: &Path,
     exec_path: &str,
@@ -408,7 +407,7 @@ fn find_crash(
 
     ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
 
-    let found_error: Option<String> = find_ICE(cmd_output);
+    let found_error: Option<String> = find_ICE_string(cmd_output);
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
@@ -485,7 +484,7 @@ fn find_crash(
                         .arg(dump_mir_dir)
                         .output()
                         .unwrap();
-                    let found_error2 = find_ICE(output);
+                    let found_error2 = find_ICE_string(output);
                     // remove the tempdir
                     tempdir.close().unwrap();
                     if found_error2.is_some() {
@@ -540,6 +539,7 @@ fn find_crash(
     ret
 }
 
+/// find out if we crash on master, nightly, beta or stable
 fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     // simply check if we crasn on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
@@ -571,7 +571,7 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     stable_path.push("bin");
     stable_path.push("rustc");
 
-    let stable_ice: bool = find_ICE(
+    let stable_ice: bool = find_ICE_string(
         Command::new(stable_path)
             .arg(&file)
             .args(&bad_but_no_nightly_flags)
@@ -582,7 +582,7 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     )
     .is_some();
 
-    let beta_ice: bool = find_ICE(
+    let beta_ice: bool = find_ICE_string(
         Command::new(beta_path)
             .arg(&file)
             .args(&bad_but_no_nightly_flags)
@@ -593,7 +593,7 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     )
     .is_some();
 
-    let nightly_ice: bool = find_ICE(
+    let nightly_ice: bool = find_ICE_string(
         Command::new(nightly_path)
             .arg(&file)
             .args(bad_flags)
@@ -617,9 +617,9 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     }
 }
 
-
+/// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
-fn find_ICE(output: Output) -> Option<String> {
+fn find_ICE_string(output: Output) -> Option<String> {
     // let output = cmd.output().unwrap();
     let _exit_status = output.status;
     let stdout = String::from_utf8_lossy(&output.stdout);

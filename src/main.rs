@@ -194,7 +194,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &[
         "-Copt-level=3",
         "-Cdebuginfo=2",
-        "-Zmir-opt-level=3",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
     ],

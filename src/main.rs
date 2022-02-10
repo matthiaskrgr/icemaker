@@ -189,6 +189,15 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     //&["-Zsanitizer=address"],
     //&["-Zsanitizer=memory"],
     //&["-Zunstable-options", "--edition", "2021"],
+
+    // optimizations + debuginfo etc
+    &[
+        "-Copt-level=3",
+        "-Cdebuginfo=2",
+        "-Zmir-opt-level=3",
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+    ],
 ];
 
 // represents a crash

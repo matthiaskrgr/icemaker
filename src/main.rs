@@ -465,7 +465,7 @@ fn find_crash(
         // rustc or clippy crashed, we have an ice
         // find out which flags are responsible
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
-        let mut bad_flags: &Vec<String> = &Vec::new();
+        let mut bad_flags: Vec<String> = Vec::new();
 
         let flag_combinations = get_flag_combination(compiler_flags);
 
@@ -489,7 +489,7 @@ fn find_crash(
                     tempdir.close().unwrap();
                     if found_error2.is_some() {
                         // save the flags that the ICE repros with
-                        bad_flags = flag_combination;
+                        bad_flags = flag_combination.to_vec();
                         true
                     } else {
                         false
@@ -503,7 +503,10 @@ fn find_crash(
             | Executable::RustAnalyzer
             | Executable::Rustfmt => {}
         }
-        let regressing_channel = find_out_crashing_channel(bad_flags, file);
+        let regressing_channel = find_out_crashing_channel(&bad_flags, file);
+        // add these for a more accurate representation of what we ran originally
+        bad_flags.push("-ooutputfile".into());
+        bad_flags.push("-Zdump-mir-dir=dir".into());
 
         let ret2 = ICE {
             regresses_on: match executable {

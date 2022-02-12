@@ -91,6 +91,7 @@ impl Executable {
 }
 
 // represents a crash
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ICE {
     // what release channel did we crash on?

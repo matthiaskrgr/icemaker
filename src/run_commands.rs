@@ -12,7 +12,7 @@ fn get_cmd_string(cmd: &std::process::Command) -> String {
         .collect::<Vec<String>>()
         .join(" ");
     let command = format!("{:?}", cmd);
-    format!("\"{}\" {}", envs, command).replace("\"", "")
+    format!("\"{}\" {}", envs, command).replace('"', "")
 }
 
 pub(crate) fn run_rustc(

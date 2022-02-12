@@ -263,7 +263,7 @@ fn main() {
                             file,
                             &exec_path,
                             &executable,
-                            &flag_combination,
+                            flag_combination,
                             false,
                             &counter,
                             files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
@@ -369,6 +369,7 @@ fn main() {
 }
 
 /// find out if a file crashes rustc with the given flags
+#[allow(clippy::too_many_arguments)]
 fn find_crash(
     file: &Path,
     exec_path: &str,
@@ -382,7 +383,7 @@ fn find_crash(
     let thread_start = Instant::now();
 
     let mut incremental = incremental;
-    if compiler_flags == &["INCR_COMP"] {
+    if compiler_flags == ["INCR_COMP"] {
         incremental = true
     }
 

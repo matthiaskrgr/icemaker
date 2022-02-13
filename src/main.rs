@@ -408,12 +408,15 @@ fn find_crash(
 
     ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
 
+    // rustc sets 101 if it crashed
+    let exit_status = cmd_output.status.code().unwrap_or(0);
+
     let found_error: Option<String> = find_ICE_string(cmd_output);
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if found_error.is_some() {
+    if found_error.is_some() || exit_status == 101 {
         print!("\r");
         println!(
             "ICE: {output: <150} {msg: <30} {feat}     {flags}",

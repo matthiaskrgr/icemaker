@@ -116,6 +116,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Cdebuginfo=2",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
+        "-Zcf-protection=full",
     ],
 ];
 

@@ -47,12 +47,8 @@ impl Executable {
     pub fn path(&self) -> String {
         match self {
             Executable::Rustc => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustc");
-                p.display().to_string()
+             
+                "/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc".into()
             }
             Executable::Clippy => {
                 let mut p = home::rustup_home().unwrap();

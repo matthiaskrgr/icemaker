@@ -644,7 +644,11 @@ fn find_ICE_string(output: Output) -> Option<String> {
 
     for kw in &ice_keywords {
         if stderr.contains(kw) || stdout.contains(kw) {
-            return Some((*kw).into());
+            return stderr
+                .lines()
+                .chain(stdout.lines())
+                .find(|line| line.contains(*kw))
+                .map(|x| x.to_string());
         }
     }
 

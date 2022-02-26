@@ -602,7 +602,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let mut limit = 2000;
+    let mut limit = 40;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     println!("Reading files...");
@@ -623,14 +623,15 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             chain.feed_str(&file);
         });
     println!("Generating code");
-    let code = chain.str_iter_for(limit).enumerate().collect::<Vec<_>>();
 
     // iterate over markov-model-generated files
-    let ICEs = code
+    let ICEs = (0..limit)
         .into_par_iter()
         .panic_fuse()
-        .filter_map(|(num, rust_code)| {
+        .filter_map(|num| {
             // gen the snippet
+            let rust_code = chain.generate_str();
+
             let filename = format!("icemaker_{}.rs", num);
             let path = PathBuf::from(&filename);
             let mut file = std::fs::File::create(filename).unwrap();

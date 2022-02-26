@@ -602,10 +602,10 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let mut limit = 500;
+    let mut limit = 2000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
-
+    println!("Reading files...");
     // gather all rust files
     let mut files = WalkDir::new(".")
         .into_iter()
@@ -615,19 +615,18 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .map(|f| f.path().to_owned());
 
     let mut chain = markov::Chain::of_order(1);
-
+    println!("Feeding input to chain");
     // add the file content to the makov model
     files
         .map(|path| std::fs::read_to_string(path).unwrap_or_default())
         .for_each(|file| {
             chain.feed_str(&file);
         });
+    println!("Generating code");
+    let code = chain.str_iter_for(limit).enumerate().collect::<Vec<_>>();
 
     // iterate over markov-model-generated files
-    let ICEs = chain
-        .str_iter_for(limit)
-        .enumerate()
-        .collect::<Vec<_>>()
+    let ICEs = code
         .into_par_iter()
         .panic_fuse()
         .filter_map(|(num, rust_code)| {

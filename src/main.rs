@@ -15,7 +15,6 @@
 ///
 mod lib;
 mod run_commands;
-mod space_heater;
 
 use crate::lib::*;
 use crate::run_commands::*;

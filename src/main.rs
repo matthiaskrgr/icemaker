@@ -340,6 +340,11 @@ fn find_crash(
         Executable::Rustfmt => run_rustfmt(exec_path, file),
     };
 
+    /*
+    dbg!(&cmd_output);
+    dbg!(&_cmd);
+    */
+
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
         .lines()
@@ -598,7 +603,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let mut limit = 100;
+    let mut limit = 500;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
 
@@ -626,25 +631,27 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .collect::<Vec<_>>()
         .into_par_iter()
         .panic_fuse()
-        .map(|(num, rust_code)| {
-            // generate the snippet
-            let filename = format!("{}.rs", num);
+        .filter_map(|(num, rust_code)| {
+            // gen the snippet
+            let filename = format!("icemaker_{}.rs", num);
             let path = PathBuf::from(&filename);
             let mut file = std::fs::File::create(filename).unwrap();
             file.write_all(rust_code.as_bytes()).unwrap();
-            (num, path)
-        })
-        .filter_map(|(num, path)| {
+
             let ice = find_crash(
                 &path,
                 &exec_path,
                 &Executable::Rustc,
-                &[""],
+                &["-Zvalidate-mir"],
                 false,
                 &counter,
                 limit,
                 false,
             );
+            // if there is no ice, remove the file
+            if ice.is_none() {
+                std::fs::remove_file(path).unwrap();
+            }
             ice
         })
         .collect::<Vec<_>>();

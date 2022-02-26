@@ -15,6 +15,7 @@
 ///
 mod lib;
 mod run_commands;
+mod space_heater;
 
 use crate::lib::*;
 use crate::run_commands::*;
@@ -52,9 +53,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
     ],
-  
     &["INCR_COMP"],
-
 ];
 
 fn main() {
@@ -80,6 +79,7 @@ fn main() {
         rustfmt: args.contains(["-f", "--rustfmt"]),
         silent: args.contains(["-s", "--silent"]),
         threads: args.value_from_str("-j").unwrap_or(0),
+        heat: args.contains(["--heat", "--heat"]),
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -98,6 +98,11 @@ fn main() {
     } else {
         Executable::Rustc
     };
+
+    if args.heat {
+        let _ = run_space_heater();
+        return;
+    }
 
     // search for rust files inside CWD
     let mut files = WalkDir::new(".")
@@ -590,4 +595,59 @@ fn find_ICE_string(output: Output) -> Option<String> {
     }
 
     None
+}
+
+pub(crate) fn run_space_heater() -> Vec<ICE> {
+    let mut limit = 100;
+    let counter = std::sync::atomic::AtomicUsize::new(0);
+    let exec_path = Executable::Rustc.path();
+
+    // gather all rust files
+    let mut files = WalkDir::new(".")
+        .into_iter()
+        .filter(|entry| entry.is_ok())
+        .map(|e| e.unwrap())
+        .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
+        .map(|f| f.path().to_owned());
+
+    let mut chain = markov::Chain::of_order(1);
+
+    // add the file content to the makov model
+    files
+        .map(|path| std::fs::read_to_string(path).unwrap_or_default())
+        .for_each(|file| {
+            chain.feed_str(&file);
+        });
+
+    // iterate over markov-model-generated files
+    let ICEs = chain
+        .str_iter_for(limit)
+        .enumerate()
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .panic_fuse()
+        .map(|(num, rust_code)| {
+            // generate the snippet
+            let filename = format!("{}.rs", num);
+            let path = PathBuf::from(&filename);
+            let mut file = std::fs::File::create(filename).unwrap();
+            file.write_all(rust_code.as_bytes()).unwrap();
+            (num, path)
+        })
+        .filter_map(|(num, path)| {
+            let ice = find_crash(
+                &path,
+                &exec_path,
+                &Executable::Rustc,
+                &[""],
+                false,
+                &counter,
+                limit,
+                false,
+            );
+            ice
+        })
+        .collect::<Vec<_>>();
+    dbg!(&ICEs);
+    ICEs
 }

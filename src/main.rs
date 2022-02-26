@@ -55,6 +55,33 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
 ];
 
+const EXCEPTIONS: &[&str] = &[
+    // runtime
+    "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
+    "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
+    "./library/stdarch/crates/core_arch/src/mod.rs", //10+ mins
+    // memory
+    "./src/test/ui/issues/issue-50811.rs",
+    "./src/test/ui/issues/issue-29466.rs",
+    "./src/tools/miri/tests/run-pass/float.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts-wasm.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
+    "./src/test/ui/wrapping-int-combinations.rs",
+    // glacier/memory/time:
+    "./fixed/23600.rs",
+    "./23600.rs",
+    "./fixed/71699.rs",
+    "./71699.rs",
+    // runtime
+    "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
+    "./library/stdarch/crates/core_arch/src/x86/mod.rs",
+    // 3.5 hours when reporting errors :(
+    "./library/stdarch/crates/core_arch/src/lib.rs",
+    // memory 2.0
+    "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
+];
+
 fn main() {
     // read in existing errors
     // read the string INTO Vec<ICE>
@@ -134,36 +161,7 @@ fn main() {
     }
 
     // files that take too long (several minutes) to check or cause other problems
-    #[allow(non_snake_case)]
-    let EXCEPTION_LIST: Vec<PathBuf> = [
-        // runtime
-        "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
-        "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
-        "./library/stdarch/crates/core_arch/src/mod.rs", //10+ mins
-        // memory
-        "./src/test/ui/issues/issue-50811.rs",
-        "./src/test/ui/issues/issue-29466.rs",
-        "./src/tools/miri/tests/run-pass/float.rs",
-        "./src/test/ui/numbers-arithmetic/saturating-float-casts-wasm.rs",
-        "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
-        "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
-        "./src/test/ui/wrapping-int-combinations.rs",
-        // glacier/memory/time:
-        "./fixed/23600.rs",
-        "./23600.rs",
-        "./fixed/71699.rs",
-        "./71699.rs",
-        // runtime
-        "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
-        "./library/stdarch/crates/core_arch/src/x86/mod.rs",
-        // 3.5 hours when reporting errors :(
-        "./library/stdarch/crates/core_arch/src/lib.rs",
-        // memory 2.0
-        "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
-    ]
-    .iter()
-    .map(PathBuf::from)
-    .collect();
+    let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
     // how long did we take?
     let start_time = Instant::now();
@@ -339,10 +337,8 @@ fn find_crash(
         Executable::Rustfmt => run_rustfmt(exec_path, file),
     };
 
-    /*
-    dbg!(&cmd_output);
-    dbg!(&_cmd);
-    */
+    //dbg!(&cmd_output);
+    //dbg!(&_cmd);
 
     // find out the ice message
     let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
@@ -602,9 +598,11 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let mut limit = 40;
+    let mut limit = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
+    let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
+
     println!("Reading files...");
     // gather all rust files
     let mut files = WalkDir::new(".")
@@ -614,10 +612,11 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned());
 
-    let mut chain = markov::Chain::of_order(1);
+    let mut chain = markov::Chain::of_order(2);
     println!("Feeding input to chain");
     // add the file content to the makov model
     files
+        .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|path| std::fs::read_to_string(path).unwrap_or_default())
         .for_each(|file| {
             chain.feed_str(&file);
@@ -641,7 +640,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
                 &path,
                 &exec_path,
                 &Executable::Rustc,
-                &["-Zvalidate-mir"],
+                &["-Zmir-opt-level=3", "--crate-type=lib", "--emit=mir"],
                 false,
                 &counter,
                 limit,

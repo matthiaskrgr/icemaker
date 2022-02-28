@@ -28,6 +28,7 @@ use std::time::Instant;
 
 use pico_args::Arguments;
 use rayon::prelude::*;
+use regex::Regex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
 // whether we run clippy, rustdoc or rustc (default: rustc)
@@ -584,35 +585,45 @@ fn find_ICE_string(output: Output) -> Option<String> {
         "RUST_BACKTRACE=",
     ];
 
+    let mut error_output = None;
+
     for kw in &ice_keywords {
         if stderr.contains(kw) || stdout.contains(kw) {
-            return stderr
+            error_output = stderr
                 .lines()
                 .chain(stdout.lines())
                 .find(|line| line.contains(*kw))
                 .map(|x| x.to_string());
+            break;
         }
+    }
+
+    // try to normalize errors a bit to have less diffs
+    if let Some(error_msg) = error_output {
+        let re = Regex::new(r"\[[a-z0-9][a-z0-9][a-z0-9][a-z0-9]\]").unwrap();
+        let result = re.replace(&error_msg, "[____]");
+        return Some(result.to_string());
     }
 
     None
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let mut limit = 100000;
+    let limit = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
     println!("Reading files...");
     // gather all rust files
-    let mut files = WalkDir::new(".")
+    let files = WalkDir::new(".")
         .into_iter()
         .filter(|entry| entry.is_ok())
         .map(|e| e.unwrap())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned());
 
-    let mut chain = markov::Chain::of_order(2);
+    let mut chain = markov::Chain::of_order(10);
     println!("Feeding input to chain");
     // add the file content to the makov model
     files

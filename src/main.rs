@@ -113,6 +113,33 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
 ];
 
+const EXCEPTIONS: &[&str] = &[
+    // runtime
+    "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
+    "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
+    "./library/stdarch/crates/core_arch/src/mod.rs", //10+ mins
+    // memory
+    "./src/test/ui/issues/issue-50811.rs",
+    "./src/test/ui/issues/issue-29466.rs",
+    "./src/tools/miri/tests/run-pass/float.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts-wasm.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
+    "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
+    "./src/test/ui/wrapping-int-combinations.rs",
+    // glacier/memory/time:
+    "./fixed/23600.rs",
+    "./23600.rs",
+    "./fixed/71699.rs",
+    "./71699.rs",
+    // runtime
+    "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
+    "./library/stdarch/crates/core_arch/src/x86/mod.rs",
+    // 3.5 hours when reporting errors :(
+    "./library/stdarch/crates/core_arch/src/lib.rs",
+    // memory 2.0
+    "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
+];
+
 fn main() {
     // read in existing errors
     // read the string INTO Vec<ICE>

@@ -37,6 +37,63 @@ use walkdir::WalkDir;
 //&q["-Zcrate-attr=feature(generic_associated_types)"],
 // git grep -o  "unstable(feature = \"[A-Za-z_-]*"   | grep -o "\ .*$" | grep -o "\".*" | sed s/\"// | sort -n | uniq | grep "...."
 const RUSTC_FLAGS: &[&[&str]] = &[
+    // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
+    // I might fix this at some point by making it work lists of &str instead of String
+    &[
+        // must_not_suspend and non_exhaustive_omitted_patterns are unstable :(
+        "-Wabsolute-paths-not-starting-with-crate",
+        "-Wbox-pointers",
+        "-Wdeprecated-in-future",
+        "-Welided-lifetimes-in-paths",
+        "-Wexplicit-outlives-requirements",
+        "-Wkeyword-idents",
+        "-Wmacro-use-extern-crate",
+        "-Wmeta-variable-misuse",
+        "-Wmissing-abi",
+        "-Wmissing-copy-implementations",
+        "-Wmissing-debug-implementations",
+        "-Wmissing-docs",
+        // "-Wmust-not-suspend",
+        "-Wnon-ascii-idents",
+        // "-Wnon-exhaustive-omitted-patterns",
+        "-Wnoop-method-call",
+        "-Wpointer-structural-match",
+        "-Wrust-2021-incompatible-closure-captures",
+    ],
+    &[
+        "-Wrust-2021-incompatible-or-patterns",
+        "-Wrust-2021-prefixes-incompatible-syntax",
+        "-Wrust-2021-prelude-collisions",
+        "-Wsingle-use-lifetimes",
+        "-Wtrivial-casts",
+        "-Wtrivial-numeric-casts",
+        "-Wunreachable-pub",
+        "-Wunsafe-code",
+        "-Wunsafe-op-in-unsafe-fn",
+        "-Wunstable-features",
+        "-Wunused-crate-dependencies",
+        "-Wunused-extern-crates",
+        "-Wunused-import-braces",
+        "-Wunused-lifetimes",
+        "-Wunused-qualifications",
+        "-Wunused-results",
+        "-Wvariant-size-differences",
+    ],
+    &["-Cinstrument-coverage"],
+    &["-Cprofile-generate=/tmp/icemaker_pgo/"],
+    &["-Zunpretty=expanded,hygiene"],
+    &["-Zunpretty=everybody_loops"],
+    &["-Zunpretty=hir,typed"],
+    &["-Zunpretty=mir"],
+    &["-Zunpretty=mir-cfg"],
+    &["-Zunpretty=ast,expanded"],
+    &["-Zunpretty=thir-tree"],
+    &["-Zthir-unsafeck=yes"],
+    &["INCR_COMP"],
+    //&["-Copt-level=z"],
+    //&["-Zsanitizer=address"],
+    //&["-Zsanitizer=memory"],
+    //&["-Zunstable-options", "--edition", "2021"],
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -54,33 +111,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zpolymorphize=on",
     ],
     &["INCR_COMP"],
-];
-
-const EXCEPTIONS: &[&str] = &[
-    // runtime
-    "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
-    "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
-    "./library/stdarch/crates/core_arch/src/mod.rs", //10+ mins
-    // memory
-    "./src/test/ui/issues/issue-50811.rs",
-    "./src/test/ui/issues/issue-29466.rs",
-    "./src/tools/miri/tests/run-pass/float.rs",
-    "./src/test/ui/numbers-arithmetic/saturating-float-casts-wasm.rs",
-    "./src/test/ui/numbers-arithmetic/saturating-float-casts-impl.rs",
-    "./src/test/ui/numbers-arithmetic/saturating-float-casts.rs",
-    "./src/test/ui/wrapping-int-combinations.rs",
-    // glacier/memory/time:
-    "./fixed/23600.rs",
-    "./23600.rs",
-    "./fixed/71699.rs",
-    "./71699.rs",
-    // runtime
-    "./library/stdarch/crates/core_arch/src/x86/avx512bw.rs",
-    "./library/stdarch/crates/core_arch/src/x86/mod.rs",
-    // 3.5 hours when reporting errors :(
-    "./library/stdarch/crates/core_arch/src/lib.rs",
-    // memory 2.0
-    "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
 ];
 
 fn main() {

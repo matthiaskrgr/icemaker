@@ -218,6 +218,7 @@ fn main() {
     }
 
     // files that take too long (several minutes) to check or cause other problems
+    #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
     // how long did we take?
@@ -668,6 +669,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
     let limit = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
+    #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
     println!("Reading files...");
@@ -691,6 +693,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
     println!("Generating code");
 
     // iterate over markov-model-generated files
+    #[allow(non_snake_case)]
     let ICEs = (0..limit)
         .into_par_iter()
         .panic_fuse()

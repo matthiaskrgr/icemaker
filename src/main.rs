@@ -82,7 +82,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Zunpretty=expanded,hygiene"],
-    &["-Zunpretty=everybody_loops"],
     &["-Zunpretty=hir,typed"],
     &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],

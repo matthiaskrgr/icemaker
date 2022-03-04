@@ -666,7 +666,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let limit = 1000;
+    const limit: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     #[allow(non_snake_case)]
@@ -681,7 +681,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned());
 
-    let mut chain = markov::Chain::of_order(10);
+    let mut chain = markov::Chain::of_order(5);
     println!("Feeding input to chain");
     // add the file content to the makov model
     files

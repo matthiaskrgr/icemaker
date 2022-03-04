@@ -666,7 +666,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let limit = 100000;
+    let limit = 1000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     #[allow(non_snake_case)]
@@ -700,6 +700,28 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .filter_map(|num| {
             // gen the snippet
             let rust_code = chain.generate_str();
+
+            // if we already have an ICE with our generated code, we don't need to check it
+            let mut already_found_ices = std::fs::read_dir(PathBuf::from("."))
+                .unwrap()
+                .into_iter()
+                .map(|f| f.unwrap().path())
+                .filter(|path| {
+                    let filename = path.file_name();
+                    if let Some(name) = filename {
+                        let s = name.to_str().unwrap();
+                        s.starts_with("icemaker")
+                    } else {
+                        false
+                    }
+                })
+                .map(std::fs::read_to_string)
+                .map(|s| s.unwrap_or_default());
+
+            if already_found_ices.any(|icemaker_ice_code| icemaker_ice_code == rust_code) {
+                //   eprintln!("SKIPPING!!");
+                return None;
+            }
 
             let filename = format!("icemaker_{}.rs", num);
             let path = PathBuf::from(&filename);

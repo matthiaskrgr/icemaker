@@ -19,6 +19,7 @@ mod run_commands;
 use crate::lib::*;
 use crate::run_commands::*;
 
+use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -673,6 +674,8 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
+    let mut file_hashset = HashSet::new();
+
     println!("Reading files...");
     // gather all rust files
     let files = WalkDir::new(".")
@@ -680,12 +683,25 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .filter(|entry| entry.is_ok())
         .map(|e| e.unwrap())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
-        .map(|f| f.path().to_owned());
+        .map(|f| f.path().to_owned())
+        .collect::<Vec<PathBuf>>();
+
+    println!("Hashing existing files");
+    files
+        .iter()
+        .filter(|file| !EXCEPTION_LIST.contains(file))
+        .map(|path| std::fs::read_to_string(path).unwrap_or_default())
+        .for_each(|s| {
+            file_hashset.insert(s);
+        });
+
+    //    let mut file_hashset =
 
     let mut chain = markov::Chain::of_order(5);
     println!("Feeding input to chain");
     // add the file content to the makov model
     files
+        .iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|path| std::fs::read_to_string(path).unwrap_or_default())
         .for_each(|file| {

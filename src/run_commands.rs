@@ -77,7 +77,9 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
-            .arg("-Zincremental-verify-ich=yes");
+            .arg("-Zincremental-verify-ich=yes")
+            // also enable debuginfo for incremental, since we are codegenning anyway
+            .arg("-Cdebuginfo=2");
 
         output = Some(command.output());
         cmd = command;

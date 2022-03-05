@@ -457,6 +457,7 @@ fn find_crash(
             args: vec![
                 "-Z incremental-verify-ich=yes".into(),
                 "-C incremental=<dir>".into(),
+                "-Cdebuginfo=2".into(),
             ],
             // executable: rustc_path.to_string(),
             error_reason: found_error.clone().unwrap_or_default(),

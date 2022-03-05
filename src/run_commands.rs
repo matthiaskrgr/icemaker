@@ -28,7 +28,7 @@ pub(crate) fn run_rustc(
     // if the file contains no "main", run with "--crate-type lib"
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
-        .contains("pub(crate) fn main(");
+        .contains("fn main(");
 
     //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     //let tempdir_path = tempdir.path();
@@ -63,7 +63,7 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
 
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
-        .contains("pub(crate) fn main(");
+        .contains("fn main(");
 
     let mut cmd = Command::new("DUMMY");
     let mut output = None;
@@ -79,9 +79,13 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
             // also enable debuginfo for incremental, since we are codegenning anyway
-            .arg("-Cdebuginfo=2");
+            .arg("-Cdebuginfo=2")
+            .arg("--edition=2021");
+
+        //dbg!(&command);
 
         output = Some(command.output());
+        //dbg!(&output);
         cmd = command;
     }
 

@@ -110,7 +110,6 @@ const RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
     ],
-    &["INCR_COMP"],
 ];
 
 const EXCEPTIONS: &[&str] = &[

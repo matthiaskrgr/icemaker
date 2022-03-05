@@ -674,7 +674,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 
-    let mut file_hashset = HashSet::new();
+    //let mut file_hashset = HashSet::new();
 
     println!("Reading files...");
     // gather all rust files
@@ -687,15 +687,11 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
         .collect::<Vec<PathBuf>>();
 
     println!("Hashing existing files");
-    files
+    let hashset = files
         .iter()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|path| std::fs::read_to_string(path).unwrap_or_default())
-        .for_each(|s| {
-            file_hashset.insert(s);
-        });
-
-    //    let mut file_hashset =
+        .collect::<HashSet<String>>();
 
     let mut chain = markov::Chain::of_order(5);
     println!("Feeding input to chain");
@@ -718,7 +714,14 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             // gen the snippet
             let rust_code = chain.generate_str();
 
+            // if the file is the same a some of our input files, skip it
+            if hashset.contains(&rust_code) {
+                return None;
+            }
+
             // if we already have an ICE with our generated code, we don't need to check it
+            // TODO: check this via hashset
+            // this will be had because we have to insert into the same hashset from multiple threads at the same time :/
             let mut already_found_ices = std::fs::read_dir(PathBuf::from("."))
                 .unwrap()
                 .into_iter()

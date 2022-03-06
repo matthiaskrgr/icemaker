@@ -162,7 +162,7 @@ fn main() {
         rustfmt: args.contains(["-f", "--rustfmt"]),
         silent: args.contains(["-s", "--silent"]),
         threads: args.value_from_str("-j").unwrap_or(0),
-        heat: args.contains(["--heat", "--heat"]),
+        heat: args.contains(["-H", "--heat"]),
     };
 
     rayon::ThreadPoolBuilder::new()

@@ -228,56 +228,57 @@ fn main() {
         .panic_fuse()
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
-            if Executable::Rustc == executable {
-                let no_flags = find_crash(
-                    file,
-                    &exec_path,
-                    &executable,
-                    &[""],
-                    false,
-                    &counter,
-                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                    args.silent,
-                );
+            match executable {
+                Executable::Rustc => {
+                    let ice_with_no_flags: Option<ICE> = find_crash(
+                        file,
+                        &exec_path,
+                        &executable,
+                        &[""],
+                        false,
+                        &counter,
+                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                        args.silent,
+                    );
 
-                // if we crash without flags we don't need to check any further
-                if no_flags.is_some() {
-                    return vec![no_flags];
+                    // if we crash without flags we don't need to check any further
+                    if ice_with_no_flags.is_some() {
+                        return vec![ice_with_no_flags];
+                    }
+
+                    // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
+                    RUSTC_FLAGS
+                        // note: this can be dangerous in case of max memory usage, if a file needs a lt
+                        .par_iter()
+                        .panic_fuse()
+                        .map(|flag_combination| {
+                            find_crash(
+                                file,
+                                &exec_path,
+                                &executable,
+                                flag_combination,
+                                false,
+                                &counter,
+                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                                args.silent,
+                            )
+                        })
+                        .collect::<Vec<Option<ICE>>>()
                 }
-
-                // for each file, run every chunk of RUSTC_FLAGS2 and check it and see if it crahes
-                // process flags in parallel as well (can this be dangerous in relation to ram usage?)
-                RUSTC_FLAGS
-                    // do not par_iter() here in order to reduce peak memory load
-                    // if one file needed launch several threads for it at the same time
-                    // it also makes the program slower apparently
-                    .par_iter()
-                    .panic_fuse()
-                    .map(|flag_combination| {
-                        find_crash(
-                            file,
-                            &exec_path,
-                            &executable,
-                            flag_combination,
-                            false,
-                            &counter,
-                            files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                            args.silent,
-                        )
-                    })
-                    .collect::<Vec<Option<ICE>>>()
-            } else {
-                // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
-                vec![find_crash(
-                    file,
-                    &exec_path,
-                    &executable,
-                    &[],
-                    false,
-                    &counter,
-                    files.len(),
-                    args.silent,
-                )]
+                _ => {
+                    // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
+                    vec![find_crash(
+                        file,
+                        &exec_path,
+                        &executable,
+                        // run with no flags
+                        &[],
+                        false,
+                        &counter,
+                        files.len(),
+                        args.silent,
+                    )]
+                }
             }
         })
         .flatten()

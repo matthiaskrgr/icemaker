@@ -139,7 +139,30 @@ const EXCEPTIONS: &[&str] = &[
     "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
 ];
 
+#[derive(Debug, Clone)]
+enum RustFlags {
+    Rustflags(Vec<String>),
+    Incremental,
+}
+
+fn executable_from_args(args: &Args) -> Executable {
+    if args.clippy {
+        Executable::Clippy
+    } else if args.rustdoc {
+        Executable::Rustdoc
+    } else if args.analyzer {
+        Executable::RustAnalyzer
+    } else if args.rustfmt {
+        Executable::Rustfmt
+    } else {
+        Executable::Rustc
+    }
+}
+
 fn main() {
+    // how long did we take?
+    let start_time = Instant::now();
+
     // read in existing errors
     // read the string INTO Vec<ICE>
     let errors_before: Vec<ICE> = if std::path::PathBuf::from("errors.json").exists() {
@@ -170,17 +193,7 @@ fn main() {
         .build_global()
         .unwrap();
 
-    let executable: Executable = if args.clippy {
-        Executable::Clippy
-    } else if args.rustdoc {
-        Executable::Rustdoc
-    } else if args.analyzer {
-        Executable::RustAnalyzer
-    } else if args.rustfmt {
-        Executable::Rustfmt
-    } else {
-        Executable::Rustc
-    };
+    let executable = executable_from_args(&args);
 
     if args.heat {
         let _ = run_space_heater();
@@ -216,9 +229,6 @@ fn main() {
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
-
-    // how long did we take?
-    let start_time = Instant::now();
 
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);

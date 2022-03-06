@@ -315,11 +315,13 @@ fn main() {
     // if we are done, print all errors
     println!("errors:\n");
 
+    /*
     errors.iter().for_each(|f| {
         let mut debug = format!("{:?}", f);
         debug.truncate(300);
         println!("{}", debug);
     });
+    */
 
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();

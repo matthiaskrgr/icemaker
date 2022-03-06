@@ -397,7 +397,7 @@ fn find_crash(
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
-    let (cmd_output, _cmd) = match executable {
+    let (cmd_output, _cmd, used_args) = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),

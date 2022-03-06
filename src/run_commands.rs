@@ -1,9 +1,11 @@
+use std::ffi::OsString;
 use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Output, Stdio};
 
 use tempdir::TempDir;
 
+/// get a process::Command as String
 fn get_cmd_string(cmd: &std::process::Command) -> String {
     let envs: String = cmd
         .get_envs()
@@ -20,7 +22,7 @@ pub(crate) fn run_rustc(
     file: &Path,
     incremental: bool,
     rustc_flags: &[&str],
-) -> (Output, String) {
+) -> (Output, String, Vec<OsString>) {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -46,18 +48,28 @@ pub(crate) fn run_rustc(
         output.args(&["--crate-type", "lib"]);
     }
     //dbg!(&output);
+
+    let actual_args = output
+        .get_args()
+        .map(|s| s.to_owned())
+        .collect::<Vec<OsString>>();
+
     // run the command
     (
         output
             .output()
             .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable)),
         get_cmd_string(&output),
+        actual_args,
     )
     // remove tempdir
     //tempdir.close().unwrap();
 }
 
-pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, String) {
+pub(crate) fn run_rustc_incremental(
+    executable: &str,
+    file: &Path,
+) -> (Output, String, Vec<OsString>) {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
@@ -67,6 +79,7 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
 
     let mut cmd = Command::new("DUMMY");
     let mut output = None;
+    let mut actual_args = Vec::new();
     for i in &[0, 1] {
         let mut command = Command::new(executable);
         if !has_main {
@@ -85,6 +98,10 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
         //dbg!(&command);
 
         output = Some(command.output());
+        actual_args = command
+            .get_args()
+            .map(|s| s.to_owned())
+            .collect::<Vec<OsString>>();
         //dbg!(&output);
         cmd = command;
     }
@@ -93,10 +110,10 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> (Output, S
 
     tempdir.close().unwrap();
     //dbg!(&output);
-    (output, get_cmd_string(&cmd))
+    (output, get_cmd_string(&cmd), actual_args)
 }
 
-pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String) {
+pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
         .contains("pub(crate) fn main(");
@@ -138,10 +155,10 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String) {
         .arg("-Wvariant-size-differences")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
-    (cmd.output().unwrap(), get_cmd_string(&cmd))
+    (cmd.output().unwrap(), get_cmd_string(&cmd), Vec::new())
 }
 
-pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String) {
+pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
@@ -152,10 +169,10 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String) {
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
     let output = cmd.output().unwrap();
-    (output, get_cmd_string(&cmd))
+    (output, get_cmd_string(&cmd), Vec::new())
 }
 
-pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, String) {
+pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
 
     let mut cmd = Command::new(executable)
@@ -170,6 +187,7 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
     (
         cmd.wait_with_output().unwrap(),
         get_cmd_string(Command::new("rust-analyer").arg("symbols")),
+        Vec::new(),
     )
 
     /*
@@ -178,12 +196,12 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
     output
     */
 }
-pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String) {
+pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let mut cmd = Command::new(executable);
     cmd.env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(&file)
         .arg("--check")
         .args(&["--edition", "2018"]);
     let output = cmd.output().unwrap();
-    (output, get_cmd_string(&cmd))
+    (output, get_cmd_string(&cmd), Vec::new())
 }

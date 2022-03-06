@@ -202,11 +202,7 @@ fn main() {
 
     let exec_path = executable.path();
 
-    // "rustc"
-    // assume CWD is src/test from rustc repo root
-    // "build/x86_64-unknown-linux-gnu/stage1/bin/rustc"
-
-    println!("bin: {}", exec_path);
+    println!("Running executable: {}", exec_path);
     if matches!(executable, Executable::Rustc) {
         println!(
             "checking: {} files x {} flags\n\n",
@@ -224,6 +220,7 @@ fn main() {
     // how long did we take?
     let start_time = Instant::now();
 
+    // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
     let mut errors: Vec<ICE> = files
@@ -667,7 +664,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    const limit: usize = 100000;
+    const LIMIT: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     #[allow(non_snake_case)]
@@ -706,7 +703,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
 
     // iterate over markov-model-generated files
     #[allow(non_snake_case)]
-    let ICEs = (0..limit)
+    let ICEs = (0..LIMIT)
         .into_par_iter()
         .panic_fuse()
         .filter_map(|num| {
@@ -754,7 +751,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
                 &["-Zmir-opt-level=3", "--crate-type=lib", "--emit=mir"],
                 false,
                 &counter,
-                limit,
+                LIMIT,
                 false,
             );
             // if there is no ice, remove the file

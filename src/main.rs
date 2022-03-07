@@ -37,7 +37,7 @@ use walkdir::WalkDir;
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 //&q["-Zcrate-attr=feature(generic_associated_types)"],
 // git grep -o  "unstable(feature = \"[A-Za-z_-]*"   | grep -o "\ .*$" | grep -o "\".*" | sed s/\"// | sort -n | uniq | grep "...."
-const RUSTC_FLAGS: &[&[&str]] = &[
+static RUSTC_FLAGS: &[&[&str]] = &[
     // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
     // I might fix this at some point by making it work lists of &str instead of String
     &[
@@ -112,7 +112,7 @@ const RUSTC_FLAGS: &[&[&str]] = &[
     ],
 ];
 
-const EXCEPTIONS: &[&str] = &[
+static EXCEPTIONS: &[&str] = &[
     // runtime
     "./src/test/ui/closures/issue-72408-nested-closures-exponential.rs",
     "./src/test/ui/issues/issue-74564-if-expr-stack-overflow.rs",
@@ -237,10 +237,13 @@ fn main() {
     let mut errors: Vec<ICE> = files
         .par_iter()
         .panic_fuse()
+        // don't check anything that is contained in the exception list
         .filter(|file| !EXCEPTION_LIST.contains(file))
         .map(|file| {
             match executable {
                 Executable::Rustc => {
+                    // if we crash without flags we don't need to check any further
+
                     let ice_with_no_flags: Option<ICE> = find_crash(
                         file,
                         &exec_path,
@@ -252,7 +255,6 @@ fn main() {
                         args.silent,
                     );
 
-                    // if we crash without flags we don't need to check any further
                     if ice_with_no_flags.is_some() {
                         return vec![ice_with_no_flags];
                     }

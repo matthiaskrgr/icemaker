@@ -139,11 +139,12 @@ const EXCEPTIONS: &[&str] = &[
     "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
 ];
 
+/*
 #[derive(Debug, Clone)]
 enum RustFlags {
     Rustflags(Vec<String>),
     Incremental,
-}
+}*/
 
 fn executable_from_args(args: &Args) -> Executable {
     if args.clippy {
@@ -482,7 +483,7 @@ fn find_crash(
         // find out which flags are responsible
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: Vec<String> = Vec::new();
-
+        eprintln!("\r{:?}\r", used_args);
         let flag_combinations = get_flag_combination(compiler_flags);
 
         match executable {

@@ -416,7 +416,7 @@ fn find_crash(
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
-    let (cmd_output, _cmd, _used_args) = match executable {
+    let (cmd_output, _cmd, actual_args) = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
@@ -475,6 +475,10 @@ fn find_crash(
             perc = perc
         );
         let _stdout = std::io::stdout().flush();
+    }
+
+    if found_error.is_some() {
+        crate::ALL_ICES_WITH_FLAGS.lock().unwrap().push(actual_args);
     }
 
     if incremental && found_error.is_some() {

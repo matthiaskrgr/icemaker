@@ -54,11 +54,6 @@ pub(crate) fn run_rustc(
         .map(|s| s.to_owned())
         .collect::<Vec<OsString>>();
 
-    crate::ALL_ICES_WITH_FLAGS
-        .lock()
-        .unwrap()
-        .push(actual_args.clone());
-
     // run the command
     (
         output

@@ -20,19 +20,25 @@ use crate::lib::*;
 use crate::run_commands::*;
 
 use std::collections::HashSet;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
+use lazy_static::lazy_static;
 use pico_args::Arguments;
 use rayon::prelude::*;
 use regex::Regex;
+use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
-// whether we run clippy, rustdoc or rustc (default: rustc)
+
+lazy_static! {
+    static ref ALL_ICES_WITH_FLAGS: Mutex<Vec<Vec<OsString>>> =
+        Mutex::new(vec![vec![OsString::new()]]);
+}
 
 // -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
 //&q["-Zcrate-attr=feature(generic_associated_types)"],
@@ -242,9 +248,8 @@ fn main() {
         .map(|file| {
             match executable {
                 Executable::Rustc => {
-                    // if we crash without flags we don't need to check any further
-
-                    let ice_with_no_flags: Option<ICE> = find_crash(
+                    // if we crash without flags we don't need to check any further flags
+                    if let Some(ice) = find_crash(
                         file,
                         &exec_path,
                         &executable,
@@ -253,15 +258,13 @@ fn main() {
                         &counter,
                         files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
                         args.silent,
-                    );
-
-                    if ice_with_no_flags.is_some() {
-                        return vec![ice_with_no_flags];
+                    ) {
+                        return vec![Some(ice)];
                     }
 
                     // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
                     RUSTC_FLAGS
-                        // note: this can be dangerous in case of max memory usage, if a file needs a lt
+                        // note: this can be dangerous in case of max memory usage, if a file needs a lot
                         .par_iter()
                         .panic_fuse()
                         .map(|flag_combination| {
@@ -377,6 +380,19 @@ fn main() {
         seconds_elapsed as f64 / 60_f64,
         files_per_second
     );
+
+    eprintln!("\n\nALL CRASHES\n\n");
+    ALL_ICES_WITH_FLAGS
+        .lock()
+        .unwrap()
+        .iter()
+        .for_each(|flags| {
+            let flags = flags
+                .iter()
+                .map(|x| x.to_str().unwrap().to_string())
+                .collect::<Vec<String>>();
+            println!("{}", flags.join(" "))
+        });
 }
 
 /// find out if a file crashes rustc with the given flags
@@ -400,7 +416,7 @@ fn find_crash(
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
-    let (cmd_output, _cmd, used_args) = match executable {
+    let (cmd_output, _cmd, _used_args) = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
@@ -485,7 +501,7 @@ fn find_crash(
         // find out which flags are responsible
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: Vec<String> = Vec::new();
-        eprintln!("\r{:?}\r", used_args);
+
         let flag_combinations = get_flag_combination(compiler_flags);
 
         match executable {

@@ -142,6 +142,7 @@ dependencies = [
  "diff",
  "home",
  "itertools 0.10.3",
+ "lazy_static",
  "markov",
  "pico-args",
  "rayon",

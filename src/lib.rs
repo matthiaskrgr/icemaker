@@ -54,6 +54,7 @@ impl Executable {
                 p.push("bin");
                 p.push("rustc");
                 p.display().to_string()
+                //String::from("/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc")
             }
             Executable::Clippy => {
                 let mut p = home::rustup_home().unwrap();

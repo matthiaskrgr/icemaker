@@ -739,7 +739,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
 
     // iterate over markov-model-generated files
     #[allow(non_snake_case)]
-    let ICEs = (0..LIMIT)
+    let mut ICEs = (0..LIMIT)
         .into_par_iter()
         .panic_fuse()
         .filter_map(|num| {
@@ -797,6 +797,14 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             ice
         })
         .collect::<Vec<_>>();
+
+    // dedupe
+    ICEs.sort_by_key(|ice| ice.file.clone());
+    ICEs.dedup();
+    ICEs.sort_by_key(|ice| ice.ice_msg.clone());
+    // dedupe equal ICEs
+    ICEs.dedup();
+
     dbg!(&ICEs);
     ICEs
 }

@@ -506,36 +506,59 @@ fn find_crash(
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: Vec<String> = Vec::new();
 
-        let flag_combinations = get_flag_combination(compiler_flags);
+        let mut flag_combinations = get_flag_combination(compiler_flags);
+        // he last one should be the full combination of flags
+        let last = flag_combinations.pop().unwrap();
 
         match executable {
             Executable::Rustc => {
-                flag_combinations.iter().any(|flag_combination| {
-                    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-                    let tempdir_path = tempdir.path();
-                    let output_file = format!("-o{}/file1", tempdir_path.display());
-                    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+                // if the full set of flags does not reproduce the ICE, bail out immediately (or assert?)
+                let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                let tempdir_path = tempdir.path();
+                let output_file = format!("-o{}/file1", tempdir_path.display());
+                let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+                let output = Command::new(exec_path)
+                    .arg(&file)
+                    .args(last)
+                    .arg(output_file)
+                    .arg(dump_mir_dir)
+                    .output()
+                    .unwrap();
+                let found_error2 = find_ICE_string(output);
+                // remove the tempdir
+                tempdir.close().unwrap();
+                // full set of flags did repro the ICE
+                if found_error2.is_some() {
+                    flag_combinations.iter().any(|flag_combination| {
+                        let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                        let tempdir_path = tempdir.path();
+                        let output_file = format!("-o{}/file1", tempdir_path.display());
+                        let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-                    let output = Command::new(exec_path)
-                        .arg(&file)
-                        .args(flag_combination)
-                        .arg(output_file)
-                        .arg(dump_mir_dir)
-                        .output()
-                        .unwrap();
-                    let found_error2 = find_ICE_string(output);
-                    // remove the tempdir
-                    tempdir.close().unwrap();
-                    if found_error2.is_some() {
-                        // save the flags that the ICE repros with
-                        bad_flags = flag_combination.to_vec();
-                        true
-                    } else {
-                        false
-                    }
-                });
+                        let output = Command::new(exec_path)
+                            .arg(&file)
+                            .args(flag_combination)
+                            .arg(output_file)
+                            .arg(dump_mir_dir)
+                            .output()
+                            .unwrap();
+                        let found_error2 = find_ICE_string(output);
+                        // remove the tempdir
+                        tempdir.close().unwrap();
+                        if found_error2.is_some() {
+                            // save the flags that the ICE repros with
+                            bad_flags = flag_combination.to_vec();
+                            true
+                        } else {
+                            false
+                        }
+                    });
 
-                // find out if this is a beta/stable/nightly regression
+                    // find out if this is a beta/stable/nightly regression
+                } else {
+                    // full set of flags did not repro the ICE???
+                    debug_assert!(false);
+                }
             }
             Executable::Clippy
             | Executable::Rustdoc

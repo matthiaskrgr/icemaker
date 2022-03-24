@@ -445,8 +445,11 @@ fn find_crash(
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
+    let exit_code_looks_like_crash =
+        exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
+
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status) {
+    if exit_code_looks_like_crash {
         print!("\r");
         println!(
             "ICE: {output: <150} {msg: <30} {feat}     {flags}",
@@ -477,7 +480,7 @@ fn find_crash(
         let _stdout = std::io::stdout().flush();
     }
 
-    if found_error.is_some() {
+    if exit_code_looks_like_crash || found_error.is_some() {
         crate::ALL_ICES_WITH_FLAGS.lock().unwrap().push(actual_args);
     }
 
@@ -782,13 +785,13 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             // TODO: check this via hashset
             // this will be had because we have to insert into the same hashset from multiple threads at the same time :/
             let mut already_found_ices = std::fs::read_dir(PathBuf::from("."))
-                .unwrap()
+                .expect("failed to read dir")
                 .into_iter()
                 .map(|f| f.unwrap().path())
                 .filter(|path| {
                     let filename = path.file_name();
                     if let Some(name) = filename {
-                        let s = name.to_str().unwrap();
+                        let s = name.to_str().expect("failed to_str");
                         s.starts_with("icemaker")
                     } else {
                         false
@@ -804,8 +807,9 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
 
             let filename = format!("icemaker_{}.rs", num);
             let path = PathBuf::from(&filename);
-            let mut file = std::fs::File::create(filename).unwrap();
-            file.write_all(rust_code.as_bytes()).unwrap();
+            let mut file = std::fs::File::create(filename).expect("failed to create file");
+            file.write_all(rust_code.as_bytes())
+                .expect("failed to write to file");
 
             let ice = find_crash(
                 &path,

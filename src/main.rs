@@ -699,6 +699,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
         "RUST_BACKTRACE=",
         "segmentation fault",
         "(core dumped)",
+        "stack overflow",
     ];
 
     let mut error_output = None;

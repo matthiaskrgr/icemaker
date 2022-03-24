@@ -446,7 +446,7 @@ fn find_crash(
     let uses_feature: bool = uses_feature(file);
 
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if exit_status == 101 {
+    if exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status) {
         print!("\r");
         println!(
             "ICE: {output: <150} {msg: <30} {feat}     {flags}",

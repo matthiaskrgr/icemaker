@@ -700,11 +700,11 @@ fn find_ICE_string(output: Output) -> Option<String> {
         "query stack during panic:",
         "internal compiler error:",
         "RUST_BACKTRACE=",
-/*
-        "segmentation fault",
-        "(core dumped)",
-        "stack overflow", 
-*/
+        /*
+                "segmentation fault",
+                "(core dumped)",
+                "stack overflow",
+        */
     ];
 
     let mut error_output = None;
@@ -826,6 +826,8 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             // if there is no ice, remove the file
             if ice.is_none() {
                 std::fs::remove_file(path).unwrap();
+            } else {
+                eprintln!("\nice: {}", path.display());
             }
             ice
         })

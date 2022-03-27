@@ -731,8 +731,8 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let chain_order: usize = std::num::NonZeroUsize::new(20).expect("no 0 please").get();
-    const LIMIT: usize = 100000;
+    let chain_order: usize = std::num::NonZeroUsize::new(1).expect("no 0 please").get();
+    const LIMIT: usize = 1000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();
     #[allow(non_snake_case)]
@@ -813,21 +813,32 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             file.write_all(rust_code.as_bytes())
                 .expect("failed to write to file");
 
-            let ice = find_crash(
-                &path,
-                &exec_path,
-                &Executable::Rustc,
-                &["-Zmir-opt-level=3", "--crate-type=lib", "--emit=mir"],
-                false,
-                &counter,
-                LIMIT,
-                false,
-            );
+            let ice = RUSTC_FLAGS.iter().find_map(|compiler_flags| {
+                find_crash(
+                    &path,
+                    &exec_path,
+                    &Executable::Rustc,
+                    compiler_flags,
+                    false,
+                    &counter,
+                    LIMIT * RUSTC_FLAGS.len(),
+                    false,
+                )
+            });
             // if there is no ice, remove the file
             if ice.is_none() {
                 std::fs::remove_file(path).unwrap();
             } else {
-                eprintln!("\nice: {}", path.display());
+                eprintln!(
+                    "\nice: {}, {}",
+                    path.display(),
+                    ice.clone()
+                        .unwrap()
+                        .args
+                        .iter()
+                        .cloned()
+                        .collect::<String>(),
+                );
             }
             ice
         })

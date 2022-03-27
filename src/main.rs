@@ -832,7 +832,7 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
                 eprintln!(
                     "\nice: {}, {}",
                     path.display(),
-                    ice.clone()
+                    ice.as_ref()
                         .unwrap()
                         .args
                         .iter()

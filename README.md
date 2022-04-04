@@ -4,6 +4,7 @@ A small program to automatically find crashes in the rust compiler
 using rustcs own tests and different feature flags.
 
 Trophy case (120+):  
+https://github.com/rust-lang/rust/issues/95640  
 https://github.com/rust-lang/rust/issues/95327  
 https://github.com/rust-lang/rust/issues/95307  
 https://github.com/rust-lang/rust/issues/95163  

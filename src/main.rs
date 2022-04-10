@@ -731,7 +731,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_space_heater() -> Vec<ICE> {
-    let chain_order: usize = std::num::NonZeroUsize::new(3).expect("no 0 please").get();
+    let chain_order: usize = std::num::NonZeroUsize::new(10).expect("no 0 please").get();
     const LIMIT: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = Executable::Rustc.path();

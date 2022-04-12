@@ -96,10 +96,10 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=thir-tree"],
     &["-Zthir-unsafeck=yes"],
     &["INCR_COMP"],
-    //&["-Copt-level=z"],
+    // &["-Copt-level=z"],
     //&["-Zsanitizer=address"],
     //&["-Zsanitizer=memory"],
-    //&["-Zunstable-options", "--edition", "2021"],
+    // &["-Zunstable-options", "--edition", "2021"],
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -109,7 +109,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
         "-Zmir-opt-level=4",
-        // "-Zunsound-mir-opts",
+        //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zsave-analysis",
@@ -559,8 +559,7 @@ fn find_crash(
 
                     // find out if this is a beta/stable/nightly regression
                 } else {
-                    // full set of flags did not repro the ICE???
-                    debug_assert!(false);
+                    debug_assert!(false, "full set of flags did not reproduce the ICE??");
                 }
             }
             Executable::Clippy

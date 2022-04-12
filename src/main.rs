@@ -409,10 +409,11 @@ fn find_crash(
 ) -> Option<ICE> {
     let thread_start = Instant::now();
 
-    let mut incremental = incremental;
-    if compiler_flags == ["INCR_COMP"] {
-        incremental = true
-    }
+    let incremental = if compiler_flags == ["INCR_COMP"] {
+        true
+    } else {
+        incremental
+    };
 
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();

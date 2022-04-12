@@ -539,7 +539,7 @@ fn find_crash(
                 //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
                 let output = Command::new(exec_path)
                     // .arg(&file)
-                    .args(last)
+                    .args(&last)
                     //  .arg(output_file)
                     //     .arg(dump_mir_dir)
                     .output()
@@ -579,10 +579,11 @@ fn find_crash(
                     // find out if this is a beta/stable/nightly regression
                 } else {
                     // full set of flags did NOT reproduce the ice...????
-                    /*/ eprintln!("full set of flags:");
+                    /*   eprintln!("full set of flags:");
                     dbg!(&last);
                     eprintln!("originl (actual) args:");
-                    dbg!(&actual_args);  */
+                    dbg!(&actual_args);
+                    dbg!(file); */
                     debug_assert!(false, "full set of flags did not reproduce the ICE??");
                 }
             }

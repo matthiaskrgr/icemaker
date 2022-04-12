@@ -415,6 +415,7 @@ fn find_crash(
         incremental
     };
 
+    // run the command with some flags (actual_args)
     let index = counter.fetch_add(1, Ordering::SeqCst);
     let output = file.display().to_string();
     let (cmd_output, _cmd, actual_args) = match executable {
@@ -482,9 +483,13 @@ fn find_crash(
     }
 
     if exit_code_looks_like_crash || found_error.is_some() {
-        crate::ALL_ICES_WITH_FLAGS.lock().unwrap().push(actual_args);
+        crate::ALL_ICES_WITH_FLAGS
+            .lock()
+            .unwrap()
+            .push(actual_args.clone());
     }
 
+    // incremental ices don't need to have their flags reduced
     if incremental && found_error.is_some() {
         return Some(ICE {
             regresses_on: Regression::Nightly,
@@ -506,33 +511,46 @@ fn find_crash(
     let mut ret = None;
     if let Some(error_reason) = found_error {
         // rustc or clippy crashed, we have an ice
-        // find out which flags are responsible
+        // find out which flags are actually responsible of the manye we passed
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
         let mut bad_flags: Vec<String> = Vec::new();
 
-        let mut flag_combinations = get_flag_combination(compiler_flags);
-        // he last one should be the full combination of flags
-        let last = flag_combinations.pop().unwrap();
+        let args2 = actual_args
+            .iter()
+            .map(|x| x.to_str().unwrap().to_string())
+            .collect::<Vec<String>>();
+        let args3 = &args2.iter().map(String::as_str).collect::<Vec<&str>>()[..];
+
+        let flag_combinations = get_flag_combination(args3);
+        //dbg!(&flag_combinations);
+
+        // the last one should be the full combination of flags
+        let last = flag_combinations[&flag_combinations.len() - 1].clone();
 
         match executable {
             Executable::Rustc => {
-                // if the full set of flags does not reproduce the ICE, bail out immediately (or assert?)
+                // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                 let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-                let tempdir_path = tempdir.path();
-                let output_file = format!("-o{}/file1", tempdir_path.display());
-                let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+
+                // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
+
+                // let tempdir_path = tempdir.path();
+                // let output_file = format!("-o{}/file1", tempdir_path.display());
+                //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
                 let output = Command::new(exec_path)
-                    .arg(&file)
+                    // .arg(&file)
                     .args(last)
-                    .arg(output_file)
-                    .arg(dump_mir_dir)
+                    //  .arg(output_file)
+                    //     .arg(dump_mir_dir)
                     .output()
                     .unwrap();
+                // dbg!(&output);
                 let found_error2 = find_ICE_string(output);
                 // remove the tempdir
                 tempdir.close().unwrap();
-                // full set of flags did repro the ICE
+                // the full set of flags did reproduce the ice
                 if found_error2.is_some() {
+                    // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
                     flag_combinations.iter().any(|flag_combination| {
                         let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
                         let tempdir_path = tempdir.path();
@@ -546,10 +564,10 @@ fn find_crash(
                             .arg(dump_mir_dir)
                             .output()
                             .unwrap();
-                        let found_error2 = find_ICE_string(output);
+                        let found_error3 = find_ICE_string(output);
                         // remove the tempdir
                         tempdir.close().unwrap();
-                        if found_error2.is_some() {
+                        if found_error3.is_some() {
                             // save the flags that the ICE repros with
                             bad_flags = flag_combination.to_vec();
                             true
@@ -560,6 +578,11 @@ fn find_crash(
 
                     // find out if this is a beta/stable/nightly regression
                 } else {
+                    // full set of flags did NOT reproduce the ice...????
+                    /*/ eprintln!("full set of flags:");
+                    dbg!(&last);
+                    eprintln!("originl (actual) args:");
+                    dbg!(&actual_args);  */
                     debug_assert!(false, "full set of flags did not reproduce the ICE??");
                 }
             }

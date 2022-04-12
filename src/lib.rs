@@ -197,5 +197,11 @@ pub fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
     tmp2.sort();
     // remove duplicates that occurred due to removed mir opt levels
     tmp2.dedup();
+    //finally, sort by length
+    tmp2.sort_by_key(|x| x.len());
+
+    // we cant assert here when we remove redundant opt levels :/
+    //    debug_assert_eq!(tmp2.iter().last().unwrap(), flags);
+
     tmp2
 }

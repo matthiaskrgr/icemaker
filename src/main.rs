@@ -185,6 +185,28 @@ fn main() {
     // parse args
     let mut args = Arguments::from_env();
 
+    let valid_args = [
+        "-c",
+        "--clippy",
+        "-r",
+        "--rustdoc",
+        "-f",
+        "--rustfmt",
+        "-s",
+        "--silent",
+        "-j",
+        "-H",
+        "--heat",
+    ];
+
+    if let Some(unknown_arg) = std::env::args()
+        .skip(1)
+        .find(|arg| !valid_args.contains(&arg.as_str()))
+    {
+        eprintln!("unknown arg: {}", unknown_arg);
+        std::process::exit(3);
+    }
+
     let args = Args {
         clippy: args.contains(["-c", "--clippy"]),
         rustdoc: args.contains(["-r", "--rustdoc"]),

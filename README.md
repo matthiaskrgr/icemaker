@@ -3,7 +3,7 @@ Maker of ICE (Internal Compiler Error).
 A small program to automatically find crashes in the rust compiler
 using rustcs own tests and different feature flags.
 
-Trophy case (120+):  
+Trophy case (130+):  
 https://github.com/rust-lang/rust/issues/95978  
 https://github.com/rust-lang/rust/issues/95879  
 https://github.com/rust-lang/rust/issues/95878  

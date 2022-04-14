@@ -197,6 +197,8 @@ fn main() {
         "-j",
         "-H",
         "--heat",
+        "-a",
+        "--analyzer",
     ];
 
     if let Some(unknown_arg) = std::env::args()

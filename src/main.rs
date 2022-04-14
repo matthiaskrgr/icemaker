@@ -225,7 +225,7 @@ fn main() {
     let executable = executable_from_args(&args);
 
     if args.heat {
-        let _ = run_space_heater();
+        let _ = run_space_heater(executable);
         return;
     }
 
@@ -244,7 +244,7 @@ fn main() {
 
     let exec_path = executable.path();
 
-    println!("Running executable: {}", exec_path);
+    println!("Using executable: {}", executable.path());
     if matches!(executable, Executable::Rustc) {
         println!(
             "checking: {} files x {} flags\n\n",
@@ -776,7 +776,9 @@ fn find_ICE_string(output: Output) -> Option<String> {
     None
 }
 
-pub(crate) fn run_space_heater() -> Vec<ICE> {
+pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
+    println!("Using executable: {}", executable.path());
+
     let chain_order: usize = std::num::NonZeroUsize::new(10).expect("no 0 please").get();
     const LIMIT: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
@@ -859,18 +861,32 @@ pub(crate) fn run_space_heater() -> Vec<ICE> {
             file.write_all(rust_code.as_bytes())
                 .expect("failed to write to file");
 
-            let ice = RUSTC_FLAGS.iter().find_map(|compiler_flags| {
-                find_crash(
+            // only iterate over flags when using rustc
+            let ice = match executable {
+                Executable::Rustc => RUSTC_FLAGS.iter().find_map(|compiler_flags| {
+                    find_crash(
+                        &path,
+                        &exec_path,
+                        &executable,
+                        compiler_flags,
+                        false,
+                        &counter,
+                        LIMIT * RUSTC_FLAGS.len(),
+                        false,
+                    )
+                }),
+                _ => find_crash(
                     &path,
                     &exec_path,
-                    &Executable::Rustc,
-                    compiler_flags,
+                    &executable,
+                    &[""],
                     false,
                     &counter,
                     LIMIT * RUSTC_FLAGS.len(),
                     false,
-                )
-            });
+                ),
+            };
+
             // if there is no ice, remove the file
             if ice.is_none() {
                 std::fs::remove_file(path).unwrap();

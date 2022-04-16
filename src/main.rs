@@ -12,7 +12,11 @@
 //
 // for i in `rg EOF . | grep -o "^.*.sh"`; do ; CONTENT=` cat $i | pcregrep --no-messages -M  '.*<<.*EOF:*(\n|.)*EOF'  | grep -v ".*EOF.*"` ; echo $CONTENT >| `echo $i | sed -e s/\.sh/\.rs/` ; done
 
-///
+// check out every single file that exists in a repo:
+//
+// for object_hash in `git cat-file --batch-all-objects --batch-check | grep blob | cut -d' ' -f1` ; do
+// git cat-file $object_hash -p > ${object_hash}.rs
+// done
 mod lib;
 mod run_commands;
 

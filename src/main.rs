@@ -19,8 +19,7 @@
 // done
 
 // get the first 275000 smallest files
-//
-// git cat-file --batch-all-objects --batch-check  | grep blob | cut -d' ' -f1,3 |  awk '{for(i=NF;i>=1;i--) printf "%s ", $i;print ""}' | sort -n | head -n 275000| cut -d' ' -f2
+// git cat-file --batch-all-objects --batch-check  | grep blob | cut -d' ' -f1,3 |  awk '{for(i=NF;i>=1;i--) printf "%s ", $i;print ""}' | sort -n | head -n 275000| cut -d' ' -f2  | parallel -I% "git cat-file % -p > %.rs"
 
 mod lib;
 mod run_commands;

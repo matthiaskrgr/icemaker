@@ -88,18 +88,20 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     ],
     &["-Cinstrument-coverage", "--edition=2018"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/", "--edition=2021"],
-    &["-Zunpretty=expanded,hygiene"],
+    // temporary disable these for more throughput... haven't found new bugs with these in a long time
+    /* &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=hir,typed"],
     &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
     &["-Zunpretty=thir-tree"],
-    &["-Zthir-unsafeck=yes"],
+    &["-Zthir-unsafeck=yes"], */
     &["INCR_COMP"],
     // &["-Copt-level=z"],
     //&["-Zsanitizer=address"],
     //&["-Zsanitizer=memory"],
     // &["-Zunstable-options", "--edition", "2021"],
+    &["-Zast-json"],
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",

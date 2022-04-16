@@ -17,6 +17,11 @@
 // for object_hash in `git cat-file --batch-all-objects --batch-check | grep blob | cut -d' ' -f1` ; do
 // git cat-file $object_hash -p > ${object_hash}.rs
 // done
+
+// get the first 275000 smallest files
+//
+// git cat-file --batch-all-objects --batch-check  | grep blob | cut -d' ' -f1,3 |  awk '{for(i=NF;i>=1;i--) printf "%s ", $i;print ""}' | sort -n | head -n 275000| cut -d' ' -f2
+
 mod lib;
 mod run_commands;
 

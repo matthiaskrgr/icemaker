@@ -20,7 +20,6 @@
 
 // get the first 275000 smallest files
 // git cat-file --batch-all-objects --batch-check  | grep blob | cut -d' ' -f1,3 |  awk '{for(i=NF;i>=1;i--) printf "%s ", $i;print ""}' | sort -n | head -n 275000| cut -d' ' -f2  | parallel -I% "git cat-file % -p > %.rs"
-
 mod lib;
 mod run_commands;
 
@@ -478,6 +477,7 @@ fn find_crash(
     let exit_status = cmd_output.status.code().unwrap_or(0);
 
     let found_error: Option<String> = find_ICE_string(cmd_output);
+
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
 
@@ -782,9 +782,12 @@ fn find_ICE_string(output: Output) -> Option<String> {
     if let Some(error_msg) = error_output {
         let re = Regex::new(r"\[[a-z0-9][a-z0-9][a-z0-9][a-z0-9]\]").unwrap();
         let result = re.replace(&error_msg, "[____]");
-        return Some(result.to_string());
+        let s = result.chars().take(2000).collect::<String>();
+        drop(result);
+        return Some(s);
     }
 
+    drop(output);
     None
 }
 

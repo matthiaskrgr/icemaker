@@ -459,6 +459,15 @@ fn find_crash(
         Executable::Rustfmt => run_rustfmt(exec_path, file),
     };
 
+    /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
+        eprintln!(
+            "\nVERY LONG: stdout {} stderr {} {}\n",
+            cmd_output.stdout.len(),
+            cmd_output.stderr.len(),
+            file.display()
+        );
+    }*/
+
     //dbg!(&cmd_output);
     //dbg!(&_cmd);
 

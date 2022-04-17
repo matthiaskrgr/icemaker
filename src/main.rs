@@ -109,7 +109,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     //&["-Zsanitizer=address"],
     //&["-Zsanitizer=memory"],
     // &["-Zunstable-options", "--edition", "2021"],
-    &["-Zast-json"],
+    //&["-Zast-json"], // memory :(
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",

@@ -29,6 +29,7 @@ use crate::run_commands::*;
 use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
 use std::io::Write;
+use std::io::{self, BufRead};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -281,6 +282,7 @@ fn main() {
         .map(|file| {
             match executable {
                 Executable::Rustc => {
+                    // eprintln!("\n\nchecking {}\n", file.display());
                     // if we crash without flags we don't need to check any further flags
                     if let Some(ice) = find_crash(
                         file,
@@ -755,11 +757,6 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
 fn find_ICE_string(output: Output) -> Option<String> {
-    // let output = cmd.output().unwrap();
-    let _exit_status = output.status;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-
     let ice_keywords = [
         "LLVM ERROR",
         "panicked at:",
@@ -774,28 +771,38 @@ fn find_ICE_string(output: Output) -> Option<String> {
         */
     ];
 
-    let mut error_output = None;
+    // let output = cmd.output().unwrap();
+    let _exit_status = output.status;
 
-    for kw in &ice_keywords {
-        if stderr.contains(kw) || stdout.contains(kw) {
-            error_output = stderr
-                .lines()
-                .chain(stdout.lines())
-                .find(|line| line.contains(*kw));
-            break;
-        }
+    //stdout
+    let line = std::io::Cursor::new(&output.stdout)
+        .lines()
+        .filter_map(|line| line.ok())
+        .find(|line| {
+            ice_keywords
+                .iter()
+                .any(|ice_keyword| line.contains(ice_keyword))
+        });
+
+    if line.is_some() {
+        return line;
     }
 
-    // try to normalize errors a bit to have less diffs
-    if let Some(error_msg) = error_output {
-        let re = Regex::new(r"\[[a-z0-9][a-z0-9][a-z0-9][a-z0-9]\]").unwrap();
-        let result = re.replace(error_msg, "[____]");
-        let s = result.chars().take(2000).collect::<String>();
-        drop(result);
-        return Some(s);
-    }
-
+    // stderr
+    let line = std::io::Cursor::new(&output.stderr)
+        .lines()
+        .filter_map(|line| line.ok())
+        .find(|line| {
+            ice_keywords
+                .iter()
+                .any(|ice_keyword| line.contains(ice_keyword))
+        });
     drop(output);
+
+    if line.is_some() {
+        return line;
+    }
+
     None
 }
 

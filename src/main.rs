@@ -781,8 +781,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
             error_output = stderr
                 .lines()
                 .chain(stdout.lines())
-                .find(|line| line.contains(*kw))
-                .map(|x| x.to_string());
+                .find(|line| line.contains(*kw));
             break;
         }
     }
@@ -790,7 +789,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
     // try to normalize errors a bit to have less diffs
     if let Some(error_msg) = error_output {
         let re = Regex::new(r"\[[a-z0-9][a-z0-9][a-z0-9][a-z0-9]\]").unwrap();
-        let result = re.replace(&error_msg, "[____]");
+        let result = re.replace(error_msg, "[____]");
         let s = result.chars().take(2000).collect::<String>();
         drop(result);
         return Some(s);

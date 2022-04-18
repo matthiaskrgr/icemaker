@@ -209,12 +209,6 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
 pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap());
 
-    // running miri is a bit more complicated:
-    // first we need a new tempdir
-
-    let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
-    let tempdir_path = tempdir.path();
-
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
 
     let has_main = file_string.contains("fn main(");
@@ -232,6 +226,12 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
             Vec::new(),
         );
     }
+
+    // running miri is a bit more complicated:
+    // first we need a new tempdir
+
+    let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
 
     assert!(!has_unsafe, "file should not contain any unsafe code!");
 

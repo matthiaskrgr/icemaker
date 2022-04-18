@@ -94,7 +94,7 @@ impl Executable {
                 // note: this is actually not what we run in the end, we need to run "cargo miri test"
                 let mut p = home::rustup_home().unwrap();
                 p.push("toolchains");
-                p.push("master");
+                p.push("x86_64-unknown-linux-gnu");
                 p.push("bin");
                 p.push("miri");
                 p.display().to_string()

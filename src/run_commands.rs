@@ -218,6 +218,19 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     let has_main = file_string.contains("fn main(");
 
     let has_unsafe = file_string.contains("unsafe ");
+
+    if !has_main || has_unsafe {
+        // @FIXME, move this out of run_miri
+        // we need some kind main entry point and code should not contain unsafe code
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+
     assert!(!has_unsafe, "file should not contain any unsafe code!");
 
     // create a new cargo project inside the tmpdir
@@ -246,6 +259,24 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
 
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push("tempcrate");
+
+    // check if the file actually compiles, if not, abort
+    if !std::process::Command::new("cargo")
+        .arg("check")
+        .current_dir(&crate_path)
+        .output()
+        .expect("failed to cargo check")
+        .status
+        .success()
+    {
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
 
     let mut output = std::process::Command::new("cargo");
     output.arg("miri").arg("run").current_dir(crate_path);

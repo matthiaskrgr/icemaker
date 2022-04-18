@@ -236,16 +236,23 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     assert!(!has_unsafe, "file should not contain any unsafe code!");
 
     // create a new cargo project inside the tmpdir
-    std::process::Command::new("cargo")
+    if !std::process::Command::new("cargo")
         .arg("new")
         .arg(file_stem)
         .current_dir(&tempdir_path)
         .status()
         .expect("failed to exec cargo new")
         .success()
-        .then(|| 0)
-        .expect("cargo new failed");
-
+    {
+        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
     let source_path = {
         let mut sp = tempdir_path.to_owned();
         sp.push(file_stem);

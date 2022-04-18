@@ -28,8 +28,8 @@ use crate::run_commands::*;
 
 use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
+use std::io::BufRead;
 use std::io::Write;
-use std::io::{self, BufRead};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -38,7 +38,6 @@ use std::time::Instant;
 use lazy_static::lazy_static;
 use pico_args::Arguments;
 use rayon::prelude::*;
-use regex::Regex;
 use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
@@ -171,6 +170,8 @@ fn executable_from_args(args: &Args) -> Executable {
         Executable::RustAnalyzer
     } else if args.rustfmt {
         Executable::Rustfmt
+    } else if args.miri {
+        Executable::Miri
     } else {
         Executable::Rustc
     }
@@ -209,6 +210,8 @@ fn main() {
         "--heat",
         "-a",
         "--analyzer",
+        "-m",
+        "--miri",
     ];
 
     if let Some(unknown_arg) = std::env::args()
@@ -227,6 +230,7 @@ fn main() {
         silent: args.contains(["-s", "--silent"]),
         threads: args.value_from_str("-j").unwrap_or(0),
         heat: args.contains(["-H", "--heat"]),
+        miri: args.contains(["-m", "--miri"]),
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -459,6 +463,7 @@ fn find_crash(
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
         Executable::Rustfmt => run_rustfmt(exec_path, file),
+        Executable::Miri => run_miri(exec_path, file),
     };
 
     /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
@@ -635,7 +640,8 @@ fn find_crash(
             Executable::Clippy
             | Executable::Rustdoc
             | Executable::RustAnalyzer
-            | Executable::Rustfmt => {}
+            | Executable::Rustfmt
+            | Executable::Miri => {}
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
         // add these for a more accurate representation of what we ran originally

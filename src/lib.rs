@@ -11,6 +11,7 @@ pub struct Args {
     pub silent: bool,
     pub threads: usize,
     pub heat: bool, //spaceheater mode, try to catch ICEs from random code
+    pub miri: bool,
 }
 
 // in what channel a regression is first noticed?
@@ -42,6 +43,7 @@ pub enum Executable {
     Rustdoc,
     RustAnalyzer,
     Rustfmt,
+    Miri,
 }
 
 impl Executable {
@@ -86,6 +88,15 @@ impl Executable {
                 p.push("master");
                 p.push("bin");
                 p.push("rustfmt");
+                p.display().to_string()
+            }
+            Executable::Miri => {
+                // note: this is actually not what we run in the end, we need to run "cargo miri test"
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("miri");
                 p.display().to_string()
             }
         }

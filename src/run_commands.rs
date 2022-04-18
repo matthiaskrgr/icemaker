@@ -205,3 +205,56 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
     let output = cmd.output().unwrap();
     (output, get_cmd_string(&cmd), Vec::new())
 }
+
+pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+    // running miri is a bit more complicated:
+    // first we need a new tempdir
+
+    let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let file_string = std::fs::read_to_string(&file).unwrap_or_default();
+
+    let has_main = file_string.contains("fn main(");
+
+    let has_unsafe = file_string.contains("unsafe ");
+    assert!(!has_unsafe, "file should not contain any unsafe code!");
+
+    // create a new cargo project inside the tmpdir
+    std::process::Command::new("cargo")
+        .arg("new")
+        .arg("tempcrate")
+        .current_dir(&tempdir_path)
+        .status()
+        .expect("failed to exec cargo new")
+        .success()
+        .then(|| 0)
+        .expect("cargo new failed");
+
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push("tempcrate");
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_string).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push("tempcrate");
+
+    let mut output = std::process::Command::new("cargo");
+    output.arg("miri").arg("run").current_dir(crate_path);
+
+    (
+        output
+            .output()
+            .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable)),
+        get_cmd_string(&output),
+        Vec::new(),
+    )
+}

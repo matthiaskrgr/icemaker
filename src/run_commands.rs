@@ -269,24 +269,6 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push(file_stem);
 
-    // check if the file actually compiles, if not, abort
-    if !std::process::Command::new("cargo")
-        .arg("check")
-        .current_dir(&crate_path)
-        .output()
-        .expect("failed to cargo check")
-        .status
-        .success()
-    {
-        return (
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-        );
-    }
-
     let mut output = std::process::Command::new("cargo");
     output.arg("miri").arg("run").current_dir(crate_path);
 

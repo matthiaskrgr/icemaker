@@ -207,6 +207,8 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
 }
 
 pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+    let file_stem = file.file_stem().unwrap();
+
     // running miri is a bit more complicated:
     // first we need a new tempdir
 
@@ -236,7 +238,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     // create a new cargo project inside the tmpdir
     std::process::Command::new("cargo")
         .arg("new")
-        .arg("tempcrate")
+        .arg(file_stem)
         .current_dir(&tempdir_path)
         .status()
         .expect("failed to exec cargo new")
@@ -246,7 +248,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
 
     let source_path = {
         let mut sp = tempdir_path.to_owned();
-        sp.push("tempcrate");
+        sp.push(file_stem);
         sp.push("src/");
         sp.push("main.rs");
         sp
@@ -258,7 +260,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     // we should have everything prepared for the miri invocation now: execute "cargo miri run"
 
     let mut crate_path = tempdir_path.to_owned();
-    crate_path.push("tempcrate");
+    crate_path.push(file_stem);
 
     // check if the file actually compiles, if not, abort
     if !std::process::Command::new("cargo")
@@ -281,11 +283,11 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     let mut output = std::process::Command::new("cargo");
     output.arg("miri").arg("run").current_dir(crate_path);
 
-    (
-        output
-            .output()
-            .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable)),
-        get_cmd_string(&output),
-        Vec::new(),
-    )
+    let out = output
+        .output()
+        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable));
+
+    eprintln!("{}", String::from_utf8(out.stderr.clone()).unwrap());
+
+    (out, get_cmd_string(&output), Vec::new())
 }

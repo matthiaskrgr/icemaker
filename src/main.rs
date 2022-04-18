@@ -770,6 +770,7 @@ fn find_ICE_string(output: Output) -> Option<String> {
         "query stack during panic:",
         "internal compiler error:",
         "RUST_BACKTRACE=",
+        "MIRIFLAGS",
         /*
                 "segmentation fault",
                 "(core dumped)",

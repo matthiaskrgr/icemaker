@@ -207,7 +207,7 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
 }
 
 pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
-    let file_stem = file.file_stem().unwrap();
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap());
 
     // running miri is a bit more complicated:
     // first we need a new tempdir

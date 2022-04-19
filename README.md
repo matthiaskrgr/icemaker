@@ -1,7 +1,7 @@
 Maker of ICE (Internal Compiler Error).
 
-A small program to automatically find crashes in the rust compiler
-using rustcs own tests and different feature flags.
+A small program to automatically find crashes in the rust compiler, clippy, rustdoc, rustfmt and miri.
+Runs executable on a vast number of rust files (such as rustcs testsuit or glacier) and filters all the crashes.
 
 Trophy case (130+):  
 https://github.com/rust-lang/rust/issues/96200  

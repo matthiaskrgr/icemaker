@@ -272,6 +272,7 @@ fn main() {
         "--analyzer",
         "-m",
         "--miri",
+        "--codegen",
     ];
 
     if let Some(unknown_arg) = std::env::args()
@@ -291,6 +292,7 @@ fn main() {
         threads: args.value_from_str("-j").unwrap_or(0),
         heat: args.contains(["-H", "--heat"]),
         miri: args.contains(["-m", "--miri"]),
+        codegen: args.contains(["--codegen", "--codegen"]),
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -302,6 +304,11 @@ fn main() {
 
     if args.heat {
         let _ = run_space_heater(executable);
+        return;
+    }
+
+    if args.codegen {
+        codegen_git();
         return;
     }
 
@@ -1045,4 +1052,53 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
 
     dbg!(&ICEs);
     ICEs
+}
+
+fn codegen_git() {
+    println!("querying blobs");
+    let stdout = std::process::Command::new("git")
+        .arg("rev-list")
+        .arg("--objects")
+        .arg("--all")
+        .output()
+        .expect("git rev-list failed")
+        .stdout;
+
+    println!("converting to text");
+
+    let s = String::from_utf8(stdout).unwrap();
+    /*
+        3a9e68329aa60201fe4eedeed3e1b80cc68926dc regex_macros/src
+    eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 regex_macros/src/lib.rs
+    a7e1f44f5eae607f1fa51951eff463e62d03bd13
+    a6945d655576f7497515d6870f476f45ddd07a33 regex_macros
+    fd0fd35ca74b281eb4753bc44d2f36583fefbca0 regex_macros/Cargo.toml
+        */
+    println!("writing to files");
+
+    let objects = s
+        .lines()
+        .filter(|line| line.ends_with(".rs"))
+        .map(|line| line.split_whitespace().next().unwrap());
+    /*
+    eb6c6f8f12a6d6db38bcfa741036d9622fad6c89
+    fd0fd35ca74b281eb4753bc44d2f36583fefbca0
+    */
+
+    objects.for_each(|obj| {
+        let first = obj.chars().nth(0).unwrap();
+        let second = obj.chars().nth(1).unwrap();
+        let stdout = std::process::Command::new("git")
+            .arg("cat-file")
+            .arg("-p")
+            .arg(obj)
+            .output()
+            .expect("git cat-file -p <obj> failed")
+            .stdout;
+        let text = String::from_utf8(stdout).unwrap();
+        std::fs::create_dir_all(format!("{}/{}", first, second))
+            .expect("failed to create directories");
+        std::fs::write(format!("{}/{}/{}.rs", first, second, obj), text)
+            .expect("failed to write file");
+    })
 }

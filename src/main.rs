@@ -155,7 +155,8 @@ static EXCEPTIONS: &[&str] = &[
 ];
 
 static MIRI_EXCEPTIONS: &[&str] = &[
-    // all of clippy
+    // all of clippy as well..?
+    // most of these have infinite loops in runtime
     "./library/alloc/benches/vec_deque.rs",
     "./library/alloc/benches/vec_deque_append.rs",
     "./library/alloc/tests/vec_deque.rs",
@@ -203,6 +204,12 @@ static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/issues/issue-75704.rs",
     "./src/test/ui/panics/panic-set-handler.rsg",
     "./src/test/ui/codegen/issue-88043-bb-does-not-have-terminator.rs",
+    "./src/test/ui/issue-25579.rs",
+    "./src/test/compile-fail/issue-25579.rs",
+    "./src/test/ui/issue-25579.rs",
+    "./src/test/ui/issues/issue-25579.rs",
+    "./src/tools/clippy/tests/ui/while_let_on_iterator.rs",
+    "./src/test/compile-fail/borrowck/borrowck-mut-borrow-linear-errors.rs",
 ];
 
 /*

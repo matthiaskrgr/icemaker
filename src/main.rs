@@ -210,6 +210,8 @@ static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/issues/issue-25579.rs",
     "./src/tools/clippy/tests/ui/while_let_on_iterator.rs",
     "./src/test/compile-fail/borrowck/borrowck-mut-borrow-linear-errors.rs",
+    "./src/test/compile-fail/E0165.rs",
+    "./src/test/ui/error-codes/E0165.rs",
 ];
 
 /*

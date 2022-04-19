@@ -325,6 +325,8 @@ fn main() {
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
+    #[allow(non_snake_case)]
+    let MIRI_EXCEPTION_LIST: Vec<PathBuf> = MIRI_EXCEPTIONS.iter().map(PathBuf::from).collect();
 
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);
@@ -333,7 +335,10 @@ fn main() {
         .par_iter()
         .panic_fuse()
         // don't check anything that is contained in the exception list
-        .filter(|file| !EXCEPTION_LIST.contains(file))
+        .filter(|file| {
+            !EXCEPTION_LIST.contains(file)
+                || (matches!(executable, Executable::Miri) && !MIRI_EXCEPTION_LIST.contains(file))
+        })
         .map(|file| {
             match executable {
                 Executable::Rustc => {

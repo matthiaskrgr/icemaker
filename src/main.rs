@@ -154,6 +154,57 @@ static EXCEPTIONS: &[&str] = &[
     "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
 ];
 
+static MIRI_EXCEPTIONS: &[&str] = &[
+    // all of clippy
+    "./library/alloc/benches/vec_deque.rs",
+    "./library/alloc/benches/vec_deque_append.rs",
+    "./library/alloc/tests/vec_deque.rs",
+    "./src/test/ui/consts/const-eval/infinite_loop.rs",
+    "./src/test/ui/consts/promote_evaluation_unused_result.rs",
+    "./src/test/ui/issues/issue-25579.rs",
+    "./src/test/ui/iterators/iter-count-overflow-debug.rs",
+    "./src/test/ui/iterators/iter-count-overflow-ndebug.rs",
+    "./src/test/ui/iterators/iter-position-overflow-debug.rs",
+    "./src/test/ui/iterators/iter-position-overflow-ndebug.rs",
+    "./src/test/ui/iterators/skip-count-overflow.rs",
+    "./src/test/ui/lint/lint-impl-fn.rs",
+    "./src/test/ui/lint/lint-unnecessary-parens.rs",
+    "./src/test/ui/reachable/expr_again.rs",
+    "./src/test/ui/reachable/unreachable-code.rs",
+    "./src/test/ui/rfc-2497-if-let-chains/irrefutable-lets.rs",
+    "./src/test/ui/try-block/try-block-unreachable-code-lint.rs",
+    "./src/test/ui/unreachable-code-1.rs",
+    "./src/test/ui/unreachable-code.rs ",
+    "./src/test/ui/lint/rfc-2383-lint-reason/catch_multiple_lint_triggers.rs",
+    "./src/test/ui/lint/suggestions.rs ",
+    ".src/test/ui/const-generics/infer_arr_len_from_pat.rs",
+    "./src/test/ui/lint/suggestions.rs",
+    "./src/test/ui/lint/lint-change-warnings.rs",
+    "./src/tools/rust-analyzer/crates/parser/test_data/parser/ok/0059_loops_in_parens.rs",
+    "./src/test/ui/rfc-2497-if-let-chains/no-double-assigments.rs",
+    "./src/test/ui/lint/unused_labels.rs",
+    "./src/test/ui/polymorphization/predicates.rs",
+    "./src/test/ui/lint/rfc-2383-lint-reason/expect_multiple_lints.rs ",
+    "./src/test/ui/impl-trait/issues/issue-55608-captures-empty-region.rs",
+    "./src/test/ui/lint/rfc-2383-lint-reason/expect_multiple_lints.rs",
+    "./src/test/ui/codegen/issue-88043-bb-does-not-have-terminator.rs",
+    "./src/test/ui/pattern/usefulness/top-level-alternation.rs",
+    "./src/test/ui/issues/issue-12860.rs",
+    "./src/test/ui/lint/rfc-2383-lint-reason/catch_multiple_lint_triggers.rs",
+    "./src/test/ui/threads-sendsync/issue-8827.rs",
+    "./src/test/mir-opt/inline/inline-cycle-generic.rs",
+    "./src/test/ui/issues/issue-73229.rs",
+    "./src/test/ui/consts/huge-values.rs",
+    "./src/test/ui/threads-sendsync/issue-9396.rs",
+    "./src/tools/rust-analyzer/crates/parser/test_data/parser/ok/0057_loop_in_call.rs",
+    "./src/test/ui/panics/panic-set-handler.rs",
+    "./src/doc/book/listings/ch03-common-programming-concepts/no-listing-32-loop/src/main.rs",
+    "./src/doc/book/listings/ch19-advanced-features/no-listing-10-loop-returns-never/src/main.rs",
+    "./src/test/ui/issues/issue-75704.rs",
+    "./src/test/ui/panics/panic-set-handler.rsg",
+    "./src/test/ui/codegen/issue-88043-bb-does-not-have-terminator.rs",
+];
+
 /*
 #[derive(Debug, Clone)]
 enum RustFlags {
@@ -663,16 +714,16 @@ fn find_crash(
             //cmd,
         };
 
-        /*
-        match executable {
-            Executable::Miri => {
-                std::fs::remove_file(&file).expect("failed to remove file after running miri");
-            }
-            _ => {}
-        }  */
-
         ret = Some(ret2);
     };
+
+    /*
+    match executable {
+        Executable::Miri => {
+            std::fs::remove_file(&file).expect("failed to remove file after running miri");
+        }
+        _ => {}
+    } */
 
     // print a warning if a file takes longer than X to process
     let seconds_elapsed = thread_start.elapsed().as_secs();

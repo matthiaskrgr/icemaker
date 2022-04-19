@@ -340,6 +340,25 @@ fn main() {
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
+    ctrlc::set_handler(move || {
+        println!("Ctrl+C: TERMINATED");
+
+        ALL_ICES_WITH_FLAGS
+            .lock()
+            .unwrap()
+            .iter()
+            .for_each(|flags| {
+                let flags = flags
+                    .iter()
+                    .map(|x| x.to_str().unwrap().to_string())
+                    .collect::<Vec<String>>();
+                println!("{}", flags.join(" "))
+            });
+
+        std::process::exit(42);
+    })
+    .expect("Error setting Ctrl-C handler");
+
     let mut errors: Vec<ICE> = files
         .par_iter()
         .panic_fuse()

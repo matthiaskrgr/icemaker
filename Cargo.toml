@@ -7,6 +7,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ctrlc = "3.2.1"
 diff = "0.1"
 home = "0.5.3"
 itertools = "0.10"

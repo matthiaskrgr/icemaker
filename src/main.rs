@@ -662,6 +662,15 @@ fn find_crash(
             ice_msg,
             //cmd,
         };
+
+        /*
+        match executable {
+            Executable::Miri => {
+                std::fs::remove_file(&file).expect("failed to remove file after running miri");
+            }
+            _ => {}
+        }  */
+
         ret = Some(ret2);
     };
 

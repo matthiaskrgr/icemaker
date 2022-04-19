@@ -1079,13 +1079,15 @@ fn codegen_git() {
     let objects = s
         .lines()
         .filter(|line| line.ends_with(".rs"))
-        .map(|line| line.split_whitespace().next().unwrap());
+        .map(|line| line.split_whitespace().next().unwrap())
+        .collect::<Vec<_>>();
+
     /*
     eb6c6f8f12a6d6db38bcfa741036d9622fad6c89
     fd0fd35ca74b281eb4753bc44d2f36583fefbca0
     */
 
-    objects.for_each(|obj| {
+    objects.par_iter().for_each(|obj| {
         let first = obj.chars().nth(0).unwrap();
         let second = obj.chars().nth(1).unwrap();
         let stdout = std::process::Command::new("git")

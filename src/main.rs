@@ -376,6 +376,7 @@ fn main() {
     let mut errors: Vec<ICE> = executables
         .par_iter()
         .flat_map(|executable| {
+            let exec_path = executable.path();
             files
                 .par_iter()
                 .panic_fuse()

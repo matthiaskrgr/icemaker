@@ -398,7 +398,7 @@ fn main() {
                                 &[""],
                                 false,
                                 &counter,
-                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
                                 args.silent,
                             ) {
                                 return vec![Some(ice)];
@@ -433,7 +433,7 @@ fn main() {
                                 &[],
                                 false,
                                 &counter,
-                                files.len(),
+                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
                                 args.silent,
                             )]
                         }

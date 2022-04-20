@@ -37,7 +37,7 @@ impl std::fmt::Display for Regression {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum Executable {
     Rustc,
     Clippy,
@@ -124,6 +124,7 @@ pub struct ICE {
     pub ice_msg: String,
     // the full command that we used to reproduce the crash
     //cmd: String,
+    pub executable: Executable,
 }
 
 impl std::fmt::Display for ICE {

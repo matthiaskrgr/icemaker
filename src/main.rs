@@ -302,6 +302,13 @@ fn main() {
 
     let executable = executable_from_args(&args);
 
+    let executables = &vec![
+        &Executable::Rustc,
+        &Executable::Rustdoc,
+        &Executable::Clippy,
+        &Executable::Rustfmt,
+    ];
+
     if args.heat {
         let _ = run_space_heater(executable);
         return;
@@ -366,70 +373,76 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
-    let mut errors: Vec<ICE> = files
+    let mut errors: Vec<ICE> = executables
         .par_iter()
-        .panic_fuse()
-        // don't check anything that is contained in the exception list
-        .filter(|file| {
-            !EXCEPTION_LIST.contains(file)
-                || (matches!(executable, Executable::Miri) && !MIRI_EXCEPTION_LIST.contains(file))
-        })
-        .map(|file| {
-            match executable {
-                Executable::Rustc => {
-                    // eprintln!("\n\nchecking {}\n", file.display());
-                    // if we crash without flags we don't need to check any further flags
-                    if let Some(ice) = find_crash(
-                        file,
-                        &exec_path,
-                        &executable,
-                        &[""],
-                        false,
-                        &counter,
-                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                        args.silent,
-                    ) {
-                        return vec![Some(ice)];
-                    }
-
-                    // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
-                    RUSTC_FLAGS
-                        // note: this can be dangerous in case of max memory usage, if a file needs a lot
-                        .par_iter()
-                        .panic_fuse()
-                        .map(|flag_combination| {
-                            find_crash(
+        .flat_map(|executable| {
+            files
+                .par_iter()
+                .panic_fuse()
+                // don't check anything that is contained in the exception list
+                .filter(|file| {
+                    !EXCEPTION_LIST.contains(file)
+                        || (matches!(executable, Executable::Miri)
+                            && !MIRI_EXCEPTION_LIST.contains(file))
+                })
+                .map(|file| {
+                    match executable {
+                        Executable::Rustc => {
+                            // eprintln!("\n\nchecking {}\n", file.display());
+                            // if we crash without flags we don't need to check any further flags
+                            if let Some(ice) = find_crash(
                                 file,
                                 &exec_path,
-                                &executable,
-                                flag_combination,
+                                executable,
+                                &[""],
                                 false,
                                 &counter,
                                 files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
                                 args.silent,
-                            )
-                        })
-                        .collect::<Vec<Option<ICE>>>()
-                }
-                _ => {
-                    // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
-                    vec![find_crash(
-                        file,
-                        &exec_path,
-                        &executable,
-                        // run with no flags
-                        &[],
-                        false,
-                        &counter,
-                        files.len(),
-                        args.silent,
-                    )]
-                }
-            }
+                            ) {
+                                return vec![Some(ice)];
+                            }
+
+                            // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
+                            RUSTC_FLAGS
+                                // note: this can be dangerous in case of max memory usage, if a file needs a lot
+                                .par_iter()
+                                .panic_fuse()
+                                .map(|flag_combination| {
+                                    find_crash(
+                                        file,
+                                        &exec_path,
+                                        executable,
+                                        flag_combination,
+                                        false,
+                                        &counter,
+                                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                                        args.silent,
+                                    )
+                                })
+                                .collect::<Vec<Option<ICE>>>()
+                        }
+                        _ => {
+                            // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
+                            vec![find_crash(
+                                file,
+                                &exec_path,
+                                executable,
+                                // run with no flags
+                                &[],
+                                false,
+                                &counter,
+                                files.len(),
+                                args.silent,
+                            )]
+                        }
+                    }
+                })
+                .flatten()
+                .filter(|opt_ice| opt_ice.is_some())
+                .map(|ice| ice.unwrap())
+                .collect::<Vec<ICE>>()
         })
-        .flatten()
-        .filter(|opt_ice| opt_ice.is_some())
-        .map(|ice| ice.unwrap())
         .collect();
 
     // dedupe equal ICEs, before sorting
@@ -645,6 +658,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason: found_error.clone().unwrap_or_default(),
             ice_msg,
+            executable: executable.clone(),
             //cmd,
         });
     }
@@ -751,6 +765,7 @@ fn find_crash(
             // executable: rustc_path.to_string(),
             error_reason,
             ice_msg,
+            executable: executable.clone(),
             //cmd,
         };
 

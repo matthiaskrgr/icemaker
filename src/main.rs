@@ -301,13 +301,17 @@ fn main() {
         .unwrap();
 
     let executable = executable_from_args(&args);
-
-    let executables = &vec![
-        &Executable::Rustc,
-        &Executable::Rustdoc,
-        &Executable::Clippy,
-        &Executable::Rustfmt,
-    ];
+    let executables = if !matches!(executable, Executable::Rustc) {
+        // assume that we passed something, do not take the default Rustc
+        vec![&executable]
+    } else {
+        vec![
+            &Executable::Rustc,
+            &Executable::Rustdoc,
+            &Executable::Clippy,
+            &Executable::Rustfmt,
+        ]
+    };
 
     if args.heat {
         let _ = run_space_heater(executable);

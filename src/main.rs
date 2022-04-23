@@ -726,7 +726,10 @@ fn find_crash(
                         tempdir.close().unwrap();
                         if found_error3.is_some() {
                             // save the flags that the ICE repros with
-                            bad_flags = flag_combination.to_vec();
+                            bad_flags = flag_combination
+                                .iter()
+                                .map(|s| s.to_string())
+                                .collect::<Vec<String>>();
                             true
                         } else {
                             false

@@ -157,16 +157,12 @@ pub fn uses_feature(file: &std::path::Path) -> bool {
     }
 }
 
-pub fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
+pub fn get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
-    let mut combs = Vec::new();
-    for numb_comb in 0..=flags.len() {
-        let combinations = flags.iter().map(|s| s.to_string()).combinations(numb_comb);
-        combs.push(combinations);
-    }
-
-    let combs: Vec<Vec<String>> = combs.into_iter().flatten().collect();
+    let combs: Vec<Vec<&&str>> = (0..=flags.len())
+        .flat_map(|numb_comb| flags.iter().map(|s| s).combinations(numb_comb))
+        .collect();
 
     // UPDATE: special cased in par_iter loop
     // add an empty "" flag so start with, in case an ice does not require any flags
@@ -179,7 +175,7 @@ pub fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
 
     let tmp2 = tmp.iter_mut().map(|vec| {
         // reverse
-        let vec_reversed: Vec<String> = {
+        let vec_reversed: Vec<&&str> = {
             let mut v = vec.clone();
             v.reverse();
             v
@@ -189,7 +185,7 @@ pub fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
         let mut seen: bool = false;
 
         // check the reversed vec for the first -Zmir and skip all other -Zmirs afterwards
-        let vtemp: Vec<String> = vec_reversed
+        let vtemp: Vec<&&str> = vec_reversed
             .into_iter()
             .filter(|flag| {
                 let cond = seen && flag.contains("-Zmir-opt-level");
@@ -201,12 +197,12 @@ pub fn get_flag_combination(flags: &[&str]) -> Vec<Vec<String>> {
             .collect();
 
         // now reverse again, so in the end we only kept the last -Zmir-opt-level
-        let mut vfinal: Vec<String> = vtemp;
+        let mut vfinal: Vec<&&str> = vtemp;
         vfinal.reverse();
         vfinal
     });
 
-    let mut tmp2 = tmp2.collect::<Vec<Vec<String>>>();
+    let mut tmp2 = tmp2.collect::<Vec<Vec<&&str>>>();
     tmp2.sort();
     // remove duplicates that occurred due to removed mir opt levels
     tmp2.dedup();

@@ -299,7 +299,7 @@ pub(crate) fn systemdrun_command(
         cmd.arg("--user")
             .arg("--scope")
             .arg("-p")
-            .arg("MemoryMax=4G")
+            .arg("MemoryMax=3G")
             .arg("-p")
             .arg("RuntimeMaxSec=300");
 

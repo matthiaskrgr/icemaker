@@ -268,19 +268,18 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push(file_stem);
 
-    let mut output = std::process::Command::new("cargo");
-    output.arg("miri").arg("run").current_dir(crate_path);
+    let mut cmd = std::process::Command::new("cargo");
+    cmd.arg("miri").arg("run").current_dir(crate_path);
 
-    let out = output
-        .output()
-        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable));
+    let out = systemdrun_command(&mut cmd)
+        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
 
     eprintln!("{}", String::from_utf8(out.stderr.clone()).unwrap());
 
-    (out, get_cmd_string(&output), Vec::new())
+    (out, get_cmd_string(&cmd), Vec::new())
 }
 
-fn systemdrun_command(
+pub(crate) fn systemdrun_command(
     new_command: &mut std::process::Command,
 ) -> std::result::Result<Output, std::io::Error> {
     if cfg!(ci) {

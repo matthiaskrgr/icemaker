@@ -214,8 +214,6 @@ static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/error-codes/E0165.rs",
 ];
 
-const SYSTEMD_RUN: bool = !cfg!(ci);
-
 /*
 #[derive(Debug, Clone)]
 enum RustFlags {
@@ -338,7 +336,7 @@ fn main() {
     files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
     files.reverse();
 
-    let exec_path = executable.path();
+    //let exec_path = executable.path();
 
     println!("Using executable: {}", executable.path());
     if matches!(executable, Executable::Rustc) {
@@ -699,27 +697,10 @@ fn find_crash(
                 // let tempdir_path = tempdir.path();
                 // let output_file = format!("-o{}/file1", tempdir_path.display());
                 //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
-                let output = if SYSTEMD_RUN {
-                    Command::new("systemd-run")
-                        .arg("--user")
-                        .arg("--scope")
-                        .arg("-p")
-                        .arg("MemoryMax=4G")
-                        .arg("-p")
-                        .arg("RuntimeMaxSec=300")
-                        .arg(exec_path)
-                        .args(&last)
-                        .output()
-                        .unwrap()
-                } else {
-                    Command::new(exec_path)
-                        // .arg(&file)
-                        .args(&last)
-                        //  .arg(output_file)
-                        //     .arg(dump_mir_dir)
-                        .output()
-                        .unwrap()
-                };
+                let mut cmd = Command::new(exec_path);
+                cmd.args(&last);
+                let output = systemdrun_command(&mut cmd).unwrap();
+
                 // dbg!(&output);
                 let found_error2 = find_ICE_string(output);
                 // remove the tempdir
@@ -733,30 +714,13 @@ fn find_crash(
                         let output_file = format!("-o{}/file1", tempdir_path.display());
                         let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-                        let output = if SYSTEMD_RUN {
-                            Command::new("systemd-run")
-                                .arg("--user")
-                                .arg("--scope")
-                                .arg("-p")
-                                .arg("MemoryMax=4G")
-                                .arg("-p")
-                                .arg("RuntimeMaxSec=300")
-                                .arg(exec_path)
-                                .arg(&file)
-                                .args(flag_combination)
-                                .arg(output_file)
-                                .arg(dump_mir_dir)
-                                .output()
-                                .unwrap()
-                        } else {
-                            Command::new(exec_path)
-                                .arg(&file)
-                                .args(flag_combination)
-                                .arg(output_file)
-                                .arg(dump_mir_dir)
-                                .output()
-                                .unwrap()
-                        };
+                        let mut cmd = Command::new(exec_path);
+                        cmd.arg(&file)
+                            .args(flag_combination)
+                            .arg(output_file)
+                            .arg(dump_mir_dir);
+                        let output = systemdrun_command(&mut cmd).unwrap();
+
                         let found_error3 = find_ICE_string(output);
                         // remove the tempdir
                         tempdir.close().unwrap();
@@ -868,35 +832,36 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
     stable_path.push("rustc");
 
     let stable_ice: bool = find_ICE_string(
-        Command::new(stable_path)
-            .arg(&file)
-            .args(&bad_but_no_nightly_flags)
-            .arg(&output_file)
-            //.arg(&dump_mir_dir)
-            .output()
-            .unwrap(),
+        systemdrun_command(
+            Command::new(stable_path)
+                .arg(&file)
+                .args(&bad_but_no_nightly_flags)
+                .arg(&output_file), //.arg(&dump_mir_dir)
+        )
+        .unwrap(),
     )
     .is_some();
 
     let beta_ice: bool = find_ICE_string(
-        Command::new(beta_path)
-            .arg(&file)
-            .args(&bad_but_no_nightly_flags)
-            .arg(&output_file)
-            //.arg(&dump_mir_dir)
-            .output()
-            .unwrap(),
+        systemdrun_command(
+            Command::new(beta_path)
+                .arg(&file)
+                .args(&bad_but_no_nightly_flags)
+                .arg(&output_file), //.arg(&dump_mir_dir)
+        )
+        .unwrap(),
     )
     .is_some();
 
     let nightly_ice: bool = find_ICE_string(
-        Command::new(nightly_path)
-            .arg(&file)
-            .args(bad_flags)
-            .arg(&output_file)
-            .arg(&dump_mir_dir)
-            .output()
-            .unwrap(),
+        systemdrun_command(
+            Command::new(nightly_path)
+                .arg(&file)
+                .args(bad_flags)
+                .arg(&output_file)
+                .arg(&dump_mir_dir),
+        )
+        .unwrap(),
     )
     .is_some();
     // remove tempdir

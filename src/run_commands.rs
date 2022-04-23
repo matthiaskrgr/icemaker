@@ -37,41 +37,26 @@ pub(crate) fn run_rustc(
     let output_file = String::from("-o/dev/null");
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
-    let mut output = Command::new("systemd-run");
-    output
-        .arg("--user")
-        .arg("--scope")
-        .arg("-p")
-        .arg("MemoryMax=4G")
-        .arg("-p")
-        .arg("RuntimeMaxSec=300")
-        .arg("--user");
-
-    output
-        .arg(executable)
-        .arg(&file)
+    let mut cmd = Command::new(executable);
+    cmd.arg(&file)
         .args(rustc_flags)
         // always keep these:
         .arg(&output_file)
         .arg(&dump_mir_dir);
     if !has_main {
-        output.args(&["--crate-type", "lib"]);
+        cmd.args(&["--crate-type", "lib"]);
     }
-    //dbg!(&output);
+    //dbg!(&cmd);
 
-    let actual_args = output
+    let actual_args = cmd
         .get_args()
         .map(|s| s.to_owned())
         .collect::<Vec<OsString>>();
 
     // run the command
-    (
-        output
-            .output()
-            .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", output, executable)),
-        get_cmd_string(&output),
-        actual_args,
-    )
+    let output = systemdrun_command(&mut cmd)
+        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+    (output, get_cmd_string(&cmd), actual_args)
     // remove tempdir
     //tempdir.close().unwrap();
 }
@@ -165,7 +150,9 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .arg("-Wvariant-size-differences")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
-    (cmd.output().unwrap(), get_cmd_string(&cmd), Vec::new())
+
+    let output = systemdrun_command(&mut cmd);
+    (output.unwrap(), get_cmd_string(&cmd), Vec::new())
 }
 
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
@@ -178,7 +165,8 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
         .arg("--document-hidden-items")
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
-    let output = cmd.output().unwrap();
+    let output = systemdrun_command(&mut cmd).unwrap();
+
     (output, get_cmd_string(&cmd), Vec::new())
 }
 
@@ -212,7 +200,7 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
         .arg(&file)
         .arg("--check")
         .args(&["--edition", "2018"]);
-    let output = cmd.output().unwrap();
+    let output = systemdrun_command(&mut cmd).unwrap();
     (output, get_cmd_string(&cmd), Vec::new())
 }
 
@@ -304,7 +292,7 @@ fn systemdrun_command(
             .map(|(k, v)| {
                 (
                     k,
-                    v.expect(&format!("failed to unwrap env {:?}", k.to_str())),
+                    v.unwrap_or_else(|| panic!("failed to unwrap env {:?}", k.to_str())),
                 )
             })
             .collect::<Vec<(&std::ffi::OsStr, &std::ffi::OsStr)>>();

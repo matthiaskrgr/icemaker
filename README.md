@@ -11,6 +11,9 @@ Features:
 * check if a file compiles stably with incremental compilation
 * build and run a file under miri
 
+Requirements: 
+ * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
+
 Trophy case (130+):  
 https://github.com/rust-lang/rust/issues/96288  
 https://github.com/rust-lang/rust/issues/96287  

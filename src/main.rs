@@ -673,7 +673,7 @@ fn find_crash(
         // rustc or clippy crashed, we have an ice
         // find out which flags are actually responsible of the manye we passed
         // run rustc with the file on several flag combinations, if the first one ICEs, abort
-        let mut bad_flags: Vec<String> = Vec::new();
+        let mut bad_flags: Vec<&&str> = Vec::new();
 
         let args2 = actual_args
             .iter()
@@ -716,7 +716,7 @@ fn find_crash(
 
                         let mut cmd = Command::new(exec_path);
                         cmd.arg(&file)
-                            .args(flag_combination)
+                            .args(flag_combination.iter())
                             .arg(output_file)
                             .arg(dump_mir_dir);
                         let output = systemdrun_command(&mut cmd).unwrap();
@@ -726,10 +726,7 @@ fn find_crash(
                         tempdir.close().unwrap();
                         if found_error3.is_some() {
                             // save the flags that the ICE repros with
-                            bad_flags = flag_combination
-                                .iter()
-                                .map(|s| s.to_string())
-                                .collect::<Vec<String>>();
+                            bad_flags = flag_combination.clone();
                             true
                         } else {
                             false
@@ -755,8 +752,8 @@ fn find_crash(
         }
         let regressing_channel = find_out_crashing_channel(&bad_flags, file);
         // add these for a more accurate representation of what we ran originally
-        bad_flags.push("-ooutputfile".into());
-        bad_flags.push("-Zdump-mir-dir=dir".into());
+        bad_flags.push(&"-ooutputfile");
+        bad_flags.push(&"-Zdump-mir-dir=dir");
 
         let ret2 = ICE {
             regresses_on: match executable {
@@ -766,7 +763,10 @@ fn find_crash(
 
             needs_feature: uses_feature,
             file: file.to_owned(),
-            args: bad_flags.to_vec(),
+            args: bad_flags
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>(),
             // executable: rustc_path.to_string(),
             error_reason,
             ice_msg,
@@ -803,7 +803,7 @@ fn find_crash(
 }
 
 /// find out if we crash on master, nightly, beta or stable
-fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
+fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression {
     // simply check if we crasn on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
@@ -811,10 +811,10 @@ fn find_out_crashing_channel(bad_flags: &[String], file: &Path) -> Regression {
         p
     };
 
-    let bad_but_no_nightly_flags: Vec<&String> = bad_flags
+    let bad_but_no_nightly_flags = bad_flags
         .iter()
         .filter(|flag| !flag.starts_with("-Z"))
-        .collect();
+        .collect::<Vec<_>>();
 
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();

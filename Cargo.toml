@@ -27,3 +27,7 @@ codegen-units = 1
 debug = false
 incremental = false
 lto = true
+
+[features]
+# run without systemd-run 
+ci = []

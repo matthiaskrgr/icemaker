@@ -214,6 +214,8 @@ static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/error-codes/E0165.rs",
 ];
 
+const SYSTEMD_RUN: bool = !cfg!(ci);
+
 /*
 #[derive(Debug, Clone)]
 enum RustFlags {
@@ -697,13 +699,27 @@ fn find_crash(
                 // let tempdir_path = tempdir.path();
                 // let output_file = format!("-o{}/file1", tempdir_path.display());
                 //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
-                let output = Command::new(exec_path)
-                    // .arg(&file)
-                    .args(&last)
-                    //  .arg(output_file)
-                    //     .arg(dump_mir_dir)
-                    .output()
-                    .unwrap();
+                let output = if SYSTEMD_RUN {
+                    Command::new("systemd-run")
+                        .arg("--user")
+                        .arg("--scope")
+                        .arg("-p")
+                        .arg("MemoryMax=4G")
+                        .arg("-p")
+                        .arg("RuntimeMaxSec=300")
+                        .arg(exec_path)
+                        .args(&last)
+                        .output()
+                        .unwrap()
+                } else {
+                    Command::new(exec_path)
+                        // .arg(&file)
+                        .args(&last)
+                        //  .arg(output_file)
+                        //     .arg(dump_mir_dir)
+                        .output()
+                        .unwrap()
+                };
                 // dbg!(&output);
                 let found_error2 = find_ICE_string(output);
                 // remove the tempdir
@@ -717,13 +733,30 @@ fn find_crash(
                         let output_file = format!("-o{}/file1", tempdir_path.display());
                         let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-                        let output = Command::new(exec_path)
-                            .arg(&file)
-                            .args(flag_combination)
-                            .arg(output_file)
-                            .arg(dump_mir_dir)
-                            .output()
-                            .unwrap();
+                        let output = if SYSTEMD_RUN {
+                            Command::new("systemd-run")
+                                .arg("--user")
+                                .arg("--scope")
+                                .arg("-p")
+                                .arg("MemoryMax=4G")
+                                .arg("-p")
+                                .arg("RuntimeMaxSec=300")
+                                .arg(exec_path)
+                                .arg(&file)
+                                .args(flag_combination)
+                                .arg(output_file)
+                                .arg(dump_mir_dir)
+                                .output()
+                                .unwrap()
+                        } else {
+                            Command::new(exec_path)
+                                .arg(&file)
+                                .args(flag_combination)
+                                .arg(output_file)
+                                .arg(dump_mir_dir)
+                                .output()
+                                .unwrap()
+                        };
                         let found_error3 = find_ICE_string(output);
                         // remove the tempdir
                         tempdir.close().unwrap();

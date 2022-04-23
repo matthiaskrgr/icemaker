@@ -5,9 +5,9 @@ Runs executable on a vast number of rust files (such as rustcs testsuit or glaci
 
 Features:
 * run rustc, clippy, rustdoc, rustfmt or miri on a file and check if there is a crash
-* paralel execution
+* parallel execution
 * check different combinations of RUSTFLAGS
-* try to find minimal set fo RUSTFLAGS that reproduces a internal compiler error
+* try to find minimal set of RUSTFLAGS that reproduces the internal compiler error
 * check if a file compiles stably with incremental compilation
 * build and run a file under miri
 

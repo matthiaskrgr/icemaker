@@ -37,8 +37,18 @@ pub(crate) fn run_rustc(
     let output_file = String::from("-o/dev/null");
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
-    let mut output = Command::new(executable);
+    let mut output = Command::new("systemd-run");
     output
+        .arg("--user")
+        .arg("--scope")
+        .arg("-p")
+        .arg("MemoryMax=4G")
+        .arg("-p")
+        .arg("RuntimeMaxSec=300")
+        .arg("--user");
+
+    output
+        .arg(executable)
         .arg(&file)
         .args(rustc_flags)
         // always keep these:
@@ -280,4 +290,41 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     eprintln!("{}", String::from_utf8(out.stderr.clone()).unwrap());
 
     (out, get_cmd_string(&output), Vec::new())
+}
+
+fn systemdrun_command(
+    new_command: &mut std::process::Command,
+) -> std::result::Result<Output, std::io::Error> {
+    if cfg!(ci) {
+        let program = new_command.get_program();
+        let args = new_command.get_args();
+        let current_dir = new_command.get_current_dir();
+        let envs = new_command
+            .get_envs()
+            .map(|(k, v)| {
+                (
+                    k,
+                    v.expect(&format!("failed to unwrap env {:?}", k.to_str())),
+                )
+            })
+            .collect::<Vec<(&std::ffi::OsStr, &std::ffi::OsStr)>>();
+        let mut cmd = Command::new("systemd-run");
+        cmd.arg("--user")
+            .arg("--scope")
+            .arg("-p")
+            .arg("MemoryMax=4G")
+            .arg("-p")
+            .arg("RuntimeMaxSec=300");
+
+        cmd.arg(program);
+        cmd.args(args);
+        if let Some(dir) = current_dir {
+            cmd.current_dir(dir);
+        }
+        cmd.envs(envs);
+        cmd.output()
+    } else {
+        // return as is
+        new_command.output()
+    }
 }

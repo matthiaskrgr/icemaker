@@ -282,7 +282,10 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
 pub(crate) fn systemdrun_command(
     new_command: &mut std::process::Command,
 ) -> std::result::Result<Output, std::io::Error> {
-    if !cfg!(ci) {
+    if cfg!(feature = "ci") {
+        // return as is
+        new_command.output()
+    } else {
         let program = new_command.get_program();
         let args = new_command.get_args();
         let current_dir = new_command.get_current_dir();
@@ -310,8 +313,5 @@ pub(crate) fn systemdrun_command(
         }
         cmd.envs(envs);
         cmd.output()
-    } else {
-        // return as is
-        new_command.output()
     }
 }

@@ -209,12 +209,13 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
 
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
 
-    let has_main = file_string.contains("fn main(");
-    let has_empty_main = file_string.contains("fn main() {}");
+    // only check files that have main() as entrypoint
+    // assue that if we find "fn main() {\n", the main contains something
+    let has_main = file_string.contains("fn main() {\n");
 
     let has_unsafe = file_string.contains("unsafe ");
 
-    if !has_main || has_unsafe || has_empty_main {
+    if has_main && !has_unsafe {
         // @FIXME, move this out of run_miri
         // we need some kind main entry point and code should not contain unsafe code
         return (

@@ -204,7 +204,13 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
     (output, get_cmd_string(&cmd), Vec::new())
 }
 
-pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_miri(
+    executable: &str,
+    file: &Path,
+    miri_flags: &[&str],
+) -> (Output, String, Vec<OsString>) {
+    // also support mir-opt-level=?
+
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap());
 
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
@@ -270,7 +276,10 @@ pub(crate) fn run_miri(executable: &str, file: &Path) -> (Output, String, Vec<Os
     crate_path.push(file_stem);
 
     let mut cmd = std::process::Command::new("cargo");
-    cmd.arg("miri").arg("run").current_dir(crate_path);
+    cmd.arg("miri")
+        .arg("run")
+        .current_dir(crate_path)
+        .env("MIRIFLAGS", miri_flags.join(" "));
 
     let out = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));

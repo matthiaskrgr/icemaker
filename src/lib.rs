@@ -161,7 +161,7 @@ pub fn get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
     let combs: Vec<Vec<&&str>> = (0..=flags.len())
-        .flat_map(|numb_comb| flags.iter().map(|s| s).combinations(numb_comb))
+        .flat_map(|numb_comb| flags.iter().combinations(numb_comb))
         .collect();
 
     // UPDATE: special cased in par_iter loop

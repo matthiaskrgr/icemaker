@@ -214,6 +214,24 @@ static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/error-codes/E0165.rs",
 ];
 
+static MIRIFLAGS: &[&[&str]] = &[
+    // with mir opt level
+    &[
+        "-Zmir-opt-level=4",
+        "-Zmiri-check-number-validity",
+        "-Zmiri-strict-provenance",
+        "-Zmiri-symbolic-alignment-check",
+        "-Zmiri-tag-raw-pointers",
+    ],
+    // and without
+    &[
+        "-Zmiri-check-number-validity",
+        "-Zmiri-strict-provenance",
+        "-Zmiri-symbolic-alignment-check",
+        "-Zmiri-tag-raw-pointers",
+    ],
+];
+
 /*
 #[derive(Debug, Clone)]
 enum RustFlags {
@@ -400,6 +418,7 @@ fn main() {
                                 &exec_path,
                                 executable,
                                 &[""],
+                                &[],
                                 false,
                                 &counter,
                                 files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
@@ -419,6 +438,7 @@ fn main() {
                                         &exec_path,
                                         executable,
                                         flag_combination,
+                                        &[],
                                         false,
                                         &counter,
                                         files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
@@ -427,6 +447,21 @@ fn main() {
                                 })
                                 .collect::<Vec<Option<ICE>>>()
                         }
+                        Executable::Miri => {
+                            MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
+                                find_crash(
+                                    file,
+                                    &exec_path,
+                                    executable,
+                                    &[],
+                                    miri_flag_combination,
+                                    false,
+                                    &counter,
+                                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                                    args.silent,
+                                )
+                            }).collect::<Vec<Option<ICE>>>()
+                        }
                         _ => {
                             // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
                             vec![find_crash(
@@ -434,6 +469,7 @@ fn main() {
                                 &exec_path,
                                 executable,
                                 // run with no flags
+                                &[],
                                 &[],
                                 false,
                                 &counter,
@@ -550,6 +586,7 @@ fn find_crash(
     exec_path: &str,
     executable: &Executable,
     compiler_flags: &[&str],
+    miri_flags: &[&str],
     incremental: bool,
     counter: &AtomicUsize,
     total_number_of_files: usize,
@@ -572,7 +609,7 @@ fn find_crash(
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
         Executable::Rustfmt => run_rustfmt(exec_path, file),
-        Executable::Miri => run_miri(exec_path, file),
+        Executable::Miri => run_miri(exec_path, file, miri_flags),
     };
 
     /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
@@ -1033,6 +1070,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
                         &exec_path,
                         &executable,
                         compiler_flags,
+                        &[],
                         false,
                         &counter,
                         LIMIT * RUSTC_FLAGS.len(),
@@ -1044,6 +1082,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
                     &exec_path,
                     &executable,
                     &[""],
+                    &[],
                     false,
                     &counter,
                     LIMIT * RUSTC_FLAGS.len(),

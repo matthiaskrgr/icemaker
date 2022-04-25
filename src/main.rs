@@ -457,7 +457,7 @@ fn main() {
                                     miri_flag_combination,
                                     false,
                                     &counter,
-                                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
+                                    files.len() * (MIRIFLAGS.len()),
                                     args.silent,
                                 )
                             }).collect::<Vec<Option<ICE>>>()

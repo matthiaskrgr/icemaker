@@ -209,8 +209,6 @@ pub(crate) fn run_miri(
     file: &Path,
     miri_flags: &[&str],
 ) -> (Output, String, Vec<OsString>) {
-    // also support mir-opt-level=?
-
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap());
 
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();

@@ -221,7 +221,7 @@ pub(crate) fn run_miri(
 
     let has_unsafe = file_string.contains("unsafe ");
 
-    if has_main && !has_unsafe {
+    if !has_main || has_unsafe {
         // @FIXME, move this out of run_miri
         // we need some kind main entry point and code should not contain unsafe code
         return (

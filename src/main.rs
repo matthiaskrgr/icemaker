@@ -907,9 +907,15 @@ fn find_ICE_string(output: Output) -> Option<String> {
         .lines()
         .filter_map(|line| line.ok())
         .find(|line| {
-            ice_keywords
-                .iter()
-                .any(|ice_keyword| line.contains(ice_keyword))
+            ice_keywords.iter().any(|ice_keyword| {
+                if ice_keyword == &"panicked at:" {
+                    // do not warn when the checked .rs file contains something like const A = panic!()
+                    line.contains(ice_keyword)
+                        && !line.contains("the evaluated program panicked at")
+                } else {
+                    line.contains(ice_keyword)
+                }
+            })
         });
 
     if line.is_some() {

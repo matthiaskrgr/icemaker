@@ -653,7 +653,10 @@ fn find_crash(
         println!(
             "ICE: {output: <150} {msg: <30} {feat}     {flags}",
             output = output,
-            msg = found_error.clone().unwrap(),
+            msg = found_error
+                .clone()
+                // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                .unwrap_or(format!("No error found but exit code: {}", exit_status)),
             feat = if uses_feature { "        " } else { "no feat!" },
             flags = {
                 let mut s = format!("{:?}", compiler_flags);

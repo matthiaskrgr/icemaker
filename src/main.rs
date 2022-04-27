@@ -942,7 +942,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "query stack during panic:",
             "internal compiler error:",
             "RUST_BACKTRACE=",
-            "MIRIFLAGS",
+            //"MIRIFLAGS",
             /*
                     "segmentation fault",
                     "(core dumped)",

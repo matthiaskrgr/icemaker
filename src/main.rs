@@ -639,7 +639,7 @@ fn find_crash(
     // rustc sets 101 if it crashed
     let exit_status = cmd_output.status.code().unwrap_or(0);
 
-    let found_error: Option<String> = find_ICE_string(cmd_output);
+    let found_error: Option<String> = find_ICE_string(executable, cmd_output);
 
     // check if the file enables any compiler features
     let uses_feature: bool = uses_feature(file);
@@ -743,7 +743,7 @@ fn find_crash(
                 let output = systemdrun_command(&mut cmd).unwrap();
 
                 // dbg!(&output);
-                let found_error2 = find_ICE_string(output);
+                let found_error2 = find_ICE_string(executable, output);
                 // remove the tempdir
                 tempdir.close().unwrap();
                 // the full set of flags did reproduce the ice
@@ -762,7 +762,7 @@ fn find_crash(
                             .arg(dump_mir_dir);
                         let output = systemdrun_command(&mut cmd).unwrap();
 
-                        let found_error3 = find_ICE_string(output);
+                        let found_error3 = find_ICE_string(executable, output);
                         // remove the tempdir
                         tempdir.close().unwrap();
                         if found_error3.is_some() {
@@ -876,6 +876,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
     stable_path.push("rustc");
 
     let stable_ice: bool = find_ICE_string(
+        &Executable::Rustc,
         systemdrun_command(
             Command::new(stable_path)
                 .arg(&file)
@@ -887,6 +888,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
     .is_some();
 
     let beta_ice: bool = find_ICE_string(
+        &Executable::Rustc,
         systemdrun_command(
             Command::new(beta_path)
                 .arg(&file)
@@ -898,6 +900,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
     .is_some();
 
     let nightly_ice: bool = find_ICE_string(
+        &Executable::Rustc,
         systemdrun_command(
             Command::new(nightly_path)
                 .arg(&file)
@@ -924,21 +927,29 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
-fn find_ICE_string(output: Output) -> Option<String> {
-    let ice_keywords = [
-        "LLVM ERROR",
-        "panicked at:",
-        "`delay_span_bug`",
-        "query stack during panic:",
-        "internal compiler error:",
-        "RUST_BACKTRACE=",
-        "MIRIFLAGS",
-        /*
-                "segmentation fault",
-                "(core dumped)",
-                "stack overflow",
-        */
-    ];
+fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
+    let ice_keywords = if matches!(executable, Executable::Miri) {
+        vec![
+            "this indicates a bug in the program",
+            "the evaluated program leaked memory",
+            "internal compiler error:",
+        ]
+    } else {
+        vec![
+            "LLVM ERROR",
+            "panicked at:",
+            "`delay_span_bug`",
+            "query stack during panic:",
+            "internal compiler error:",
+            "RUST_BACKTRACE=",
+            "MIRIFLAGS",
+            /*
+                    "segmentation fault",
+                    "(core dumped)",
+                    "stack overflow",
+            */
+        ]
+    };
 
     // let output = cmd.output().unwrap();
     let _exit_status = output.status;

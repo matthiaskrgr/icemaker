@@ -238,14 +238,14 @@ pub(crate) fn run_miri(
     let tempdir_path = tempdir.path();
 
     assert!(!has_unsafe, "file should not contain any unsafe code!");
-
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
         .arg("new")
         .arg(file_stem)
         .current_dir(&tempdir_path)
-        .status()
+        .output()
         .expect("failed to exec cargo new")
+        .status
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem);
@@ -282,7 +282,8 @@ pub(crate) fn run_miri(
     let out = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
 
-    eprintln!("{}", String::from_utf8(out.stderr.clone()).unwrap());
+    //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
+    //eprintln!("{}", stderr);
 
     (out, get_cmd_string(&cmd), Vec::new())
 }

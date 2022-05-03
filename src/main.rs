@@ -125,7 +125,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
     ],
-    &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
+    // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
 ];
 
 static EXCEPTIONS: &[&str] = &[

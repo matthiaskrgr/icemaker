@@ -359,7 +359,6 @@ pub(crate) fn incremental_stress_test(
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
             // also enable debuginfo for incremental, since we are codegenning anyway
-            .arg("-Cdebuginfo=2")
             .arg("--edition=2021");
 
         //dbg!(&command);

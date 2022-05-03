@@ -1,6 +1,6 @@
 use std::ffi::OsString;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use tempdir::TempDir;
@@ -92,7 +92,7 @@ pub(crate) fn run_rustc_incremental(
 
         //dbg!(&command);
 
-        output = Some(command.output());
+        output = Some(systemdrun_command(&mut command));
         actual_args = command
             .get_args()
             .map(|s| s.to_owned())
@@ -323,4 +323,66 @@ pub(crate) fn systemdrun_command(
         cmd.envs(envs);
         cmd.output()
     }
+}
+
+pub(crate) fn incremental_stress_test(
+    file_a: &std::path::PathBuf,
+    files: &Vec<std::path::PathBuf>,
+    executable: &str,
+) -> (Output, String, Vec<OsString>, PathBuf, PathBuf) {
+    use rand::seq::SliceRandom;
+
+    let file_b = files.choose(&mut rand::thread_rng()).unwrap();
+    let files = [&file_a, &file_b];
+
+    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let mut cmd = Command::new("DUMMY");
+    let mut output = None;
+    let mut actual_args = Vec::new();
+    for i in &[0_usize, 1_usize] {
+        let file = files[*i];
+        let mut command = Command::new(executable);
+
+        let has_main = std::fs::read_to_string(&file)
+            .unwrap_or_default()
+            .contains("fn main(");
+
+        if !has_main {
+            command.args(&["--crate-type", "lib"]);
+        }
+        command
+            .arg(&file)
+            // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
+            .arg(format!("-o{}/{}", tempdir_path.display(), i))
+            .arg(format!("-Cincremental={}", tempdir_path.display()))
+            .arg("-Zincremental-verify-ich=yes")
+            // also enable debuginfo for incremental, since we are codegenning anyway
+            .arg("-Cdebuginfo=2")
+            .arg("--edition=2021");
+
+        //dbg!(&command);
+
+        // the output from the second invocation is the interesting one!
+        output = Some(systemdrun_command(&mut command));
+        actual_args = command
+            .get_args()
+            .map(|s| s.to_owned())
+            .collect::<Vec<OsString>>();
+        //dbg!(&output);
+        cmd = command;
+    }
+
+    let output = output.map(|output| output.unwrap()).unwrap();
+
+    tempdir.close().unwrap();
+    //dbg!(&output);
+
+    let mut cmd_str = get_cmd_string(&cmd);
+    cmd_str.push_str(&file_a.display().to_string());
+    cmd_str.push_str(" | ");
+    cmd_str.push_str(&file_b.display().to_string());
+
+    (output, cmd_str, actual_args, file_a.clone(), file_b.clone())
 }

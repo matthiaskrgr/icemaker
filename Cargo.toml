@@ -14,6 +14,7 @@ itertools = "0.10"
 lazy_static = "1.4"
 markov = "1.1"
 pico-args = "0.4"
+rand = "0.8"
 rayon = "1.5.0"
 regex = "1.5"
 serde = {version = "1.0", features = ["derive"]}

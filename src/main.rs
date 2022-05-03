@@ -293,6 +293,7 @@ fn main() {
         "-m",
         "--miri",
         "--codegen",
+        "--incremental",
     ];
 
     if let Some(unknown_arg) = std::env::args()
@@ -313,6 +314,7 @@ fn main() {
         heat: args.contains(["-H", "--heat"]),
         miri: args.contains(["-m", "--miri"]),
         codegen: args.contains(["--codegen", "--codegen"]),
+        incremental_test: args.contains("--incremental"),
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -396,6 +398,35 @@ fn main() {
         std::process::exit(42);
     })
     .expect("Error setting Ctrl-C handler");
+
+    if args.incremental_test {
+        let files = files
+            .iter()
+            .filter(|file| !EXCEPTION_LIST.contains(file))
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let incr_crashes = files
+            .par_iter()
+            .filter(|file| !EXCEPTION_LIST.contains(file))
+            .panic_fuse()
+            .filter(|file| !EXCEPTION_LIST.contains(file))
+            .filter_map(|file_a| {
+                let (output, _cmd_str, _actual_args, file_a, file_b) =
+                    incremental_stress_test(file_a, &files, &Executable::Rustc.path());
+                let is_ice = find_ICE_string(&Executable::Rustc, output.clone());
+                if is_ice.is_some() {
+                    eprintln!("\nINCRCOMP ICE: {},{}", file_a.display(), file_b.display());
+                    Some((file_a, file_b, output))
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        dbg!(incr_crashes);
+        return;
+    }
 
     let mut errors: Vec<ICE> = executables
         .par_iter()

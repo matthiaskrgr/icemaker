@@ -13,6 +13,7 @@ pub struct Args {
     pub heat: bool, //spaceheater mode, try to catch ICEs from random code
     pub miri: bool,
     pub codegen: bool,
+    pub incremental_test: bool,
 }
 
 // in what channel a regression is first noticed?

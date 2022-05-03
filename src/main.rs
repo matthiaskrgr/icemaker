@@ -648,7 +648,7 @@ fn find_crash(
         exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
 
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if exit_code_looks_like_crash {
+    if exit_code_looks_like_crash && found_error.is_some() {
         print!("\r");
         println!(
             "ICE: {output: <150} {msg: <30} {feat}     {flags}",
@@ -928,7 +928,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
 fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
-    let ice_keywords = if matches!(executable, Executable::Miri) {
+    let ice_keywords = if executable == &Executable::Miri {
         vec![
             "this indicates a bug in the program",
             "the evaluated program leaked memory",

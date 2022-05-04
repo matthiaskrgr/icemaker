@@ -329,10 +329,11 @@ pub(crate) fn incremental_stress_test(
     file_a: &std::path::PathBuf,
     files: &Vec<std::path::PathBuf>,
     executable: &str,
-) -> (Output, String, Vec<OsString>, PathBuf, PathBuf) {
+) -> Option<(Output, String, Vec<OsString>, PathBuf, PathBuf)> {
     use rand::seq::SliceRandom;
 
     let file_b = files.choose(&mut rand::thread_rng()).unwrap();
+
     let files = [&file_a, &file_b];
 
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
@@ -341,13 +342,36 @@ pub(crate) fn incremental_stress_test(
     let mut cmd = Command::new("DUMMY");
     let mut output = None;
     let mut actual_args = Vec::new();
+
+    // make sure both files compile
+    for file in files {
+        let has_main = std::fs::read_to_string(&file)
+            .unwrap_or_default()
+            .contains("fn main(");
+        let mut compile_passes_check_cmd = Command::new(executable);
+        if !has_main {
+            compile_passes_check_cmd.args(&["--crate-type", "lib"]);
+        }
+        compile_passes_check_cmd.arg(&file).arg("--emit=metadata");
+        // if we fail to compile one of the files, return None (abort)
+        if !systemdrun_command(&mut compile_passes_check_cmd)
+            .ok()?
+            .status
+            .success()
+        {
+            return None;
+        }
+    }
+    // both files compile, continue with actual incremental checking
+
     for i in &[0_usize, 1_usize] {
         let file = files[*i];
-        let mut command = Command::new(executable);
 
         let has_main = std::fs::read_to_string(&file)
             .unwrap_or_default()
             .contains("fn main(");
+
+        let mut command = Command::new(executable);
 
         if !has_main {
             command.args(&["--crate-type", "lib"]);
@@ -383,5 +407,5 @@ pub(crate) fn incremental_stress_test(
     cmd_str.push_str(" | ");
     cmd_str.push_str(&file_b.display().to_string());
 
-    (output, cmd_str, actual_args, file_a.clone(), file_b.clone())
+    Some((output, cmd_str, actual_args, file_a.clone(), file_b.clone()))
 }

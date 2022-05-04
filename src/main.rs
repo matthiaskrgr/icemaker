@@ -413,7 +413,7 @@ fn main() {
             .filter(|file| !EXCEPTION_LIST.contains(file))
             .filter_map(|file_a| {
                 let (output, _cmd_str, _actual_args, file_a, file_b) =
-                    incremental_stress_test(file_a, &files, &Executable::Rustc.path());
+                    incremental_stress_test(file_a, &files, &Executable::Rustc.path())?;
                 let is_ice = find_ICE_string(&Executable::Rustc, output.clone());
                 if is_ice.is_some() {
                     eprintln!("\nINCRCOMP ICE: {},{}", file_a.display(), file_b.display());

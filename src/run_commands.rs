@@ -328,11 +328,16 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     let has_main = std::fs::read_to_string(&file)
         .unwrap_or_default()
         .contains("fn main(");
+
+    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+
     let mut compile_passes_check_cmd = Command::new(executable);
     if !has_main {
         compile_passes_check_cmd.args(&["--crate-type", "lib"]);
     }
     compile_passes_check_cmd.arg(&file).arg("--emit=metadata");
+    compile_passes_check_cmd.current_dir(tempdir_path);
     // if we fail to compile one of the files, return None (abort)
     match systemdrun_command(&mut compile_passes_check_cmd)
         .ok()

@@ -399,12 +399,17 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
+    let rustc_exec_path = Executable::Rustc.path();
+
     if args.incremental_test {
+        eprintln!("checking which files compile...");
         let files = files
             .iter()
             .filter(|file| !EXCEPTION_LIST.contains(file))
+            .filter(|file| file_compiles(file, &rustc_exec_path))
             .cloned()
             .collect::<Vec<_>>();
+        eprintln!("checking files..");
 
         let incr_crashes = files
             .par_iter()
@@ -413,7 +418,7 @@ fn main() {
             .filter(|file| !EXCEPTION_LIST.contains(file))
             .filter_map(|file_a| {
                 let (output, _cmd_str, _actual_args, file_a, file_b) =
-                    incremental_stress_test(file_a, &files, &Executable::Rustc.path())?;
+                    incremental_stress_test(file_a, &files, &rustc_exec_path)?;
                 let is_ice = find_ICE_string(&Executable::Rustc, output.clone());
                 if is_ice.is_some() {
                     eprintln!("\nINCRCOMP ICE: {},{}", file_a.display(), file_b.display());

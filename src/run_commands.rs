@@ -324,6 +324,24 @@ pub(crate) fn systemdrun_command(
         cmd.output()
     }
 }
+pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool {
+    let has_main = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .contains("fn main(");
+    let mut compile_passes_check_cmd = Command::new(executable);
+    if !has_main {
+        compile_passes_check_cmd.args(&["--crate-type", "lib"]);
+    }
+    compile_passes_check_cmd.arg(&file).arg("--emit=metadata");
+    // if we fail to compile one of the files, return None (abort)
+    match systemdrun_command(&mut compile_passes_check_cmd)
+        .ok()
+        .map(|x| x.status.success())
+    {
+        Some(true) => true,
+        _ => false,
+    }
+}
 
 pub(crate) fn incremental_stress_test(
     file_a: &std::path::PathBuf,
@@ -345,20 +363,7 @@ pub(crate) fn incremental_stress_test(
 
     // make sure both files compile
     for file in files {
-        let has_main = std::fs::read_to_string(&file)
-            .unwrap_or_default()
-            .contains("fn main(");
-        let mut compile_passes_check_cmd = Command::new(executable);
-        if !has_main {
-            compile_passes_check_cmd.args(&["--crate-type", "lib"]);
-        }
-        compile_passes_check_cmd.arg(&file).arg("--emit=metadata");
-        // if we fail to compile one of the files, return None (abort)
-        if !systemdrun_command(&mut compile_passes_check_cmd)
-            .ok()?
-            .status
-            .success()
-        {
+        if !file_compiles(file, executable) {
             return None;
         }
     }
@@ -382,7 +387,6 @@ pub(crate) fn incremental_stress_test(
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
-            // also enable debuginfo for incremental, since we are codegenning anyway
             .arg("--edition=2021");
 
         //dbg!(&command);

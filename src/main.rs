@@ -688,7 +688,7 @@ fn find_crash(
     if exit_code_looks_like_crash && found_error.is_some() {
         print!("\r");
         println!(
-            "ICE: {output: <150} {msg: <30} {feat}     {flags}",
+            "ICE: {executable:?} {output: <150} {msg: <30} {feat}     {flags}",
             output = output,
             msg = found_error
                 .clone()

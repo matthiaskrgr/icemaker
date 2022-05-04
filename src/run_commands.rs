@@ -122,6 +122,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .arg(&file)
         .arg("-Aclippy::cargo") // allow cargo lints
         //.arg("-Wclippy::internal")
+        .arg("-Wclippy::restriction")
         .arg("-Wclippy::pedantic")
         .arg("-Wclippy::nursery")
         .arg("-Wmissing-doc-code-examples")

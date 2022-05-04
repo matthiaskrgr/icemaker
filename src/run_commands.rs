@@ -363,7 +363,7 @@ pub(crate) fn incremental_stress_test(
         }
     }
     // both files compile, continue with actual incremental checking
-
+    eprintln!("found possible pair: {:?}", files);
     for i in &[0_usize, 1_usize] {
         let file = files[*i];
 

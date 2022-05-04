@@ -341,13 +341,12 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     compile_passes_check_cmd.arg(&file).arg("-Zno-codegen");
     compile_passes_check_cmd.current_dir(tempdir_path);
     // if we fail to compile one of the files, return None (abort)
-    match systemdrun_command(&mut compile_passes_check_cmd)
-        .ok()
-        .map(|x| x.status.success())
-    {
-        Some(true) => true,
-        _ => false,
-    }
+    matches!(
+        systemdrun_command(&mut compile_passes_check_cmd)
+            .ok()
+            .map(|x| x.status.success()),
+        Some(true)
+    )
 }
 
 pub(crate) fn incremental_stress_test(

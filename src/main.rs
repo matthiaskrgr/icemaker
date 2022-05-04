@@ -404,7 +404,7 @@ fn main() {
     if args.incremental_test {
         eprintln!("checking which files compile...");
         let files = files
-            .iter()
+            .par_iter()
             .filter(|file| !EXCEPTION_LIST.contains(file))
             .filter(|file| file_compiles(file, &rustc_exec_path))
             .cloned()

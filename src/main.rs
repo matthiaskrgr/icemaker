@@ -409,7 +409,7 @@ fn main() {
             .filter(|file| file_compiles(file, &rustc_exec_path))
             .cloned()
             .collect::<Vec<_>>();
-        eprintln!("checking files..");
+        eprintln!("checking {} files...", files.len());
 
         let incr_crashes = files
             .par_iter()

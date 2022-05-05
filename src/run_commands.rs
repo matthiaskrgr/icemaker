@@ -218,11 +218,11 @@ pub(crate) fn run_miri(
     // assue that if we find "fn main() {\n", the main contains something
     let has_main = file_string.contains("fn main() {\n");
 
-    let has_test = file_string.contains("#[test");
+    // let has_test = file_string.contains("#[test");
 
     let has_unsafe = file_string.contains("unsafe ");
 
-    if (!has_main && !has_test) || has_unsafe {
+    if (!has_main/*&& !has_test*/) || has_unsafe {
         // @FIXME, move this out of run_miri
         // we need some kind main entry point and code should not contain unsafe code
         return (
@@ -277,17 +277,17 @@ pub(crate) fn run_miri(
     crate_path.push(file_stem);
 
     let mut cmd = std::process::Command::new("cargo");
-    if !has_main && has_test {
+    /* if !has_main && has_test {
         cmd.arg("miri")
             .arg("test")
             .current_dir(crate_path)
             .env("MIRIFLAGS", miri_flags.join(" "));
-    } else {
-        cmd.arg("miri")
-            .arg("run")
-            .current_dir(crate_path)
-            .env("MIRIFLAGS", miri_flags.join(" "));
-    }
+    } else { */
+    cmd.arg("miri")
+        .arg("run")
+        .current_dir(crate_path)
+        .env("MIRIFLAGS", miri_flags.join(" "));
+    //  }
 
     let out = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));

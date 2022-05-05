@@ -93,8 +93,8 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-results",
         "-Wvariant-size-differences",
     ],
-    &["-Cinstrument-coverage", "--edition=2018"],
-    &["-Cprofile-generate=/tmp/icemaker_pgo/", "--edition=2021"],
+    //&["-Cinstrument-coverage", "--edition=2018"],
+    //&["-Cprofile-generate=/tmp/icemaker_pgo/", "--edition=2021"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
     /* &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=hir,typed"],
@@ -125,6 +125,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zsave-analysis",
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
+        "-Zalways-encode-mir",
     ],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
 ];

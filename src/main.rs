@@ -20,9 +20,11 @@
 
 // get the first 275000 smallest files
 // git cat-file --batch-all-objects --batch-check  | grep blob | cut -d' ' -f1,3 |  awk '{for(i=NF;i>=1;i--) printf "%s ", $i;print ""}' | sort -n | head -n 275000| cut -d' ' -f2  | parallel -I% "git cat-file % -p > %.rs"
+mod fuzz;
 mod lib;
 mod run_commands;
 
+use crate::fuzz::*;
 use crate::lib::*;
 use crate::run_commands::*;
 
@@ -295,6 +297,7 @@ fn main() {
         "--miri",
         "--codegen",
         "--incremental",
+        "--fuzz",
     ];
 
     if let Some(unknown_arg) = std::env::args()
@@ -316,6 +319,7 @@ fn main() {
         miri: args.contains(["-m", "--miri"]),
         codegen: args.contains(["--codegen", "--codegen"]),
         incremental_test: args.contains("--incremental"),
+        fuzz: args.contains("--fuzz"),
     };
 
     rayon::ThreadPoolBuilder::new()
@@ -338,6 +342,11 @@ fn main() {
 
     if args.heat {
         let _ = run_space_heater(executable);
+        return;
+    }
+
+    if args.fuzz {
+        let _ = run_random_fuzz(executable);
         return;
     }
 
@@ -1030,6 +1039,82 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
     None
 }
 
+pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
+    let LIMIT = 1000;
+    let exec_path = executable.path();
+    let counter = std::sync::atomic::AtomicUsize::new(0);
+
+    #[allow(non_snake_case)]
+    let mut ICEs = (0..LIMIT)
+        .into_par_iter()
+        .panic_fuse()
+        .filter_map(|num| {
+            // gen the snippet
+            let rust_code = get_random_string();
+
+            let filename = format!("icemaker_{}.rs", num);
+            let path = PathBuf::from(&filename);
+            let mut file = std::fs::File::create(filename).expect("failed to create file");
+            file.write_all(rust_code.as_bytes())
+                .expect("failed to write to file");
+
+            // only iterate over flags when using rustc
+            let ice = match executable {
+                Executable::Rustc => RUSTC_FLAGS.iter().find_map(|compiler_flags| {
+                    find_crash(
+                        &path,
+                        &exec_path,
+                        &executable,
+                        compiler_flags,
+                        &[],
+                        false,
+                        &counter,
+                        LIMIT * RUSTC_FLAGS.len(),
+                        false,
+                    )
+                }),
+                _ => find_crash(
+                    &path,
+                    &exec_path,
+                    &executable,
+                    &[""],
+                    &[],
+                    false,
+                    &counter,
+                    LIMIT * RUSTC_FLAGS.len(),
+                    false,
+                ),
+            };
+
+            // if there is no ice, remove the file
+            if ice.is_none() {
+                std::fs::remove_file(path).unwrap();
+            } else {
+                eprintln!(
+                    "\nice: {}, {}",
+                    path.display(),
+                    ice.as_ref()
+                        .unwrap()
+                        .args
+                        .iter()
+                        .cloned()
+                        .collect::<String>(),
+                );
+            }
+            ice
+        })
+        .collect::<Vec<_>>();
+
+    // dedupe
+    ICEs.sort_by_key(|ice| ice.file.clone());
+    ICEs.dedup();
+    ICEs.sort_by_key(|ice| ice.ice_msg.clone());
+    // dedupe equal ICEs
+    ICEs.dedup();
+
+    dbg!(&ICEs);
+    ICEs
+}
 pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
     println!("Using executable: {}", executable.path());
 

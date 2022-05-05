@@ -88,6 +88,7 @@ pub(crate) fn run_rustc_incremental(
             .arg("-Zincremental-verify-ich=yes")
             // also enable debuginfo for incremental, since we are codegenning anyway
             .arg("-Cdebuginfo=2")
+            .arg("-Csave-temps=yes")
             .arg("--edition=2021");
 
         //dbg!(&command);
@@ -402,6 +403,7 @@ pub(crate) fn incremental_stress_test(
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
+            .arg("-Csave-temps=yes")
             .arg("--edition=2021");
 
         //dbg!(&command);

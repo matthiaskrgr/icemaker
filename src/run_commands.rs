@@ -324,7 +324,7 @@ pub(crate) fn systemdrun_command(
             .arg("-p")
             .arg("MemoryMax=3G")
             .arg("-p")
-            .arg("RuntimeMaxSec=300");
+            .arg("RuntimeMaxSec=90");
 
         cmd.arg(program);
         cmd.args(args);

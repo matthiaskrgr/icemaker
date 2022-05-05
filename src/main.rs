@@ -968,7 +968,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
     let ice_keywords = if executable == &Executable::Miri {
         vec![
             "this indicates a bug in the program",
-            "the evaluated program leaked memory",
+            // "the evaluated program leaked memory", // memleaks are save apparently
             "internal compiler error:",
         ]
     } else {

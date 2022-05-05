@@ -1040,7 +1040,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
 }
 
 pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
-    let LIMIT = 1000;
+    let LIMIT = 4000;
     let exec_path = executable.path();
     let counter = std::sync::atomic::AtomicUsize::new(0);
 

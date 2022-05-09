@@ -216,7 +216,7 @@ pub(crate) fn run_miri(
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
 
     // only check files that have main() as entrypoint
-    // assue that if we find "fn main() {\n", the main contains something
+    // assume that if we find "fn main() {\n", the main contains something
     let has_main = file_string.contains("fn main() {\n");
 
     // let has_test = file_string.contains("#[test");

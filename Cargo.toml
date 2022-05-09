@@ -32,3 +32,10 @@ lto = true
 [features]
 # run without systemd-run 
 ci = []
+
+[profile.fast]
+codegen-units = 4
+debug = false
+incremental = false
+inherits = "release"
+lto = "thin"

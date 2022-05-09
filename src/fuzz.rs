@@ -108,8 +108,8 @@ fn _gen_random_fn() -> String {
 fn gen_random_main() -> String {
     format!(
         "pub fn main() {{
-  let x =   {};
-  let z = {}
+ // let x =   {}; \n
+  let z = {};
     
 }}",
         r(),
@@ -120,7 +120,7 @@ fn gen_random_main() -> String {
 static TYPES_SIMPLE: &[&str] = &[
     "String::new()",
     "Vec::<u32>::new()",
-    "std::path::PathBuf",
+    "std::path::PathBuf::from(\".\")",
     "u32",
     "i8",
     "f32",

@@ -33,6 +33,7 @@ lto = true
 # run without systemd-run 
 ci = []
 
+#faster compile with not as good performance (more cgus) for manual testing
 [profile.fast]
 codegen-units = 4
 debug = false

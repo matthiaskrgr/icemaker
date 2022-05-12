@@ -95,23 +95,6 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-results",
         "-Wvariant-size-differences",
     ],
-    //&["-Cinstrument-coverage", "--edition=2018"],
-    //&["-Cprofile-generate=/tmp/icemaker_pgo/", "--edition=2021"],
-    // temporary disable these for more throughput... haven't found new bugs with these in a long time
-    /* &["-Zunpretty=expanded,hygiene"],
-    &["-Zunpretty=hir,typed"],
-    &["-Zunpretty=mir"],
-    &["-Zunpretty=mir-cfg"],
-    &["-Zunpretty=ast,expanded"],
-    &["-Zunpretty=thir-tree"],
-    &["-Zthir-unsafeck=yes"], */
-    &["INCR_COMP"],
-    // &["-Copt-level=z"],
-    //&["-Zsanitizer=address"],
-    //&["-Zsanitizer=memory"],
-    // &["-Zunstable-options", "--edition", "2021"],
-    //&["-Zast-json"], // memory :(
-    //&["-Zdump-mir=all", "-Zdump-mir-dataflow"],
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -130,6 +113,34 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zalways-encode-mir",
     ],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
+    // temporary disable these for more throughput... haven't found new bugs with these in a long time
+    &["-Cinstrument-coverage"],
+    &["-Cprofile-generate=/tmp/icemaker_pgo/"],
+    &["-Copt-level=z"],
+    &["-Zsanitizer=address"],
+    &["-Zsanitizer=memory"],
+    &["-Zunpretty=normal"],
+    &["-Zunpretty=identified"],
+    &["-Zunpretty=expanded"],
+    &["-Zunpretty=expanded,identified"],
+    &["-Zunpretty=ast-tree"],
+    &["-Zunpretty=ast-tree,expanded"],
+    &["-Zunpretty=hir"],
+    &["-Zunpretty=hir,identified"],
+    &["-Zunpretty=hir-tree"],
+    &["-Zunpretty=thir-tree"],
+    &["-Zunpretty=hir,typed"],
+    &["-Zunpretty=expanded,hygiene"],
+    &["-Zunpretty=mir"],
+    &["-Zunpretty=mir-cfg"],
+    &["-Zunpretty=ast,expanded"],
+    &["-Zthir-unsafeck=yes"],
+    &["INCR_COMP"],
+    &["-Zunstable-options", "--edition", "2021"],
+    &["-Zunstable-options", "--edition", "2015"],
+    &["-Zunstable-options", "--edition", "2018"],
+    &["-Zast-json"], // memory :(
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
 ];
 
 static EXCEPTIONS: &[&str] = &[

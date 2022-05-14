@@ -323,8 +323,12 @@ pub(crate) fn systemdrun_command(
             .arg("--scope")
             .arg("-p")
             .arg("MemoryMax=3G")
-            .arg("-p")
-            .arg("RuntimeMaxSec=90");
+            .arg("-p");
+        if program.to_str().unwrap_or_default().contains("miri") {
+            cmd.arg("RuntimeMaxSec=20");
+        } else {
+            cmd.arg("RuntimeMaxSec=90");
+        }
 
         cmd.arg(program);
         cmd.args(args);

@@ -114,7 +114,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     ],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-    &["-Cinstrument-coverage"],
+ /*   &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
     &["-Zsanitizer=address"],
@@ -140,7 +140,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunstable-options", "--edition", "2015"],
     &["-Zunstable-options", "--edition", "2018"],
     &["-Zast-json"], // memory :(
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
 ];
 
 static EXCEPTIONS: &[&str] = &[

@@ -245,6 +245,7 @@ static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
+        "-Zmiri-mute-stdout-stderr",
     ],
 ];
 

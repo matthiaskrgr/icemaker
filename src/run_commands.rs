@@ -36,7 +36,7 @@ pub(crate) fn run_rustc(
     //let tempdir_path = tempdir.path();
     let output_file = String::from("-o/dev/null");
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
-
+git re
     let mut cmd = Command::new(executable);
     cmd.arg(&file)
         .args(rustc_flags)
@@ -240,8 +240,6 @@ pub(crate) fn run_miri(
 
     let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
     let tempdir_path = tempdir.path();
-
-    assert!(!has_unsafe, "file should not contain any unsafe code!");
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
         .arg("new")

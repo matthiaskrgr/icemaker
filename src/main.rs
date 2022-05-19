@@ -645,7 +645,9 @@ fn main() {
                 .iter()
                 .map(|x| x.to_str().unwrap().to_string())
                 .collect::<Vec<String>>();
-            println!("{}", flags.join(" "))
+            if !flags.is_empty() {
+                println!("{}", flags.join(" "))
+            }
         });
 }
 

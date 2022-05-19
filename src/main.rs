@@ -115,7 +115,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-    /*   &["-Cinstrument-coverage"],
+       &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
     &["-Zsanitizer=address"],
@@ -140,7 +140,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunstable-options", "--edition", "2015"],
     &["-Zunstable-options", "--edition", "2018"],
     &["-Zast-json"], // memory :(
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], 
 ];
 
 static EXCEPTIONS: &[&str] = &[
@@ -1146,7 +1146,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
     let chain_order: usize = std::num::NonZeroUsize::new(4).expect("no 0 please").get();
     const LIMIT: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
-    let exec_path = Executable::Rustc.path();
+    let exec_path = executable.path();
     #[allow(non_snake_case)]
     let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
 

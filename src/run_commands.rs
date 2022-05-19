@@ -211,7 +211,10 @@ pub(crate) fn run_miri(
     file: &Path,
     miri_flags: &[&str],
 ) -> (Output, String, Vec<OsString>) {
-    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap()).replace('.', "_");
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace('[', "_")
+        .replace(']', "_");
 
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
     /*    // only check files that have main() as entrypoint

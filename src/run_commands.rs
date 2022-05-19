@@ -241,6 +241,19 @@ pub(crate) fn run_miri(
     // running miri is a bit more complicated:
     // first we need a new tempdir
 
+    let no_std = file_string.contains("#![no_std]");
+    let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
+    if no_std || platform_intrinsics {
+        // miri is know to not really handles this well
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+
     let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir

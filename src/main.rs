@@ -645,6 +645,7 @@ fn main() {
                 .iter()
                 .map(|x| x.to_str().unwrap().to_string())
                 .collect::<Vec<String>>();
+            // miri for example has no flags, don't spam a bunch of empty lines into stdout
             if !flags.is_empty() {
                 println!("{}", flags.join(" "))
             }

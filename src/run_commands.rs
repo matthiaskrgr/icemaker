@@ -36,7 +36,7 @@ pub(crate) fn run_rustc(
     //let tempdir_path = tempdir.path();
     let output_file = String::from("-o/dev/null");
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
-git re
+
     let mut cmd = Command::new(executable);
     cmd.arg(&file)
         .args(rustc_flags)
@@ -214,15 +214,13 @@ pub(crate) fn run_miri(
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap()).replace('.', "_");
 
     let file_string = std::fs::read_to_string(&file).unwrap_or_default();
-
-    // only check files that have main() as entrypoint
+    /*    // only check files that have main() as entrypoint
     // assume that if we find "fn main() {\n", the main contains something
     let has_main = file_string.contains("fn main() {\n");
 
     // let has_test = file_string.contains("#[test");
 
     let has_unsafe = file_string.contains("unsafe ");
-
     if (!has_main/*&& !has_test*/) || has_unsafe {
         // @FIXME, move this out of run_miri
         // we need some kind main entry point and code should not contain unsafe code
@@ -234,6 +232,8 @@ pub(crate) fn run_miri(
             Vec::new(),
         );
     }
+    assert!(!has_unsafe, "file should not contain any unsafe code!");
+    */
 
     // running miri is a bit more complicated:
     // first we need a new tempdir

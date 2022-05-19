@@ -352,6 +352,15 @@ fn main() {
         ]
     };
 
+    if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
+        let _ = std::process::Command::new("cargo")
+            .arg("miri")
+            .arg("setup")
+            .status()
+            .unwrap()
+            .success();
+    }
+
     if args.heat {
         let _ = run_space_heater(executable);
         return;

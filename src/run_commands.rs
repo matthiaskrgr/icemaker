@@ -88,7 +88,8 @@ pub(crate) fn run_rustc_incremental(
             .arg("-Zincremental-verify-ich=yes")
             // also enable debuginfo for incremental, since we are codegenning anyway
             .arg("-Cdebuginfo=2")
-            .arg("-Csave-temps=yes")
+            // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly
+            //.arg("-Csave-temps=yes")
             .arg("--edition=2021");
 
         //dbg!(&command);

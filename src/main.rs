@@ -115,7 +115,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-       &["-Cinstrument-coverage"],
+    &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
     &["-Zsanitizer=address"],
@@ -140,7 +140,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunstable-options", "--edition", "2015"],
     &["-Zunstable-options", "--edition", "2018"],
     &["-Zast-json"], // memory :(
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], 
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
 ];
 
 static EXCEPTIONS: &[&str] = &[
@@ -256,6 +256,7 @@ enum RustFlags {
     Incremental,
 }*/
 
+#[allow(clippy::if_same_then_else)]
 fn executable_from_args(args: &Args) -> Executable {
     if args.clippy {
         Executable::Clippy
@@ -267,6 +268,8 @@ fn executable_from_args(args: &Args) -> Executable {
         Executable::Rustfmt
     } else if args.miri {
         Executable::Miri
+    } else if args.rustc {
+        Executable::Rustc
     } else {
         Executable::Rustc
     }
@@ -309,6 +312,7 @@ fn main() {
         "--miri",
         "--codegen",
         "--incremental",
+        "--rustc",
         "--fuzz",
     ];
 
@@ -328,6 +332,7 @@ fn main() {
         silent: args.contains(["-s", "--silent"]),
         threads: args.value_from_str("-j").unwrap_or(0),
         heat: args.contains(["-H", "--heat"]),
+        rustc: args.contains(["--rustc", "--rustc"]),
         miri: args.contains(["-m", "--miri"]),
         codegen: args.contains(["--codegen", "--codegen"]),
         incremental_test: args.contains("--incremental"),

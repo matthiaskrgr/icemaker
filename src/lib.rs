@@ -15,6 +15,7 @@ pub struct Args {
     pub codegen: bool,
     pub incremental_test: bool,
     pub fuzz: bool,
+    pub rustc: bool,
 }
 
 // in what channel a regression is first noticed?

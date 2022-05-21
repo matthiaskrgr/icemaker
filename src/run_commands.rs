@@ -302,7 +302,9 @@ pub(crate) fn run_miri(
     cmd.arg("miri")
         .arg("run")
         .current_dir(crate_path)
-        .env("MIRIFLAGS", miri_flags.join(" "));
+        .env("MIRIFLAGS", miri_flags.join(" "))
+        .env("RUSTFLAGS", "-Zvalidate-mir");
+
     //  }
 
     let out = systemdrun_command(&mut cmd)

@@ -531,7 +531,7 @@ fn main() {
                                     file,
                                     &exec_path,
                                     executable,
-                                    &[],
+                                    &["-Zvalidate-mir"],
                                     miri_flag_combination,
                                     false,
                                     &counter,

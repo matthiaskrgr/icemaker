@@ -246,6 +246,7 @@ static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
         "-Zmiri-mute-stdout-stderr",
+        "-Zmir-opt-level=4",
     ],
 ];
 
@@ -429,7 +430,9 @@ fn main() {
                     .iter()
                     .map(|x| x.to_str().unwrap().to_string())
                     .collect::<Vec<String>>();
-                println!("{}", flags.join(" "))
+                if !flags.is_empty() {
+                    println!("{}", flags.join(" "))
+                }
             });
 
         std::process::exit(42);

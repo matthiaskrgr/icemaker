@@ -728,6 +728,8 @@ fn find_crash(
         exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
 
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
+    // @TODO 2: once https://github.com/rust-lang/miri/issues/2143 is fixed and ported into rustc main, convert
+    // convert from && to ||
     if exit_code_looks_like_crash && found_error.is_some() {
         print!("\r");
         println!(

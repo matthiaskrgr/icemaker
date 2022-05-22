@@ -1010,9 +1010,10 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
     let ice_keywords = if executable == &Executable::Miri {
         vec![
-            "this indicates a bug in the program",
+            "error: Undefined Behavior",
             // "the evaluated program leaked memory", // memleaks are save apparently
             "internal compiler error:",
+            "this indicates a bug in the program",
         ]
     } else {
         vec![

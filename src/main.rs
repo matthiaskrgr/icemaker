@@ -728,7 +728,10 @@ fn find_crash(
         exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
 
     // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if exit_code_looks_like_crash || found_error.is_some() {
+    if exit_code_looks_like_crash && found_error.is_some()
+    // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
+        || (matches!(executable, Executable::Miri) && found_error.is_some())
+    {
         print!("\r");
         println!(
             "ICE: {executable:?} {output: <150} {msg: <30} {feat}     {flags}",

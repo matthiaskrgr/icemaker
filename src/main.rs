@@ -692,6 +692,7 @@ fn find_crash(
     let output = file.display().to_string();
     let (cmd_output, _cmd, actual_args) = match executable {
         Executable::Clippy => run_clippy(exec_path, file),
+        Executable::ClippyFix => run_clippy_fix(exec_path, file),
         Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
         Executable::Rustdoc => run_rustdoc(exec_path, file),
         Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
@@ -875,6 +876,7 @@ fn find_crash(
                 }
             }
             Executable::Clippy
+            | Executable::ClippyFix
             | Executable::Rustdoc
             | Executable::RustAnalyzer
             | Executable::Rustfmt
@@ -1023,6 +1025,11 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             // "the evaluated program leaked memory", // memleaks are save apparently
             "internal compiler error:",
             "this indicates a bug in the program",
+        ]
+    } else if executable == &Executable::ClippyFix {
+        vec![
+            "internal compiler error:",
+            "indicates a bug in either rustc or cargo itself",
         ]
     } else {
         vec![

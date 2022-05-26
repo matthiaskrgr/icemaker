@@ -44,6 +44,7 @@ impl std::fmt::Display for Regression {
 pub enum Executable {
     Rustc,
     Clippy,
+    ClippyFix,
     Rustdoc,
     RustAnalyzer,
     Rustfmt,
@@ -63,6 +64,14 @@ impl Executable {
                 //String::from("/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc")
             }
             Executable::Clippy => {
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push("master");
+                p.push("bin");
+                p.push("clippy-driver");
+                p.display().to_string()
+            }
+            Executable::ClippyFix => {
                 let mut p = home::rustup_home().unwrap();
                 p.push("toolchains");
                 p.push("master");

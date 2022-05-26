@@ -154,8 +154,171 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
 
-    let output = systemdrun_command(&mut cmd);
-    (output.unwrap(), get_cmd_string(&cmd), Vec::new())
+    let output = systemdrun_command(&mut cmd).unwrap();
+    // if the snippet "compiles" fine, try to run clippy with --fix
+    let exit_status = output.status.code().unwrap_or(1);
+
+    (output, get_cmd_string(&cmd), Vec::new())
+}
+
+pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+    // we need the "cargo-clippy" executable for --fix
+    // s/clippy-driver/cargo-clippy
+    let cargo_clippy = executable
+        .to_string()
+        .replace("clippy-driver", "cargo-clippy");
+
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace('[', "_")
+        .replace(']', "_");
+
+    let file_string = std::fs::read_to_string(&file).unwrap_or_default();
+
+    let has_main = file_string.contains("pub(crate) fn main(");
+    let mut cmd = Command::new(executable);
+
+    if !has_main {
+        cmd.args(&["--crate-type", "lib"]);
+    }
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .arg(&file)
+        .arg("-Aclippy::cargo") // allow cargo lints
+        //.arg("-Wclippy::internal")
+        .arg("-Wclippy::restriction")
+        .arg("-Wclippy::pedantic")
+        .arg("-Wclippy::nursery")
+        .arg("-Wmissing-doc-code-examples")
+        .arg("-Wabsolute-paths-not-starting-with-crate")
+        .arg("-Wbare-trait-objects")
+        .arg("-Wbox-pointers")
+        .arg("-Welided-lifetimes-in-paths")
+        .arg("-Wellipsis-inclusive-range-patterns")
+        .arg("-Wkeyword-idents")
+        .arg("-Wmacro-use-extern-crate")
+        .arg("-Wmissing-copy-implementations")
+        .arg("-Wmissing-debug-implementations")
+        .arg("-Wmissing-docs")
+        .arg("-Wsingle-use-lifetimes")
+        .arg("-Wtrivial-casts")
+        .arg("-Wtrivial-numeric-casts")
+        .arg("-Wunreachable-pub")
+        .arg("-Wunsafe-code")
+        .arg("-Wunstable-features")
+        .arg("-Wunused-extern-crates")
+        .arg("-Wunused-import-braces")
+        .arg("-Wunused-labels")
+        .arg("-Wunused-lifetimes")
+        .arg("-Wunused-qualifications")
+        .arg("-Wunused-results")
+        .arg("-Wvariant-size-differences")
+        .args(&["--cap-lints", "warn"])
+        .args(&["-o", "/dev/null"]);
+
+    let output = systemdrun_command(&mut cmd).unwrap();
+    // if the snippet "compiles" fine, try to run clippy with --fix
+    let exit_status = output.status.code().unwrap_or(1);
+
+    if exit_status != 0 {
+        // errors while checking file, abort (file may not build)
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+
+    let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+    // create a new cargo project inside the tmpdir
+    if !std::process::Command::new("cargo")
+        .arg("new")
+        .arg(file_stem)
+        .current_dir(&tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push(file_stem);
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_string).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push(file_stem);
+
+    /* if !has_main && has_test {
+        cmd.arg("miri")
+            .arg("test")
+            .current_dir(crate_path)
+            .env("MIRIFLAGS", miri_flags.join(" "));
+    } else { */
+
+    let mut cmd = Command::new(cargo_clippy);
+
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .current_dir(crate_path)
+        .arg("--fix")
+        .arg("--")
+        .arg("-Aclippy::cargo") // allow cargo lints
+        //.arg("-Wclippy::internal")
+        .arg("-Wclippy::restriction")
+        .arg("-Wclippy::pedantic")
+        .arg("-Wclippy::nursery")
+        .arg("-Wmissing-doc-code-examples")
+        .arg("-Wabsolute-paths-not-starting-with-crate")
+        .arg("-Wbare-trait-objects")
+        .arg("-Wbox-pointers")
+        .arg("-Welided-lifetimes-in-paths")
+        .arg("-Wellipsis-inclusive-range-patterns")
+        .arg("-Wkeyword-idents")
+        .arg("-Wmacro-use-extern-crate")
+        .arg("-Wmissing-copy-implementations")
+        .arg("-Wmissing-debug-implementations")
+        .arg("-Wmissing-docs")
+        .arg("-Wsingle-use-lifetimes")
+        .arg("-Wtrivial-casts")
+        .arg("-Wtrivial-numeric-casts")
+        .arg("-Wunreachable-pub")
+        .arg("-Wunsafe-code")
+        .arg("-Wunstable-features")
+        .arg("-Wunused-extern-crates")
+        .arg("-Wunused-import-braces")
+        .arg("-Wunused-labels")
+        .arg("-Wunused-lifetimes")
+        .arg("-Wunused-qualifications")
+        .arg("-Wunused-results")
+        .arg("-Wvariant-size-differences")
+        .args(&["--cap-lints", "warn"])
+        .args(&["-o", "/dev/null"]);
+
+    let output = systemdrun_command(&mut cmd).unwrap();
+
+    //  }
+
+    (output, get_cmd_string(&cmd), Vec::new())
 }
 
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {

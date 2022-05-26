@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub struct Args {
     pub clippy: bool,
+    pub clippy_fix: bool,
     pub rustdoc: bool,
     pub analyzer: bool, // rla
     pub rustfmt: bool,

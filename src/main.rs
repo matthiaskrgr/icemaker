@@ -267,6 +267,8 @@ enum RustFlags {
 fn executable_from_args(args: &Args) -> Executable {
     if args.clippy {
         Executable::Clippy
+    } else if args.clippy_fix {
+        Executable::ClippyFix
     } else if args.rustdoc {
         Executable::Rustdoc
     } else if args.analyzer {
@@ -304,6 +306,7 @@ fn main() {
     let valid_args = [
         "-c",
         "--clippy",
+        "--clippy-fix",
         "-r",
         "--rustdoc",
         "-f",
@@ -332,6 +335,7 @@ fn main() {
     }
 
     let args = Args {
+        clippy_fix: args.contains(["--clippy-fix", "--clippy-fix"]),
         clippy: args.contains(["-c", "--clippy"]),
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),

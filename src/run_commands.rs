@@ -211,12 +211,13 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
-        .args(&["--cap-lints", "warn"])
-        .args(&["-o", "/dev/null"]);
+        .args(&["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
+
+    //dbg!(&output);
     // if the snippet "compiles" fine, try to run clippy with --fix
-    let exit_status = output.status.code().unwrap_or(1);
+    let exit_status = output.status.code().unwrap_or(42);
 
     if exit_status != 0 {
         // errors while checking file, abort (file may not build)
@@ -309,10 +310,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
-        .args(&["--cap-lints", "warn"])
-        .args(&["-o", "/dev/null"]);
+        .args(&["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
+    dbg!(&output);
 
     //  }
 

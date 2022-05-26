@@ -336,7 +336,8 @@ fn main() {
 
     let args = Args {
         clippy_fix: args.contains(["--clippy-fix", "--clippy-fix"]),
-        clippy: args.contains(["-c", "--clippy"]),
+        clippy: args.contains(["-c", "--clippy"])
+            && !args.contains(["--clippy-fix", "--clippy-fix"]),
         rustdoc: args.contains(["-r", "--rustdoc"]),
         analyzer: args.contains(["-a", "--analyzer"]),
         rustfmt: args.contains(["-f", "--rustfmt"]),

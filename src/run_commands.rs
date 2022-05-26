@@ -313,7 +313,6 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .args(&["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
-    dbg!(&output);
 
     //  }
 

@@ -155,8 +155,6 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .args(&["-o", "/dev/null"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
-    // if the snippet "compiles" fine, try to run clippy with --fix
-    let exit_status = output.status.code().unwrap_or(1);
 
     (output, get_cmd_string(&cmd), Vec::new())
 }

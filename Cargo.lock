@@ -230,7 +230,6 @@ dependencies = [
  "itertools 0.10.3",
  "lazy_static",
  "markov",
- "pico-args",
  "rand 0.8.5",
  "rayon",
  "regex",
@@ -358,12 +357,6 @@ dependencies = [
  "fixedbitset",
  "indexmap",
 ]
-
-[[package]]
-name = "pico-args"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db8bcd96cb740d03149cbad5518db9fd87126a10ab519c011893b1754134c468"
 
 [[package]]
 name = "ppv-lite86"

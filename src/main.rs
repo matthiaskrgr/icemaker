@@ -43,8 +43,8 @@ use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
+use clap::Parser;
 use lazy_static::lazy_static;
-use pico_args::Arguments;
 use rayon::prelude::*;
 use std::sync::Mutex;
 use tempdir::TempDir;
@@ -297,59 +297,7 @@ fn main() {
         Vec::new()
     };
 
-    //let flags: Vec<Vec<String>> = get_flag_combinations();
-    // println!("flags:\n");
-    // flags.iter().for_each(|x| println!("{:?}", x));
-    // parse args
-    let mut args = Arguments::from_env();
-
-    let valid_args = [
-        "-c",
-        "--clippy",
-        "--clippy-fix",
-        "-r",
-        "--rustdoc",
-        "-f",
-        "--rustfmt",
-        "-s",
-        "--silent",
-        "-j",
-        "-H",
-        "--heat",
-        "-a",
-        "--analyzer",
-        "-m",
-        "--miri",
-        "--codegen",
-        "--incremental",
-        "--rustc",
-        "--fuzz",
-    ];
-
-    if let Some(unknown_arg) = std::env::args()
-        .skip(1)
-        .find(|arg| !valid_args.contains(&arg.as_str()))
-    {
-        eprintln!("unknown arg: {}", unknown_arg);
-        std::process::exit(3);
-    }
-
-    let args = Args {
-        clippy_fix: args.contains(["--clippy-fix", "--clippy-fix"]),
-        clippy: args.contains(["-c", "--clippy"])
-            && !args.contains(["--clippy-fix", "--clippy-fix"]),
-        rustdoc: args.contains(["-r", "--rustdoc"]),
-        analyzer: args.contains(["-a", "--analyzer"]),
-        rustfmt: args.contains(["-f", "--rustfmt"]),
-        silent: args.contains(["-s", "--silent"]),
-        threads: args.value_from_str("-j").unwrap_or(0),
-        heat: args.contains(["-H", "--heat"]),
-        rustc: args.contains(["--rustc", "--rustc"]),
-        miri: args.contains(["-m", "--miri"]),
-        codegen: args.contains(["--codegen", "--codegen"]),
-        incremental_test: args.contains("--incremental"),
-        fuzz: args.contains("--fuzz"),
-    };
+    let args = Args::parse();
 
     rayon::ThreadPoolBuilder::new()
         .num_threads(args.threads)

@@ -1,22 +1,50 @@
 use std::path::PathBuf;
 
+use clap::Parser;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-pub struct Args {
-    pub clippy: bool,
-    pub clippy_fix: bool,
-    pub rustdoc: bool,
-    pub analyzer: bool, // rla
-    pub rustfmt: bool,
-    pub silent: bool,
-    pub threads: usize,
-    pub heat: bool, //spaceheater mode, try to catch ICEs from random code
-    pub miri: bool,
-    pub codegen: bool,
-    pub incremental_test: bool,
-    pub fuzz: bool,
-    pub rustc: bool,
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub(crate) struct Args {
+    #[clap(short, short = 'c', long)]
+    pub(crate) clippy: bool,
+
+    #[clap(short, long = "clippy-fix")]
+    pub(crate) clippy_fix: bool,
+
+    #[clap(short, long)]
+    pub(crate) rustdoc: bool,
+
+    #[clap(short, long)]
+    pub(crate) analyzer: bool, // rla
+
+    #[clap(short, long)]
+    pub(crate) rustfmt: bool,
+
+    #[clap(short, long)]
+    pub(crate) silent: bool,
+
+    #[clap(short = 'H', long)]
+    pub(crate) heat: bool, // spaceheater mode, try to catch ICEs from random codeu
+
+    #[clap(short, long)]
+    pub(crate) miri: bool,
+
+    #[clap(short, long)]
+    pub(crate) codegen: bool,
+
+    #[clap(short, long)]
+    pub(crate) incremental_test: bool,
+
+    #[clap(short, long)]
+    pub(crate) fuzz: bool,
+
+    #[clap(short, long)]
+    pub(crate) rustc: bool,
+
+    #[clap(short = 'j', long = "jobs", long = "threads", default_value_t = 0)]
+    pub(crate) threads: usize,
 }
 
 // in what channel a regression is first noticed?

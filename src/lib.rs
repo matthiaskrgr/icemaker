@@ -10,16 +10,16 @@ pub(crate) struct Args {
     #[clap(short, short = 'c', long)]
     pub(crate) clippy: bool,
 
-    #[clap(short, long = "clippy-fix")]
+    #[clap(long = "cf", long = "clippy-fix")]
     pub(crate) clippy_fix: bool,
 
-    #[clap(short, long)]
+    #[clap(short = 'd', long)]
     pub(crate) rustdoc: bool,
 
     #[clap(short, long)]
     pub(crate) analyzer: bool, // rla
 
-    #[clap(short, long)]
+    #[clap(long)]
     pub(crate) rustfmt: bool,
 
     #[clap(short, long)]
@@ -31,13 +31,13 @@ pub(crate) struct Args {
     #[clap(short, long)]
     pub(crate) miri: bool,
 
-    #[clap(short, long)]
+    #[clap(long)]
     pub(crate) codegen: bool,
 
     #[clap(short, long)]
     pub(crate) incremental_test: bool,
 
-    #[clap(short, long)]
+    #[clap(long)]
     pub(crate) fuzz: bool,
 
     #[clap(short, long)]

@@ -644,7 +644,7 @@ impl ICE {
 
         // run the command with some flags (actual_args)
         let index = counter.fetch_add(1, Ordering::SeqCst);
-        let output = file.display().to_string();
+        let file_name = file.display().to_string();
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file),
             Executable::ClippyFix => run_clippy_fix(exec_path, file),
@@ -696,18 +696,13 @@ impl ICE {
         {
             print!("\r");
             println!(
-                "ICE: {executable:?} {output: <150} {msg: <30} {feat}     {flags}",
-                output = output,
+                "ICE: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
                 msg = found_error
                     .clone()
                     // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
                     .unwrap_or(format!("No error found but exit code: {}", exit_status)),
                 feat = if uses_feature { "        " } else { "no feat!" },
-                flags = {
-                    let mut s = format!("{:?}", compiler_flags);
-                    s.truncate(100);
-                    s
-                }
+                flags = format!("{:?}", compiler_flags).to_string()
             );
             print!("\r");
             let _stdout = std::io::stdout().flush();
@@ -719,7 +714,7 @@ impl ICE {
             let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
             print!(
                 "\r[{idx}/{total} {perc}%] Checking {output: <150}",
-                output = output,
+                output = file_name,
                 idx = index,
                 total = total_number_of_files,
                 perc = perc

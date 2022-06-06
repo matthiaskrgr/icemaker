@@ -451,7 +451,7 @@ fn main() {
                         Executable::Rustc => {
                             // eprintln!("\n\nchecking {}\n", file.display());
                             // if we crash without flags we don't need to check any further flags
-                            if let Some(ice) = find_crash(
+                            if let Some(ice) = ICE::discover(
                                 file,
                                 &exec_path,
                                 executable,
@@ -471,7 +471,7 @@ fn main() {
                                 .par_iter()
                                 .panic_fuse()
                                 .map(|flag_combination| {
-                                    find_crash(
+                                    ICE::discover(
                                         file,
                                         &exec_path,
                                         executable,
@@ -487,7 +487,7 @@ fn main() {
                         }
                         Executable::Miri => {
                             MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
-                                find_crash(
+                                ICE::discover(
                                     file,
                                     &exec_path,
                                     executable,
@@ -502,7 +502,7 @@ fn main() {
                         }
                         _ => {
                             // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
-                            vec![find_crash(
+                            vec![ICE::discover(
                                 file,
                                 &exec_path,
                                 executable,
@@ -620,272 +620,274 @@ fn main() {
         });
 }
 
-/// find out if a file crashes rustc with the given flags
-#[allow(clippy::too_many_arguments)]
-fn find_crash(
-    file: &Path,
-    exec_path: &str,
-    executable: &Executable,
-    compiler_flags: &[&str],
-    miri_flags: &[&str],
-    incremental: bool,
-    counter: &AtomicUsize,
-    total_number_of_files: usize,
-    silent: bool,
-) -> Option<ICE> {
-    let thread_start = Instant::now();
+impl ICE {
+    /// find out if a file crashes rustc with the given flags
+    #[allow(clippy::too_many_arguments)]
+    fn discover(
+        file: &Path,
+        exec_path: &str,
+        executable: &Executable,
+        compiler_flags: &[&str],
+        miri_flags: &[&str],
+        incremental: bool,
+        counter: &AtomicUsize,
+        total_number_of_files: usize,
+        silent: bool,
+    ) -> Option<Self> {
+        let thread_start = Instant::now();
 
-    let incremental = if compiler_flags == ["INCR_COMP"] {
-        true
-    } else {
-        incremental
-    };
-
-    // run the command with some flags (actual_args)
-    let index = counter.fetch_add(1, Ordering::SeqCst);
-    let output = file.display().to_string();
-    let (cmd_output, _cmd, actual_args) = match executable {
-        Executable::Clippy => run_clippy(exec_path, file),
-        Executable::ClippyFix => run_clippy_fix(exec_path, file),
-        Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
-        Executable::Rustdoc => run_rustdoc(exec_path, file),
-        Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
-        Executable::Rustfmt => run_rustfmt(exec_path, file),
-        Executable::Miri => run_miri(exec_path, file, miri_flags),
-    };
-
-    /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
-        eprintln!(
-            "\nVERY LONG: stdout {} stderr {} {}\n",
-            cmd_output.stdout.len(),
-            cmd_output.stderr.len(),
-            file.display()
-        );
-    }*/
-
-    //dbg!(&cmd_output);
-    //dbg!(&_cmd);
-
-    // find out the ice message
-    let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
-        .lines()
-        .find(|line| {
-            line.contains("panicked at") || line.contains("error: internal compiler error: ")
-        })
-        .unwrap_or_default()
-        .to_string();
-
-    ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
-
-    // rustc sets 101 if it crashed
-    let exit_status = cmd_output.status.code().unwrap_or(0);
-
-    let found_error: Option<String> = find_ICE_string(executable, cmd_output);
-
-    // check if the file enables any compiler features
-    let uses_feature: bool = uses_feature(file);
-
-    let exit_code_looks_like_crash =
-        exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
-
-    // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
-    if exit_code_looks_like_crash && found_error.is_some()
-    // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
-        || (matches!(executable, Executable::Miri) && found_error.is_some())
-    {
-        print!("\r");
-        println!(
-            "ICE: {executable:?} {output: <150} {msg: <30} {feat}     {flags}",
-            output = output,
-            msg = found_error
-                .clone()
-                // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                .unwrap_or(format!("No error found but exit code: {}", exit_status)),
-            feat = if uses_feature { "        " } else { "no feat!" },
-            flags = {
-                let mut s = format!("{:?}", compiler_flags);
-                s.truncate(100);
-                s
-            }
-        );
-        print!("\r");
-        let _stdout = std::io::stdout().flush();
-    } else if !silent {
-        //@FIXME this only advances the checking once the files has already been checked!
-
-        // let stdout = std::io::stdout().flush();
-
-        let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
-        print!(
-            "\r[{idx}/{total} {perc}%] Checking {output: <150}",
-            output = output,
-            idx = index,
-            total = total_number_of_files,
-            perc = perc
-        );
-        let _stdout = std::io::stdout().flush();
-    }
-
-    if exit_code_looks_like_crash || found_error.is_some() {
-        crate::ALL_ICES_WITH_FLAGS
-            .lock()
-            .unwrap()
-            .push(actual_args.clone());
-    }
-
-    // incremental ices don't need to have their flags reduced
-    if incremental && found_error.is_some() {
-        return Some(ICE {
-            regresses_on: Regression::Nightly,
-
-            needs_feature: uses_feature,
-            file: file.to_owned(),
-            args: vec![
-                "-Z incremental-verify-ich=yes".into(),
-                "-C incremental=<dir>".into(),
-                "-Cdebuginfo=2".into(),
-            ],
-            // executable: rustc_path.to_string(),
-            error_reason: found_error.clone().unwrap_or_default(),
-            ice_msg,
-            executable: executable.clone(),
-            //cmd,
-        });
-    }
-
-    let mut ret = None;
-    if let Some(error_reason) = found_error {
-        // rustc or clippy crashed, we have an ice
-        // find out which flags are actually responsible of the manye we passed
-        // run rustc with the file on several flag combinations, if the first one ICEs, abort
-        let mut bad_flags: Vec<&&str> = Vec::new();
-
-        let args2 = actual_args
-            .iter()
-            .map(|x| x.to_str().unwrap().to_string())
-            .collect::<Vec<String>>();
-        let args3 = &args2.iter().map(String::as_str).collect::<Vec<&str>>()[..];
-
-        let flag_combinations = get_flag_combination(args3);
-        //dbg!(&flag_combinations);
-
-        // the last one should be the full combination of flags
-        let last = flag_combinations[&flag_combinations.len() - 1].clone();
-
-        match executable {
-            Executable::Rustc => {
-                // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
-                let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-
-                // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
-
-                // let tempdir_path = tempdir.path();
-                // let output_file = format!("-o{}/file1", tempdir_path.display());
-                //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
-                let mut cmd = Command::new(exec_path);
-                cmd.args(&last);
-                let output = systemdrun_command(&mut cmd).unwrap();
-
-                // dbg!(&output);
-                let found_error2 = find_ICE_string(executable, output);
-                // remove the tempdir
-                tempdir.close().unwrap();
-                // the full set of flags did reproduce the ice
-                if found_error2.is_some() {
-                    // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
-                    flag_combinations.iter().any(|flag_combination| {
-                        let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-                        let tempdir_path = tempdir.path();
-                        let output_file = format!("-o{}/file1", tempdir_path.display());
-                        let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
-
-                        let mut cmd = Command::new(exec_path);
-                        cmd.arg(&file)
-                            .args(flag_combination.iter())
-                            .arg(output_file)
-                            .arg(dump_mir_dir);
-                        let output = systemdrun_command(&mut cmd).unwrap();
-
-                        let found_error3 = find_ICE_string(executable, output);
-                        // remove the tempdir
-                        tempdir.close().unwrap();
-                        if found_error3.is_some() {
-                            // save the flags that the ICE repros with
-                            bad_flags = flag_combination.clone();
-                            true
-                        } else {
-                            false
-                        }
-                    });
-
-                    // find out if this is a beta/stable/nightly regression
-                } else {
-                    // full set of flags did NOT reproduce the ice...????
-                    /*   eprintln!("full set of flags:");
-                    dbg!(&last);
-                    eprintln!("originl (actual) args:");
-                    dbg!(&actual_args);
-                    dbg!(file); */
-                    debug_assert!(false, "full set of flags did not reproduce the ICE??");
-                }
-            }
-            Executable::Clippy
-            | Executable::ClippyFix
-            | Executable::Rustdoc
-            | Executable::RustAnalyzer
-            | Executable::Rustfmt
-            | Executable::Miri => {}
-        }
-        let regressing_channel = find_out_crashing_channel(&bad_flags, file);
-        // add these for a more accurate representation of what we ran originally
-        bad_flags.push(&"-ooutputfile");
-        bad_flags.push(&"-Zdump-mir-dir=dir");
-
-        let ret2 = ICE {
-            regresses_on: match executable {
-                Executable::Clippy => Regression::Master,
-                _ => regressing_channel,
-            },
-
-            needs_feature: uses_feature,
-            file: file.to_owned(),
-            args: bad_flags
-                .iter()
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>(),
-            // executable: rustc_path.to_string(),
-            error_reason,
-            ice_msg,
-            executable: executable.clone(),
-            //cmd,
+        let incremental = if compiler_flags == ["INCR_COMP"] {
+            true
+        } else {
+            incremental
         };
 
-        ret = Some(ret2);
-    };
+        // run the command with some flags (actual_args)
+        let index = counter.fetch_add(1, Ordering::SeqCst);
+        let output = file.display().to_string();
+        let (cmd_output, _cmd, actual_args) = match executable {
+            Executable::Clippy => run_clippy(exec_path, file),
+            Executable::ClippyFix => run_clippy_fix(exec_path, file),
+            Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
+            Executable::Rustdoc => run_rustdoc(exec_path, file),
+            Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
+            Executable::Rustfmt => run_rustfmt(exec_path, file),
+            Executable::Miri => run_miri(exec_path, file, miri_flags),
+        };
 
-    /*
-    match executable {
-        Executable::Miri => {
-            std::fs::remove_file(&file).expect("failed to remove file after running miri");
+        /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
+            eprintln!(
+                "\nVERY LONG: stdout {} stderr {} {}\n",
+                cmd_output.stdout.len(),
+                cmd_output.stderr.len(),
+                file.display()
+            );
+        }*/
+
+        //dbg!(&cmd_output);
+        //dbg!(&_cmd);
+
+        // find out the ice message
+        let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
+            .lines()
+            .find(|line| {
+                line.contains("panicked at") || line.contains("error: internal compiler error: ")
+            })
+            .unwrap_or_default()
+            .to_string();
+
+        ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
+
+        // rustc sets 101 if it crashed
+        let exit_status = cmd_output.status.code().unwrap_or(0);
+
+        let found_error: Option<String> = find_ICE_string(executable, cmd_output);
+
+        // check if the file enables any compiler features
+        let uses_feature: bool = uses_feature(file);
+
+        let exit_code_looks_like_crash =
+            exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
+
+        // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
+        if exit_code_looks_like_crash && found_error.is_some()
+    // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
+        || (matches!(executable, Executable::Miri) && found_error.is_some())
+        {
+            print!("\r");
+            println!(
+                "ICE: {executable:?} {output: <150} {msg: <30} {feat}     {flags}",
+                output = output,
+                msg = found_error
+                    .clone()
+                    // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                    .unwrap_or(format!("No error found but exit code: {}", exit_status)),
+                feat = if uses_feature { "        " } else { "no feat!" },
+                flags = {
+                    let mut s = format!("{:?}", compiler_flags);
+                    s.truncate(100);
+                    s
+                }
+            );
+            print!("\r");
+            let _stdout = std::io::stdout().flush();
+        } else if !silent {
+            //@FIXME this only advances the checking once the files has already been checked!
+
+            // let stdout = std::io::stdout().flush();
+
+            let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
+            print!(
+                "\r[{idx}/{total} {perc}%] Checking {output: <150}",
+                output = output,
+                idx = index,
+                total = total_number_of_files,
+                perc = perc
+            );
+            let _stdout = std::io::stdout().flush();
         }
-        _ => {}
-    } */
 
-    // print a warning if a file takes longer than X to process
-    let seconds_elapsed = thread_start.elapsed().as_secs();
-    let minutes_elapsed: u64 = seconds_elapsed / 60;
-    const MINUTE_LIMIT: u64 = 1;
-    if minutes_elapsed > (MINUTE_LIMIT) {
-        print!("\r");
-        println!(
-            "{} running for more ({} minutes) than {} minute",
-            file.display(),
-            seconds_elapsed / 60,
-            MINUTE_LIMIT
-        );
+        if exit_code_looks_like_crash || found_error.is_some() {
+            crate::ALL_ICES_WITH_FLAGS
+                .lock()
+                .unwrap()
+                .push(actual_args.clone());
+        }
+
+        // incremental ices don't need to have their flags reduced
+        if incremental && found_error.is_some() {
+            return Some(ICE {
+                regresses_on: Regression::Nightly,
+
+                needs_feature: uses_feature,
+                file: file.to_owned(),
+                args: vec![
+                    "-Z incremental-verify-ich=yes".into(),
+                    "-C incremental=<dir>".into(),
+                    "-Cdebuginfo=2".into(),
+                ],
+                // executable: rustc_path.to_string(),
+                error_reason: found_error.clone().unwrap_or_default(),
+                ice_msg,
+                executable: executable.clone(),
+                //cmd,
+            });
+        }
+
+        let mut ret = None;
+        if let Some(error_reason) = found_error {
+            // rustc or clippy crashed, we have an ice
+            // find out which flags are actually responsible of the manye we passed
+            // run rustc with the file on several flag combinations, if the first one ICEs, abort
+            let mut bad_flags: Vec<&&str> = Vec::new();
+
+            let args2 = actual_args
+                .iter()
+                .map(|x| x.to_str().unwrap().to_string())
+                .collect::<Vec<String>>();
+            let args3 = &args2.iter().map(String::as_str).collect::<Vec<&str>>()[..];
+
+            let flag_combinations = get_flag_combination(args3);
+            //dbg!(&flag_combinations);
+
+            // the last one should be the full combination of flags
+            let last = flag_combinations[&flag_combinations.len() - 1].clone();
+
+            match executable {
+                Executable::Rustc => {
+                    // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
+                    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+
+                    // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
+
+                    // let tempdir_path = tempdir.path();
+                    // let output_file = format!("-o{}/file1", tempdir_path.display());
+                    //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+                    let mut cmd = Command::new(exec_path);
+                    cmd.args(&last);
+                    let output = systemdrun_command(&mut cmd).unwrap();
+
+                    // dbg!(&output);
+                    let found_error2 = find_ICE_string(executable, output);
+                    // remove the tempdir
+                    tempdir.close().unwrap();
+                    // the full set of flags did reproduce the ice
+                    if found_error2.is_some() {
+                        // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
+                        flag_combinations.iter().any(|flag_combination| {
+                            let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                            let tempdir_path = tempdir.path();
+                            let output_file = format!("-o{}/file1", tempdir_path.display());
+                            let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+
+                            let mut cmd = Command::new(exec_path);
+                            cmd.arg(&file)
+                                .args(flag_combination.iter())
+                                .arg(output_file)
+                                .arg(dump_mir_dir);
+                            let output = systemdrun_command(&mut cmd).unwrap();
+
+                            let found_error3 = find_ICE_string(executable, output);
+                            // remove the tempdir
+                            tempdir.close().unwrap();
+                            if found_error3.is_some() {
+                                // save the flags that the ICE repros with
+                                bad_flags = flag_combination.clone();
+                                true
+                            } else {
+                                false
+                            }
+                        });
+
+                        // find out if this is a beta/stable/nightly regression
+                    } else {
+                        // full set of flags did NOT reproduce the ice...????
+                        /*   eprintln!("full set of flags:");
+                        dbg!(&last);
+                        eprintln!("originl (actual) args:");
+                        dbg!(&actual_args);
+                        dbg!(file); */
+                        debug_assert!(false, "full set of flags did not reproduce the ICE??");
+                    }
+                }
+                Executable::Clippy
+                | Executable::ClippyFix
+                | Executable::Rustdoc
+                | Executable::RustAnalyzer
+                | Executable::Rustfmt
+                | Executable::Miri => {}
+            }
+            let regressing_channel = find_out_crashing_channel(&bad_flags, file);
+            // add these for a more accurate representation of what we ran originally
+            bad_flags.push(&"-ooutputfile");
+            bad_flags.push(&"-Zdump-mir-dir=dir");
+
+            let ret2 = ICE {
+                regresses_on: match executable {
+                    Executable::Clippy => Regression::Master,
+                    _ => regressing_channel,
+                },
+
+                needs_feature: uses_feature,
+                file: file.to_owned(),
+                args: bad_flags
+                    .iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>(),
+                // executable: rustc_path.to_string(),
+                error_reason,
+                ice_msg,
+                executable: executable.clone(),
+                //cmd,
+            };
+
+            ret = Some(ret2);
+        };
+
+        /*
+        match executable {
+            Executable::Miri => {
+                std::fs::remove_file(&file).expect("failed to remove file after running miri");
+            }
+            _ => {}
+        } */
+
+        // print a warning if a file takes longer than X to process
+        let seconds_elapsed = thread_start.elapsed().as_secs();
+        let minutes_elapsed: u64 = seconds_elapsed / 60;
+        const MINUTE_LIMIT: u64 = 1;
+        if minutes_elapsed > (MINUTE_LIMIT) {
+            print!("\r");
+            println!(
+                "{} running for more ({} minutes) than {} minute",
+                file.display(),
+                seconds_elapsed / 60,
+                MINUTE_LIMIT
+            );
+        }
+
+        ret
     }
-
-    ret
 }
 
 /// find out if we crash on master, nightly, beta or stable
@@ -1065,7 +1067,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
             // only iterate over flags when using rustc
             let ice = match executable {
                 Executable::Rustc => RUSTC_FLAGS.iter().find_map(|compiler_flags| {
-                    find_crash(
+                    ICE::discover(
                         &path,
                         &exec_path,
                         &executable,
@@ -1077,7 +1079,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                         false,
                     )
                 }),
-                _ => find_crash(
+                _ => ICE::discover(
                     &path,
                     &exec_path,
                     &executable,
@@ -1207,7 +1209,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
             // only iterate over flags when using rustc
             let ice = match executable {
                 Executable::Rustc => RUSTC_FLAGS.iter().find_map(|compiler_flags| {
-                    find_crash(
+                    ICE::discover(
                         &path,
                         &exec_path,
                         &executable,
@@ -1219,7 +1221,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
                         false,
                     )
                 }),
-                _ => find_crash(
+                _ => ICE::discover(
                     &path,
                     &exec_path,
                     &executable,

@@ -62,7 +62,7 @@ lazy_static! {
 static RUSTC_FLAGS: &[&[&str]] = &[
     // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
     // I might fix this at some point by making it work lists of &str instead of String
-    &[
+    /*   &[
         // must_not_suspend and non_exhaustive_omitted_patterns are unstable :(
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
@@ -118,7 +118,7 @@ static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
-    ],
+    ], */
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
@@ -148,6 +148,41 @@ static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunstable-options", "--edition", "2018"],
     &["-Zast-json"], // memory :(
     &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
+    &[
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=address",
+        "-Clto",
+    ],
+    &[
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=cfi",
+        "-Clto",
+    ],
+    &[
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=leak",
+        "-Clto",
+    ],
+    &[
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=memory",
+        "-Clto",
+    ],
+    &[
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=thread",
+        "-Clto",
+    ],
 ];
 
 static EXCEPTIONS: &[&str] = &[

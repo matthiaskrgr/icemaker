@@ -825,7 +825,11 @@ impl ICE {
                         eprintln!("originl (actual) args:");
                         dbg!(&actual_args);
                         dbg!(file); */
-                        debug_assert!(false, "full set of flags did not reproduce the ICE??");
+                        debug_assert!(
+                            false,
+                            "full set of flags on '{}' did not reproduce the ICE??",
+                            file.display()
+                        );
                     }
                 }
                 Executable::Clippy

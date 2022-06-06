@@ -341,7 +341,8 @@ fn main() {
         .unwrap();
 
     let executable = executable_from_args(&args);
-    let executables = if !matches!(executable, Executable::Rustc) {
+    let executables = if !matches!(executable, Executable::Rustc) ||  /* may have passed --rustc to disable clippy rustdoc etc */ args.rustc
+    {
         // assume that we passed something, do not take the default Rustc
         vec![&executable]
     } else {

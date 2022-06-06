@@ -145,7 +145,7 @@ impl Executable {
     }
 }
 
-// represents a crash
+// represents a crash that we found by running an `Executable` with a set of flags on a .rs file
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ICE {
@@ -168,11 +168,13 @@ pub struct ICE {
     pub executable: Executable,
 }
 
+// is this actually used?
 impl std::fmt::Display for ICE {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(
             f,
-            "'rustc {} {}' ICEs on {}, {} with: {} / '{}'",
+            "'{:?} {} {}' ICEs on {}, {} with: {} / '{}'",
+            self.executable,
             self.file.display(),
             self.args.join(" "),
             self.regresses_on,

@@ -697,12 +697,15 @@ impl ICE {
             print!("\r");
             println!(
                 "ICE: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-                msg = found_error
-                    .clone()
-                    // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                    .unwrap_or(format!("No error found but exit code: {}", exit_status)),
+                msg = {
+                    let s = found_error
+                        .clone()
+                        // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                        .unwrap_or(format!("No error found but exit code: {}", exit_status));
+                    s.replace("error: internal compiler error:", "ICE:")
+                },
                 feat = if uses_feature { "        " } else { "no feat!" },
-                flags = format!("{:?}", compiler_flags).to_string()
+                flags = format!("{:?}", compiler_flags)
             );
             print!("\r");
             let _stdout = std::io::stdout().flush();

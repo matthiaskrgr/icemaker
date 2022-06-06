@@ -1295,7 +1295,7 @@ fn codegen_git() {
     */
 
     objects.par_iter().for_each(|obj| {
-        let first = obj.chars().nth(0).unwrap();
+        let first = obj.chars().next().unwrap();
         let second = obj.chars().nth(1).unwrap();
         let stdout = std::process::Command::new("git")
             .arg("cat-file")
@@ -1347,7 +1347,7 @@ fn _codegen_git_and_check() {
 
     // return this as an iterator?
     objects.par_iter().for_each(|obj| {
-        let first = obj.chars().nth(0).unwrap();
+        let first = obj.chars().next().unwrap();
         let second = obj.chars().nth(1).unwrap();
         let stdout = std::process::Command::new("git")
             .arg("cat-file")

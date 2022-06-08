@@ -234,3 +234,40 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=4",
     ],
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::RUSTC_FLAGS;
+    use crate::ice::*;
+    use std::fs::File;
+    use std::io::Write;
+    use tempdir::TempDir;
+
+    const DUMMY_FILE_CONTENT: &str = "pub fn main() {}\n";
+
+    #[test]
+    fn test_rustc_flags() {
+        // make sure we don't have invalid rustc flags
+        for (i, batch_of_flags) in RUSTC_FLAGS
+            .iter()
+            // skip incr comp here, needs to be special cased!
+            .filter(|flags| flags != &&["INCR_COMP"])
+            .enumerate()
+        {
+            let tempdir = TempDir::new(&i.to_string()).expect("failed to create tempdir!");
+            let tempdir_path = tempdir.path();
+            let rustfile_path = tempdir_path.join("file.rs");
+            let mut rustfile = File::create(&rustfile_path).unwrap();
+            writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+
+            let output = &std::process::Command::new(&Executable::Rustc.path())
+                .args(*batch_of_flags)
+                .arg(&rustfile_path)
+                .output()
+                .unwrap();
+
+            dbg!(output);
+            assert!(output.status.success());
+        }
+    }
+}

@@ -58,15 +58,6 @@ lazy_static! {
         Mutex::new(vec![vec![OsString::new()]]);
 }
 
-
-
-/*
-#[derive(Debug, Clone)]
-enum RustFlags {
-    Rustflags(Vec<String>),
-    Incremental,
-}*/
-
 #[allow(clippy::if_same_then_else)]
 fn executable_from_args(args: &Args) -> Executable {
     if args.clippy {

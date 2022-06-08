@@ -176,17 +176,17 @@ pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/test/ui/rfc-2497-if-let-chains/irrefutable-lets.rs",
     "./src/test/ui/try-block/try-block-unreachable-code-lint.rs",
     "./src/test/ui/unreachable-code-1.rs",
-    "./src/test/ui/unreachable-code.rs ",
+    "./src/test/ui/unreachable-code.rs",
     "./src/test/ui/lint/rfc-2383-lint-reason/catch_multiple_lint_triggers.rs",
-    "./src/test/ui/lint/suggestions.rs ",
-    ".src/test/ui/const-generics/infer_arr_len_from_pat.rs",
+    "./src/test/ui/lint/suggestions.rs",
+    "./src/test/ui/const-generics/infer_arr_len_from_pat.rs",
     "./src/test/ui/lint/suggestions.rs",
     "./src/test/ui/lint/lint-change-warnings.rs",
     "./src/tools/rust-analyzer/crates/parser/test_data/parser/ok/0059_loops_in_parens.rs",
     "./src/test/ui/rfc-2497-if-let-chains/no-double-assigments.rs",
     "./src/test/ui/lint/unused_labels.rs",
     "./src/test/ui/polymorphization/predicates.rs",
-    "./src/test/ui/lint/rfc-2383-lint-reason/expect_multiple_lints.rs ",
+    "./src/test/ui/lint/rfc-2383-lint-reason/expect_multiple_lints.rs",
     "./src/test/ui/impl-trait/issues/issue-55608-captures-empty-region.rs",
     "./src/test/ui/lint/rfc-2383-lint-reason/expect_multiple_lints.rs",
     "./src/test/ui/codegen/issue-88043-bb-does-not-have-terminator.rs",
@@ -203,7 +203,7 @@ pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
     "./src/doc/book/listings/ch03-common-programming-concepts/no-listing-32-loop/src/main.rs",
     "./src/doc/book/listings/ch19-advanced-features/no-listing-10-loop-returns-never/src/main.rs",
     "./src/test/ui/issues/issue-75704.rs",
-    "./src/test/ui/panics/panic-set-handler.rsg",
+    "./src/test/ui/panics/panic-set-handler.rs",
     "./src/test/ui/codegen/issue-88043-bb-does-not-have-terminator.rs",
     "./src/test/ui/issue-25579.rs",
     "./src/test/compile-fail/issue-25579.rs",
@@ -237,7 +237,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
 
 #[cfg(test)]
 mod tests {
-    use super::RUSTC_FLAGS;
+    use super::{EXCEPTIONS, MIRI_EXCEPTIONS, RUSTC_FLAGS};
     use crate::ice::*;
     use std::fs::File;
     use std::io::Write;
@@ -246,7 +246,7 @@ mod tests {
     const DUMMY_FILE_CONTENT: &str = "pub fn main() {}\n";
 
     #[test]
-    fn test_rustc_flags() {
+    fn rustc_flags_are_valid() {
         // make sure we don't have invalid rustc flags
         for (i, batch_of_flags) in RUSTC_FLAGS
             .iter()
@@ -269,5 +269,15 @@ mod tests {
             dbg!(output);
             assert!(output.status.success());
         }
+    }
+
+    #[test]
+    fn testfilepaths_are_valid() {
+        let paths_iter = EXCEPTIONS.iter().chain(MIRI_EXCEPTIONS.iter());
+
+        paths_iter.for_each(|file| {
+            assert!(file.starts_with("./"), "{}", file);
+            assert!(file.ends_with(".rs"), "{}", file);
+        });
     }
 }

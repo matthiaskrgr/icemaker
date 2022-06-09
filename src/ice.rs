@@ -143,3 +143,55 @@ impl Executable {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ice::Executable;
+
+    #[test]
+    fn exec_rustc() {
+        let ex = &Executable::Rustc.path();
+        assert!(ex.contains("rustc"));
+        assert!(ex.contains("master"));
+    }
+
+    #[test]
+    fn exec_clippy() {
+        let ex = &Executable::Clippy.path();
+        assert!(ex.contains("master"));
+        assert!(ex.contains("clippy-driver"));
+    }
+
+    #[test]
+    fn exec_clippyfix() {
+        assert_eq!(Executable::Clippy.path(), Executable::ClippyFix.path())
+    }
+
+    #[test]
+    fn exec_rustdoc() {
+        let ex = &Executable::Rustdoc.path();
+        assert!(ex.contains("master"));
+        assert!(ex.contains("rustdoc"));
+    }
+
+    #[test]
+    fn exec_analyzer() {
+        let ex = &Executable::RustAnalyzer.path();
+        assert!(ex.contains("master"));
+        assert!(ex.contains("rust-analyzer"));
+    }
+
+    #[test]
+    fn exec_rustfmt() {
+        let ex = &Executable::Rustfmt.path();
+        assert!(ex.contains("master"));
+        assert!(ex.contains("rustfmt"));
+    }
+
+    #[test]
+    fn exec_miri() {
+        let ex = &Executable::Miri.path();
+        // not master toolchain, but nightly
+        assert!(ex.contains("miri"));
+    }
+}

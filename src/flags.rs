@@ -126,6 +126,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zsanitizer=thread",
         "-Clto",
     ], */
+    &["-Zpolonius"],
 ];
 
 pub(crate) static EXCEPTIONS: &[&str] = &[
@@ -231,13 +232,14 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
         "-Zmiri-mute-stdout-stderr",
-        "-Zmir-opt-level=4",
+        //"-Zmir-opt-level=4",
+        "-Zrandomize-layout",
     ],
 ];
 
 #[cfg(test)]
 mod tests {
-    use super::{EXCEPTIONS, MIRI_EXCEPTIONS, RUSTC_FLAGS};
+    use super::{EXCEPTIONS, MIRIFLAGS, MIRI_EXCEPTIONS, RUSTC_FLAGS};
     use crate::ice::*;
     use std::fs::File;
     use std::io::Write;
@@ -272,12 +274,69 @@ mod tests {
     }
 
     #[test]
-    fn testfilepaths_are_valid() {
+    fn filepaths_are_valid() {
         let paths_iter = EXCEPTIONS.iter().chain(MIRI_EXCEPTIONS.iter());
 
         paths_iter.for_each(|file| {
             assert!(file.starts_with("./"), "{}", file);
             assert!(file.ends_with(".rs"), "{}", file);
         });
+    }
+
+    #[test]
+    fn test_miriflags_are_valid() {
+        for (i, batch_of_flags) in MIRIFLAGS.iter().enumerate() {
+            let tempdir = TempDir::new(&format!("icemaker_miri_tempdir_{}", i)).unwrap();
+            let tempdir_path = tempdir.path();
+            // create a new cargo project inside the tmpdir
+
+            // dummy crate name
+            let crate_name = &format!("_{}", i);
+
+            let mut cmd = std::process::Command::new("cargo");
+            cmd.arg("new").arg(crate_name).current_dir(&tempdir_path);
+
+            let status = cmd
+                .output()
+                .expect("failed to exec cargo new")
+                .status
+                .success();
+
+            dbg!(&cmd);
+
+            assert!(status, "failed to run cargo new");
+
+            let source_path = {
+                let mut sp = tempdir_path.to_owned();
+                sp.push(crate_name);
+                sp.push("src/");
+                sp.push("main.rs");
+                sp
+            };
+
+            // write the content of the file we want to check into tmpcrate/src/main.rs
+            std::fs::write(source_path, DUMMY_FILE_CONTENT).expect("failed to write to file");
+
+            // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+            let mut crate_path = tempdir_path.to_owned();
+            crate_path.push(crate_name);
+
+            let mut cmd = std::process::Command::new("cargo");
+
+            assert!(
+                cmd.arg("miri")
+                    .arg("run")
+                    .current_dir(crate_path)
+                    .env("MIRIFLAGS", batch_of_flags.join(" "))
+                    .env("RUSTFLAGS", "-Zvalidate-mir")
+                    .output()
+                    .unwrap()
+                    .status
+                    .success(),
+                "miri flags bad: '{:?}'",
+                batch_of_flags
+            );
+        }
     }
 }

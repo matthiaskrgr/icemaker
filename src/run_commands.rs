@@ -329,6 +329,11 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
         .arg("--document-hidden-items")
         .args(&["--output-format", "json"])
         .args(&["--cap-lints", "warn"])
+        .arg("-Wrustdoc::invalid-html-tags")
+        .arg("-Wrustdoc::missing-crate-level-docs")
+        .arg("-Wrustdoc::missing-doc-code-examples")
+        .arg("-Wrustdoc::private-doc-tests")
+        .arg("--show-type-layout")
         .args(&["-o", "/dev/null"]);
     let output = systemdrun_command(&mut cmd).unwrap();
 

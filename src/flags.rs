@@ -125,8 +125,9 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Copt-level=3",
         "-Zsanitizer=thread",
         "-Clto",
-    ], */
+    ],
     &["-Zpolonius"],
+    */
 ];
 
 pub(crate) static EXCEPTIONS: &[&str] = &[

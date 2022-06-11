@@ -327,6 +327,7 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
         .arg("-Zunstable-options")
         .arg("--document-private-items")
         .arg("--document-hidden-items")
+        .args(&["--output-format", "json"])
         .args(&["--cap-lints", "warn"])
         .args(&["-o", "/dev/null"]);
     let output = systemdrun_command(&mut cmd).unwrap();

@@ -62,7 +62,6 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zalways-encode-mir",
     ],
     &["INCR_COMP"],
-    // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
     /*   &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
@@ -89,8 +88,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunstable-options", "--edition", "2015"],
     &["-Zunstable-options", "--edition", "2018"],
     &["-Zast-json"], // memory :(
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
-    /*
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
     &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -125,8 +123,8 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Copt-level=3",
         "-Zsanitizer=thread",
         "-Clto",
-    ], */
-    &["-Zpolonius"],
+    ],
+    &["-Zpolonius"], */
 ];
 
 pub(crate) static EXCEPTIONS: &[&str] = &[

@@ -47,6 +47,23 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-results",
         "-Wvariant-size-differences",
     ],
+    /*  &[
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+        "-Zincremental-verify-ich=yes",
+        "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=4",
+        //  "-Zunsound-mir-opts",
+        "-Zdump-mir=all",
+        "--emit=mir",
+        "-Zsave-analysis",
+        "-Zprint-mono-items=full",
+        "-Zpolymorphize=on",
+        "-Zalways-encode-mir",
+    ], */
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -63,11 +80,49 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
+        "--edition=2015",
+    ],
+    &[
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+        "-Zincremental-verify-ich=yes",
+        "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=4",
+        //  "-Zunsound-mir-opts",
+        "-Zdump-mir=all",
+        "--emit=mir",
+        "-Zsave-analysis",
+        "-Zprint-mono-items=full",
+        "-Zpolymorphize=on",
+        "-Zalways-encode-mir",
+        "--edition=2018",
+    ],
+    &[
+        "-Zvalidate-mir",
+        "-Zverify-llvm-ir=yes",
+        "-Zincremental-verify-ich=yes",
+        "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=4",
+        //  "-Zunsound-mir-opts",
+        "-Zdump-mir=all",
+        "--emit=mir",
+        "-Zsave-analysis",
+        "-Zprint-mono-items=full",
+        "-Zpolymorphize=on",
+        "-Zalways-encode-mir",
+        "--edition=2021",
     ],
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-    /*   &["-Cinstrument-coverage"],
+   /*
+    &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
     &["-Zsanitizer=address"],
@@ -88,12 +143,8 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=mir-cfg"],
     &["-Zunpretty=ast,expanded"],
     &["-Zthir-unsafeck=yes"],
-    &["-Zunstable-options", "--edition=2021"],
-    &["-Zunstable-options", "--edition=2015"],
-    &["-Zunstable-options", "--edition=2018"],
-    &["-Zast-json"], // memory :(
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
-    /*
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
+    */ /*
     &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -237,8 +288,15 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-tag-raw-pointers",
         "-Zmiri-mute-stdout-stderr",
         //"-Zmir-opt-level=4",
-        "-Zrandomize-layout",
+        // "-Zrandomize-layout",
     ],
+];
+
+// TODO: tests
+pub(crate) static _MIRIRUSTFLAGS: &[&[&str]] = &[
+    &["--edition=2015", "-Zvalidate-mir"],
+    &["--edition=2018", "-Zvalidate-mir"],
+    &["--edition=2021", "-Zvalidate-mir"],
 ];
 
 #[cfg(test)]

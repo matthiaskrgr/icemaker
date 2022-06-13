@@ -241,80 +241,83 @@ fn main() {
                             && !MIRI_EXCEPTION_LIST.contains(file))
                 })
                 .map(|executable| {
-                                let exec_path = executable.path();
+                let exec_path = executable.path();
+               
+                // PRECHECK if plain rustc crashes on the file, check no further for these:
+                if matches!(executable, Executable::Rustc | Executable::Clippy | Executable::Rustdoc | Executable::Miri) {
+                    // eprintln!("\n\nchecking {}\n", file.display());
+                    // if we crash without flags we don't need to check any further flags
+                    let ice = ICE::discover(
+                        file,
+                        &exec_path,
+                        executable,
+                        &[""],
+                        &[],
+                        false,
+                        &counter,
+                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
+                        args.silent,
+                    );
+                    if ice.is_some() {
+                        return vec![ice];
+                    }
+                }
 
-                    match executable {
-                        Executable::Rustc => {
-                            // eprintln!("\n\nchecking {}\n", file.display());
-                            // if we crash without flags we don't need to check any further flags
-                            let ice = ICE::discover(
-                                file,
-                                &exec_path,
-                                executable,
-                                &[""],
-                                &[],
-                                false,
-                                &counter,
-                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
-                                args.silent,
-                            );
-                            if ice.is_some() {
-                                return vec![ice];
-                            }
-
-                            // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
-                            RUSTC_FLAGS
-                                // note: this can be dangerous in case of max memory usage, if a file needs a lot
-                                .par_iter()
-                                .panic_fuse()
-                                .map(|flag_combination| {
-                                    ICE::discover(
-                                        file,
-                                        &exec_path,
-                                       executable,
-                                        flag_combination,
-                                        &[],
-                                        false,
-                                        &counter,
-                                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                                        args.silent,
-                                    )
-                                })
-                                .collect::<Vec<Option<ICE>>>()
-                        }
-                        Executable::Miri => {
-                            // TODO use find() here!
-                           MIRIRUSTFLAGS.par_iter().map(|mirirustflag| { MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
+                match executable {
+                    Executable::Rustc => {
+                        // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
+                        RUSTC_FLAGS
+                            // note: this can be dangerous in case of max memory usage, if a file needs a lot
+                            .par_iter()
+                            .panic_fuse()
+                            .map(|flag_combination| {
                                 ICE::discover(
                                     file,
                                     &exec_path,
-                                   executable,
-                                    mirirustflag,
-                                    miri_flag_combination,
+                                    executable,
+                                    flag_combination,
+                                    &[],
                                     false,
                                     &counter,
-                                    files.len() * (MIRIFLAGS.len()),
+                                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
                                     args.silent,
                                 )
-                            }).collect::<Vec<_>>()
-                        }).flatten().collect::<Vec<Option<ICE>>>()}
-                        _ => {
-                            // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
-                            vec![ICE::discover(
+                            })
+                            .collect::<Vec<Option<ICE>>>()
+                    }
+                    Executable::Miri => {
+                        // TODO use find() here!
+                        MIRIRUSTFLAGS.par_iter().map(|mirirustflag| { MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
+                            ICE::discover(
                                 file,
                                 &exec_path,
-                               executable,
-                                // run with no flags
-                                &[],
-                                &[],
+                                executable,
+                                mirirustflag,
+                                miri_flag_combination,
                                 false,
                                 &counter,
-                                files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
+                                files.len() * (MIRIFLAGS.len()),
                                 args.silent,
-                            )]
-                        }
+                            )
+                        }).collect::<Vec<_>>()
+                    }).flatten().collect::<Vec<Option<ICE>>>()}
+                    _ => {
+                        // if we run clippy/rustfmt/rla .. we dont need to check multiple combinations of RUSTFLAGS
+                        vec![ICE::discover(
+                            file,
+                            &exec_path,
+                            executable,
+                            // run with no flags
+                            &[],
+                            &[],
+                            false,
+                            &counter,
+                            files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
+                            args.silent,
+                        )]
                     }
-                })
+                }
+            })
                 .flatten()
                 .filter(|opt_ice| opt_ice.is_some())
                 .map(|ice| ice.unwrap())

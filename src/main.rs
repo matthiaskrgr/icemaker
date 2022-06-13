@@ -286,7 +286,6 @@ fn main() {
                             .collect::<Vec<Option<ICE>>>()
                     }
                     Executable::Miri => {
-                        // TODO use find() here!
                         MIRIFLAGS.par_iter().map(|miri_flag_combination| { MIRIRUSTFLAGS.par_iter().panic_fuse().map(|miri_rustflag|{
                             ICE::discover(
                                 file,

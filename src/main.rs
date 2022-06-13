@@ -228,20 +228,21 @@ fn main() {
         return;
     }
 
-    let mut errors: Vec<ICE> = executables
+    let mut errors: Vec<ICE> = files
         .par_iter()
-        .flat_map(|executable| {
-            let exec_path = executable.path();
-            files
+        .flat_map(|file| {
+            executables
                 .par_iter()
                 .panic_fuse()
                 // don't check anything that is contained in the exception list
-                .filter(|file| {
+                .filter(|executable| {
                     !EXCEPTION_LIST.contains(file)
                         || (matches!(executable, Executable::Miri)
                             && !MIRI_EXCEPTION_LIST.contains(file))
                 })
-                .map(|file| {
+                .map(|executable| {
+                                let exec_path = executable.path();
+
                     match executable {
                         Executable::Rustc => {
                             // eprintln!("\n\nchecking {}\n", file.display());
@@ -249,7 +250,7 @@ fn main() {
                             let ice = ICE::discover(
                                 file,
                                 &exec_path,
-                                executable,
+                                &executable,
                                 &[""],
                                 &[],
                                 false,
@@ -270,7 +271,7 @@ fn main() {
                                     ICE::discover(
                                         file,
                                         &exec_path,
-                                        executable,
+                                       & executable,
                                         flag_combination,
                                         &[],
                                         false,
@@ -287,7 +288,7 @@ fn main() {
                                 ICE::discover(
                                     file,
                                     &exec_path,
-                                    executable,
+                                   & executable,
                                     mirirustflag,
                                     miri_flag_combination,
                                     false,
@@ -302,7 +303,7 @@ fn main() {
                             vec![ICE::discover(
                                 file,
                                 &exec_path,
-                                executable,
+                               & executable,
                                 // run with no flags
                                 &[],
                                 &[],

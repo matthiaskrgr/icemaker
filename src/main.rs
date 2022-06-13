@@ -250,7 +250,7 @@ fn main() {
                             let ice = ICE::discover(
                                 file,
                                 &exec_path,
-                                &executable,
+                                executable,
                                 &[""],
                                 &[],
                                 false,
@@ -271,7 +271,7 @@ fn main() {
                                     ICE::discover(
                                         file,
                                         &exec_path,
-                                       & executable,
+                                       executable,
                                         flag_combination,
                                         &[],
                                         false,
@@ -288,7 +288,7 @@ fn main() {
                                 ICE::discover(
                                     file,
                                     &exec_path,
-                                   & executable,
+                                   executable,
                                     mirirustflag,
                                     miri_flag_combination,
                                     false,
@@ -303,7 +303,7 @@ fn main() {
                             vec![ICE::discover(
                                 file,
                                 &exec_path,
-                               & executable,
+                               executable,
                                 // run with no flags
                                 &[],
                                 &[],

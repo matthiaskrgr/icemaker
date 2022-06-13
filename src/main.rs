@@ -287,19 +287,19 @@ fn main() {
                     }
                     Executable::Miri => {
                         // TODO use find() here!
-                        MIRIRUSTFLAGS.par_iter().map(|mirirustflag| { MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
+                        MIRIFLAGS.par_iter().map(|miri_flag_combination| { MIRIRUSTFLAGS.par_iter().panic_fuse().map(|miri_rustflag|{
                             ICE::discover(
                                 file,
                                 &exec_path,
                                 executable,
-                                mirirustflag,
+                                miri_rustflag,
                                 miri_flag_combination,
                                 false,
                                 &counter,
                                 files.len() * (MIRIFLAGS.len()),
                                 args.silent,
                             )
-                        }).collect::<Vec<_>>()
+                        }).find_any(|ice| ice.is_some())
                     }).flatten().collect::<Vec<Option<ICE>>>()}
                     _ => {
                         // if we run clippy/rustfmt/rla .. we dont need to check multiple combinations of RUSTFLAGS

@@ -121,7 +121,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-   /*
+    /*
     &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
@@ -293,7 +293,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
 ];
 
 // TODO: tests
-pub(crate) static _MIRIRUSTFLAGS: &[&[&str]] = &[
+pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
     &["--edition=2015", "-Zvalidate-mir"],
     &["--edition=2018", "-Zvalidate-mir"],
     &["--edition=2021", "-Zvalidate-mir"],

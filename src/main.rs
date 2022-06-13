@@ -282,20 +282,21 @@ fn main() {
                                 .collect::<Vec<Option<ICE>>>()
                         }
                         Executable::Miri => {
-                            MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
+                            // TODO use find() here!
+                           MIRIRUSTFLAGS.par_iter().map(|mirirustflag| { MIRIFLAGS.par_iter().panic_fuse().map(|miri_flag_combination|{
                                 ICE::discover(
                                     file,
                                     &exec_path,
                                     executable,
-                                    &["-Zvalidate-mir"],
+                                    mirirustflag,
                                     miri_flag_combination,
                                     false,
                                     &counter,
                                     files.len() * (MIRIFLAGS.len()),
                                     args.silent,
                                 )
-                            }).collect::<Vec<Option<ICE>>>()
-                        }
+                            }).collect::<Vec<_>>()
+                        }).flatten().collect::<Vec<Option<ICE>>>()}
                         _ => {
                             // if we run clippy/rustfmt/rls .. we dont need to check multiple combinations of RUSTFLAGS
                             vec![ICE::discover(

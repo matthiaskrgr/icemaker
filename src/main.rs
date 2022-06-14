@@ -242,26 +242,6 @@ fn main() {
                 })
                 .map(|executable| {
                 let exec_path = executable.path();
-               
-                // PRECHECK if plain rustc crashes on the file, check no further for these:
-                if matches!(executable, Executable::Rustc | Executable::Clippy | Executable::Rustdoc | Executable::Miri) {
-                    // eprintln!("\n\nchecking {}\n", file.display());
-                    // if we crash without flags we don't need to check any further flags
-                    let ice = ICE::discover(
-                        file,
-                        &exec_path,
-                        executable,
-                        &[""],
-                        &[],
-                        false,
-                        &counter,
-                        files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
-                        args.silent,
-                    );
-                    if ice.is_some() {
-                        return vec![ice];
-                    }
-                }
 
                 match executable {
                     Executable::Rustc => {

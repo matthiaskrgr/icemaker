@@ -239,6 +239,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
         .arg("new")
+        .args(["--vcs", "none"])
         .arg(file_stem)
         .current_dir(&tempdir_path)
         .output()
@@ -432,6 +433,7 @@ pub(crate) fn run_miri(
     if !std::process::Command::new("cargo")
         .arg("new")
         .arg(file_stem)
+        .args(["--vcs", "none"])
         .current_dir(&tempdir_path)
         .output()
         .expect("failed to exec cargo new")

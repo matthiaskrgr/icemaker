@@ -356,7 +356,10 @@ mod tests {
             let crate_name = &format!("_{}", i);
 
             let mut cmd = std::process::Command::new("cargo");
-            cmd.arg("new").arg(crate_name).current_dir(&tempdir_path);
+            cmd.arg("new")
+                .args(["--vcs", "none"])
+                .arg(crate_name)
+                .current_dir(&tempdir_path);
 
             let status = cmd
                 .output()

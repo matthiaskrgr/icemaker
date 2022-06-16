@@ -80,6 +80,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
+        "-Cpasses=lint",
         "--edition=2015",
     ],
     &[
@@ -98,6 +99,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
+        "-Cpasses=lint",
         "--edition=2018",
     ],
     &[
@@ -116,6 +118,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
+        "-Cpasses=lint",
         "--edition=2021",
     ],
     &["INCR_COMP"],

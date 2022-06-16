@@ -411,12 +411,14 @@ pub(crate) fn run_miri(
     assert!(!has_unsafe, "file should not contain any unsafe code!");
     */
 
+    let has_main = file_string.contains("fn main() {\n");
+
     // running miri is a bit more complicated:
     // first we need a new tempdir
 
     let no_std = file_string.contains("#![no_std]");
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
-    if no_std || platform_intrinsics {
+    if no_std || platform_intrinsics || !has_main {
         // miri is know to not really handles this well
         return (
             std::process::Command::new("true")

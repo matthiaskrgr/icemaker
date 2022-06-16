@@ -777,12 +777,12 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "query stack during panic:",
             "internal compiler error:",
             "RUST_BACKTRACE=",
+            "error: Undefined Behavior",
             //"MIRIFLAGS",
-            /*
-                    "segmentation fault",
-                    "(core dumped)",
-                    "stack overflow",
-            */
+            "segmentation fault",
+            "(core dumped)",
+            "stack overflow",
+            "Unusual: ",
         ]
     };
 

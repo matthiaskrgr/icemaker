@@ -1,4 +1,19 @@
+use rand::prelude::IteratorRandom;
 use std::fmt;
+
+const TYPES: &[Ty] = &[
+    Ty::u8,
+    Ty::u16,
+    Ty::u32,
+    Ty::u64,
+    Ty::i8,
+    Ty::i16,
+    Ty::i32,
+    Ty::i64,
+    Ty::usize,
+    Ty::isize,
+    Ty::String,
+];
 
 struct FunctionGenerator {
     id: usize,
@@ -15,12 +30,14 @@ impl FunctionGenerator {
     }
 
     fn gen_fn(&mut self) -> Function {
+        let mut rng = rand::thread_rng();
+        let ty = TYPES.iter().choose(&mut rng).unwrap();
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
         let fun = Function {
             name: function_id,
-            return_ty: Ty::usize,
+            return_ty: ty.clone(),
             args: Vec::new(),
             body: "todo!()".into(),
         };

@@ -100,7 +100,7 @@ impl std::fmt::Display for Function {
         let body = &self.body;
         write!(
             f,
-            "fn {}({}) -> {} {{ {body} }}",
+            "fn fn_{}({}) -> {} {{ {body} }}",
             &self.name, args_fmtd, self.return_ty
         )
     }
@@ -108,7 +108,10 @@ impl std::fmt::Display for Function {
 
 pub(crate) fn fuzz2main() {
     let mut fngen = FunctionGenerator::new();
-    let fun = fngen.gen_fn();
 
-    eprintln!("{fun}");
+    for i in 0..100000 {
+        let fun = fngen.gen_fn();
+
+        eprintln!("{fun}");
+    }
 }

@@ -27,12 +27,14 @@ mod flags;
 //  for file in `cat errors.json | grep file.: | cut -d' ' -f6 | sed s/\"//g | sed s/,//` ; do; echo -n "$file " ; grep "unsafe\|simd\|no_core\|transmute\|Box::\|rustc_variance" -c $file ; done  | grep 0$
 //
 mod fuzz;
+mod fuzz2;
 mod ice;
 mod lib;
 mod run_commands;
 
 use crate::flags::*;
 use crate::fuzz::*;
+use crate::fuzz2::*;
 use crate::ice::*;
 use crate::lib::*;
 use crate::run_commands::*;

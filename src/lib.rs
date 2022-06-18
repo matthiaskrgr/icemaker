@@ -37,6 +37,9 @@ pub(crate) struct Args {
     #[clap(long)]
     pub(crate) fuzz: bool,
 
+    #[clap(long)]
+    pub(crate) fuzz2: bool,
+
     #[clap(short, long)]
     pub(crate) rustc: bool,
 

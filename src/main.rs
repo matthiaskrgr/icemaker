@@ -133,6 +133,9 @@ fn main() {
     if args.fuzz {
         let _ = run_random_fuzz(executable);
         return;
+    } else if args.fuzz2 {
+        fuzz2main();
+        return;
     }
 
     if args.codegen {

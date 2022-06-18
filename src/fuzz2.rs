@@ -1,12 +1,12 @@
 use std::fmt;
 
-struct FunctionGenerator<'a> {
+struct FunctionGenerator {
     id: usize,
     // keep a list of generated functions so we can reference them in other functions..?
-    functions: Vec<&'a Function>,
+    functions: Vec<Function>,
 }
 
-impl<'a> FunctionGenerator<'a> {
+impl FunctionGenerator {
     fn new() -> Self {
         Self {
             id: 0,
@@ -14,19 +14,23 @@ impl<'a> FunctionGenerator<'a> {
         }
     }
 
-    fn gen_function(&mut self) -> Function {
+    fn gen_fn(&mut self) -> Function {
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
-        Function {
+        let fun = Function {
             name: function_id,
             return_ty: Ty::usize,
             args: Vec::new(),
             body: "todo!()".into(),
-        }
+        };
+        self.functions.push(fun.clone());
+        fun
     }
 }
 
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone)]
 enum Ty {
     u8,
     u16,
@@ -60,6 +64,7 @@ impl std::fmt::Display for Ty {
     }
 }
 
+#[derive(Debug, Clone)]
 struct Function {
     name: String,
     return_ty: Ty,
@@ -76,20 +81,17 @@ impl std::fmt::Display for Function {
             .map(|(i, arg_ty)| format!("arg_{i}: {arg_ty}, "))
             .collect::<String>();
         let body = &self.body;
-        write!(f, "fn {}({}) -> {{ {body} }}", &self.name, args_fmtd)
+        write!(
+            f,
+            "fn {}({}) -> {} {{ {body} }}",
+            &self.name, args_fmtd, self.return_ty
+        )
     }
 }
 
-impl Function {
-    fn to_string(&self) -> String {
-        let args_fmtd = self
-            .args
-            .iter()
-            .enumerate()
-            .map(|(i, arg_ty)| format!("arg_{i}: {arg_ty}, "))
-            .collect::<String>();
-        let body = &self.body;
-        format!("fn {}({}) -> {{ {body} }}", &self.name, args_fmtd)
-    }
+pub(crate) fn fuzz2main() {
+    let mut fngen = FunctionGenerator::new();
+    let fun = fngen.gen_fn();
+
+    eprintln!("{fun}");
 }
-pub(crate) fn fuzz2main() {}

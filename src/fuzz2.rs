@@ -109,7 +109,7 @@ impl std::fmt::Display for Function {
 pub(crate) fn fuzz2main() {
     let mut fngen = FunctionGenerator::new();
 
-    for i in 0..100000 {
+    for _ in 0..100000 {
         let fun = fngen.gen_fn();
 
         eprintln!("{fun}");

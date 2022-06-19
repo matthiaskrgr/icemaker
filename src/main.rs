@@ -802,8 +802,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
         vec![
             "^LLVM ERROR",
             "^thread '.*' panicked at:",
-            "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
             "^query stack during panic:$",
+            "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
             "^error: internal compiler error: ",
             "RUST_BACKTRACE=",
             "error: Undefined Behavior",
@@ -812,7 +812,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "(core dumped)",
             "^fatal runtime error: stack overflow",
             "^Unusual: ",
-            "^Undefined",
+            "^Undefined behaviour: ",
         ]
     };
 

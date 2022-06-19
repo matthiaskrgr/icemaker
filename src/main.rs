@@ -51,6 +51,7 @@ use std::time::Instant;
 use clap::Parser;
 use lazy_static::lazy_static;
 use rayon::prelude::*;
+use regex::Regex;
 use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
@@ -776,20 +777,26 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
         ]
     } else {
         vec![
-            "LLVM ERROR",
-            "panicked at:",
-            "`delay_span_bug`",
-            "query stack during panic:",
-            "internal compiler error:",
+            "^LLVM ERROR",
+            "^thread '.*' panicked at:",
+            "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
+            "^query stack during panic:$",
+            "^error: internal compiler error: ",
             "RUST_BACKTRACE=",
             "error: Undefined Behavior",
             //"MIRIFLAGS",
             "segmentation fault",
             "(core dumped)",
-            "fatal runtime error: stack overflow",
-            "Unusual: ",
+            "^fatal runtime error: stack overflow",
+            "^Unusual: ",
+            "^Undefined",
         ]
     };
+
+    let ice_keywords = ice_keywords
+        .into_iter()
+        .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+        .collect::<Vec<_>>();
 
     // let output = cmd.output().unwrap();
     let _exit_status = output.status;
@@ -799,13 +806,12 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
         .lines()
         .filter_map(|line| line.ok())
         .find(|line| {
-            ice_keywords.iter().any(|ice_keyword| {
-                if ice_keyword == &"panicked at:" {
+            ice_keywords.iter().any(|regex| {
+                if &regex.to_string() == "panicked at:" {
                     // do not warn when the checked .rs file contains something like const A = panic!()
-                    line.contains(ice_keyword)
-                        && !line.contains("the evaluated program panicked at")
+                    regex.is_match(line) && !line.contains("the evaluated program panicked at")
                 } else {
-                    line.contains(ice_keyword)
+                    regex.is_match(line)
                 }
             })
         });
@@ -818,11 +824,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
     let line = std::io::Cursor::new(&output.stderr)
         .lines()
         .filter_map(|line| line.ok())
-        .find(|line| {
-            ice_keywords
-                .iter()
-                .any(|ice_keyword| line.contains(ice_keyword))
-        });
+        .find(|line| ice_keywords.iter().any(|regex| regex.is_match(line)));
     drop(output);
 
     if line.is_some() {

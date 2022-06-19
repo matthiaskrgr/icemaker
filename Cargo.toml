@@ -1,6 +1,6 @@
 [package]
 authors = ["Matthias Krüger <matthias.krueger@famsik.de>"]
-edition = "2018"
+edition = "2021"
 name = "icemaker"
 version = "0.1.0"
 

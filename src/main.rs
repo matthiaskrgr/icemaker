@@ -333,6 +333,29 @@ fn main() {
     errors.sort_by_key(|ice| ice.ice_msg.clone());
     // dedupe equal ICEs
     errors.dedup();
+
+    // if we have the same file, same error_msg and same error_reason, this also gotta be an identical ICE
+    errors.sort_by_key(|ice| {
+        format!(
+            "file: {} error_reason: {} ice_msg: {}",
+            ice.file.display(),
+            ice.error_reason,
+            ice.ice_msg
+        )
+    });
+
+    errors.dedup_by_key(|ice| {
+        format!(
+            "file: {} error_reason: {} ice_msg: {}",
+            ice.file.display(),
+            ice.error_reason,
+            ice.ice_msg
+        )
+    });
+    // original sorting again
+    errors.sort_by_key(|ice| ice.file.clone());
+    errors.sort_by_key(|ice| ice.ice_msg.clone());
+
     // sort by command
     // errors.sort_by_key(|ice| ice.cmd.clone());
 

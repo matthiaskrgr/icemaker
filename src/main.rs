@@ -786,7 +786,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             //"MIRIFLAGS",
             "segmentation fault",
             "(core dumped)",
-            "stack overflow",
+            "fatal runtime error: stack overflow",
             "Unusual: ",
         ]
     };

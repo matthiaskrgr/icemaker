@@ -812,7 +812,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "(core dumped)",
             "^fatal runtime error: stack overflow",
             "^Unusual: ",
-            "^Undefined behaviour: ",
+            "^Undefined behavior: ",
         ]
     };
 

@@ -108,12 +108,24 @@ fn main() {
         // assume that we passed something, do not take the default Rustc
         vec![&executable]
     } else {
-        vec![
-            &Executable::Rustc,
-            &Executable::Rustdoc,
-            &Executable::Clippy,
-            &Executable::Rustfmt,
-        ]
+        // default Executables
+        if cfg!(feature = "ci") {
+            // on ci, don't run miri
+            vec![
+                &Executable::Rustc,
+                &Executable::Rustdoc,
+                &Executable::Clippy,
+                &Executable::Rustfmt,
+            ]
+        } else {
+            vec![
+                &Executable::Rustc,
+                &Executable::Rustdoc,
+                &Executable::Clippy,
+                &Executable::Rustfmt,
+                &Executable::Miri,
+            ]
+        }
     };
 
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {

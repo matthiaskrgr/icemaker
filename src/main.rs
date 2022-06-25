@@ -798,20 +798,19 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
 fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
-    let ice_keywords = if executable == &Executable::Miri {
-        vec![
+    let ice_keywords = match executable {
+        Executable::Miri => vec![
             "error: Undefined Behavior",
             // "the evaluated program leaked memory", // memleaks are save apparently
             "internal compiler error:",
             "this indicates a bug in the program",
-        ]
-    } else if executable == &Executable::ClippyFix {
-        vec![
+        ],
+        Executable::ClippyFix => vec![
             "internal compiler error:",
             "indicates a bug in either rustc or cargo itself",
-        ]
-    } else {
-        vec![
+        ],
+
+        _ => vec![
             "^LLVM ERROR",
             "^thread '.*' panicked at:",
             "^query stack during panic:$",
@@ -825,7 +824,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "^fatal runtime error: stack overflow",
             "^Unusual: ",
             "^Undefined behavior:",
-        ]
+        ],
     };
 
     let ice_keywords = ice_keywords

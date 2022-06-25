@@ -715,7 +715,7 @@ impl ICE {
 
 /// find out if we crash on master, nightly, beta or stable
 fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression {
-    // simply check if we crasn on nightly, beta, stable or master
+    // simply check if we crash on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
         p.push("toolchains");

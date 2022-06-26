@@ -170,8 +170,9 @@ fn main() {
     files.reverse();
 
     //let exec_path = executable.path();
-
-    println!("Using executable: {}", executable.path());
+    executables.iter().for_each(|executable| {
+        println!("Using executable(s): {}", executable.path());
+    });
     if matches!(executable, Executable::Rustc) {
         println!(
             "checking: {} files x {} flags\n\n",

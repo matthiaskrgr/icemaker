@@ -175,9 +175,10 @@ fn main() {
     });
     if matches!(executable, Executable::Rustc) {
         println!(
-            "checking: {} files x {} flags\n\n",
+            "checking: {} files x {} flags, {} executables\n\n",
             files.len(),
-            RUSTC_FLAGS.len() + 2 // incremental
+            RUSTC_FLAGS.len() + 2, // incremental
+            executables.len()
         );
     } else {
         println!("checking: {} files\n", files.len(),);

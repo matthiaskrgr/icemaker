@@ -250,6 +250,8 @@ fn main() {
     let mut errors: Vec<ICE> = files
         .par_iter()
         .flat_map(|file| {
+            // for each file, increment counter by one
+            let _ = counter.fetch_add(1, Ordering::SeqCst);
             executables
                 .par_iter()
                 .panic_fuse()
@@ -260,62 +262,70 @@ fn main() {
                             && !MIRI_EXCEPTION_LIST.contains(file))
                 })
                 .map(|executable| {
-                let exec_path = executable.path();
+                    let exec_path = executable.path();
 
-                match executable {
-                    Executable::Rustc => {
-                        // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
-                        RUSTC_FLAGS
-                            // note: this can be dangerous in case of max memory usage, if a file needs a lot
+                    match executable {
+                        Executable::Rustc => {
+                            // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
+                            RUSTC_FLAGS
+                                // note: this can be dangerous in case of max memory usage, if a file needs a lot
+                                .par_iter()
+                                .panic_fuse()
+                                .map(|flag_combination| {
+                                    ICE::discover(
+                                        file,
+                                        &exec_path,
+                                        executable,
+                                        flag_combination,
+                                        &[],
+                                        false,
+                                        &counter,
+                                        files.len(),
+                                        args.silent,
+                                    )
+                                })
+                                .collect::<Vec<Option<ICE>>>()
+                        }
+                        Executable::Miri => MIRIFLAGS
                             .par_iter()
-                            .panic_fuse()
-                            .map(|flag_combination| {
-                                ICE::discover(
-                                    file,
-                                    &exec_path,
-                                    executable,
-                                    flag_combination,
-                                    &[],
-                                    false,
-                                    &counter,
-                                    files.len() * (RUSTC_FLAGS.len() + 1/* incr */),
-                                    args.silent,
-                                )
+                            .map(|miri_flag_combination| {
+                                MIRIRUSTFLAGS
+                                    .par_iter()
+                                    .panic_fuse()
+                                    .map(|miri_rustflag| {
+                                        ICE::discover(
+                                            file,
+                                            &exec_path,
+                                            executable,
+                                            miri_rustflag,
+                                            miri_flag_combination,
+                                            false,
+                                            &counter,
+                                            files.len(),
+                                            args.silent,
+                                        )
+                                    })
+                                    .find_any(|ice| ice.is_some())
                             })
-                            .collect::<Vec<Option<ICE>>>()
-                    }
-                    Executable::Miri => {
-                        MIRIFLAGS.par_iter().map(|miri_flag_combination| { MIRIRUSTFLAGS.par_iter().panic_fuse().map(|miri_rustflag|{
-                            ICE::discover(
+                            .flatten()
+                            .collect::<Vec<Option<ICE>>>(),
+                        _ => {
+                            // if we run clippy/rustfmt/rla .. we dont need to check multiple combinations of RUSTFLAGS
+                            vec![ICE::discover(
                                 file,
                                 &exec_path,
                                 executable,
-                                miri_rustflag,
-                                miri_flag_combination,
+                                // run with no flags
+                                &[],
+                                &[],
                                 false,
                                 &counter,
-                                files.len() * (MIRIFLAGS.len()),
+                                files.len(),
                                 args.silent,
-                            )
-                        }).find_any(|ice| ice.is_some())
-                    }).flatten().collect::<Vec<Option<ICE>>>()}
-                    _ => {
-                        // if we run clippy/rustfmt/rla .. we dont need to check multiple combinations of RUSTFLAGS
-                        vec![ICE::discover(
-                            file,
-                            &exec_path,
-                            executable,
-                            // run with no flags
-                            &[],
-                            &[],
-                            false,
-                            &counter,
-                            files.len() * (RUSTC_FLAGS.len() + 1/* incr */) + (executables.len() - 1) /* rustc already accounted for */ * files.len(),
-                            args.silent,
-                        )]
+                            )]
+                        }
                     }
-                }
-            })
+                })
                 .flatten()
                 .filter(|opt_ice| opt_ice.is_some())
                 .map(|ice| ice.unwrap())
@@ -465,7 +475,8 @@ impl ICE {
         };
 
         // run the command with some flags (actual_args)
-        let index = counter.fetch_add(1, Ordering::SeqCst);
+
+        let index = counter.load(Ordering::SeqCst); // the current file number
         let file_name = file.display().to_string();
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file),

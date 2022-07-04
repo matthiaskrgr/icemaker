@@ -511,13 +511,18 @@ pub(crate) fn systemdrun_command(
                 )
             })
             .collect::<Vec<(&std::ffi::OsStr, &std::ffi::OsStr)>>();
+        let full_miri = new_command
+            .get_args()
+            .chain(std::iter::once(program))
+            .any(|s| s == std::ffi::OsStr::new("miri"));
+
         let mut cmd = Command::new("systemd-run");
         cmd.arg("--user")
             .arg("--scope")
             .arg("-p")
             .arg("MemoryMax=3G")
             .arg("-p");
-        if program.to_str().unwrap_or_default().contains("miri") {
+        if full_miri {
             cmd.arg("RuntimeMaxSec=20");
         } else {
             cmd.arg("RuntimeMaxSec=90");

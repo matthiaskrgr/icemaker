@@ -501,8 +501,8 @@ pub(crate) fn run_miri(
 		eprintln!("STDERR:\n {}", String::from_utf8(out3.stderr).unwrap());
 
         panic!(
-            "miri tried to recompile std!!\n{:?} {:?} {:?}\n\n",
-            executable, file, miri_flags
+            "miri tried to recompile std!!\n{:?} {:?} {:?} in  {:?}\n\n",
+            executable, file, miri_flags, crate_path
         )
     }
     (out, get_cmd_string(&cmd), Vec::new())

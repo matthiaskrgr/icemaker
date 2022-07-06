@@ -475,7 +475,8 @@ pub(crate) fn run_miri(
             .current_dir(crate_path)
             .env("MIRIFLAGS", miri_flags.join(" "));
     } else { */
-    cmd.arg("miri")
+    cmd.arg("+nightly")
+        .arg("miri")
         .arg("run")
         .current_dir(crate_path)
         .env("MIRIFLAGS", miri_flags.join(" "))

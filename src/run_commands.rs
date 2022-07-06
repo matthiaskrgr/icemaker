@@ -444,6 +444,7 @@ pub(crate) fn run_miri(
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        panic!();
         return (
             std::process::Command::new("true")
                 .output()
@@ -489,7 +490,16 @@ pub(crate) fn run_miri(
 
     //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
     //eprintln!("{}", stderr);
-
+    let out2 = out.clone();
+    if [out2.stderr, out2.stdout].into_iter().any(|out| {
+        let out = String::from_utf8(out).unwrap();
+        out.contains("compiler_builtins ")
+    }) {
+        panic!(
+            "miri tried to recompile std!!\n{:?} {:?} {:?}\n\n",
+            executable, file, miri_flags
+        )
+    }
     (out, get_cmd_string(&cmd), Vec::new())
 }
 

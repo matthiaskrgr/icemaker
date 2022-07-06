@@ -444,7 +444,6 @@ pub(crate) fn run_miri(
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem);
-        panic!();
         return (
             std::process::Command::new("true")
                 .output()

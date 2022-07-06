@@ -443,7 +443,7 @@ pub(crate) fn run_miri(
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        eprintln!("ERROR: cargo new failed for: {}", file_stem,);
         return (
             std::process::Command::new("true")
                 .output()
@@ -478,9 +478,10 @@ pub(crate) fn run_miri(
     cmd.arg("+nightly")
         .arg("miri")
         .arg("run")
-        .current_dir(crate_path)
+        .current_dir(&crate_path)
         .env("MIRIFLAGS", miri_flags.join(" "))
-        .env("RUSTFLAGS", "-Zvalidate-mir");
+        .env("RUSTFLAGS", "-Zvalidate-mir")
+        .env("MIRI_CWD", &crate_path);
 
     //  }
 

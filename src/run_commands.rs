@@ -491,10 +491,15 @@ pub(crate) fn run_miri(
     //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
     //eprintln!("{}", stderr);
     let out2 = out.clone();
+    let out3 = out.clone(); // hax
     if [out2.stderr, out2.stdout].into_iter().any(|out| {
         let out = String::from_utf8(out).unwrap();
         out.contains("compiler_builtins ")
     }) {
+		eprintln!("\n\n\n\n");
+		eprintln!("STDOUT:\n {}", String::from_utf8(out3.stdout).unwrap());
+		eprintln!("STDERR:\n {}", String::from_utf8(out3.stderr).unwrap());
+
         panic!(
             "miri tried to recompile std!!\n{:?} {:?} {:?}\n\n",
             executable, file, miri_flags

@@ -77,6 +77,8 @@ fn executable_from_args(args: &Args) -> Executable {
         Executable::Miri
     } else if args.rustc {
         Executable::Rustc
+    } else if args.cranelift {
+        Executable::RustcCGClif
     } else {
         Executable::Rustc
     }
@@ -109,6 +111,7 @@ fn main() {
         vec![&executable]
     } else {
         // default Executables
+        // dont run cranelift by default, maybe wait until we have an official rustup component
         if cfg!(feature = "ci") {
             // on ci, don't run miri
             vec![
@@ -487,6 +490,7 @@ impl ICE {
             Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
             Executable::Rustfmt => run_rustfmt(exec_path, file),
             Executable::Miri => run_miri(exec_path, file, miri_flags),
+            Executable::RustcCGClif => run_cranelift(exec_path, file, incremental, compiler_flags),
         };
 
         /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
@@ -606,7 +610,7 @@ impl ICE {
             let last = flag_combinations[&flag_combinations.len() - 1].clone();
 
             match executable {
-                Executable::Rustc => {
+                Executable::Rustc | Executable::RustcCGClif => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
 

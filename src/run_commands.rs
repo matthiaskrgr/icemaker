@@ -496,9 +496,9 @@ pub(crate) fn run_miri(
         let out = String::from_utf8(out).unwrap();
         out.contains("compiler_builtins ")
     }) {
-		eprintln!("\n\n\n\n");
-		eprintln!("STDOUT:\n {}", String::from_utf8(out3.stdout).unwrap());
-		eprintln!("STDERR:\n {}", String::from_utf8(out3.stderr).unwrap());
+        eprintln!("\n\n\n\n");
+        eprintln!("STDOUT:\n {}", String::from_utf8(out3.stdout).unwrap());
+        eprintln!("STDERR:\n {}", String::from_utf8(out3.stderr).unwrap());
 
         panic!(
             "miri tried to recompile std!!\n{:?} {:?} {:?} in  {:?}\n\n",
@@ -506,6 +506,50 @@ pub(crate) fn run_miri(
         )
     }
     (out, get_cmd_string(&cmd), Vec::new())
+}
+
+pub(crate) fn run_cranelift(
+    executable: &str,
+    file: &Path,
+    incremental: bool,
+    rustc_flags: &[&str],
+) -> (Output, String, Vec<OsString>) {
+    if incremental {
+        // only run incremental compilation tests
+        return run_rustc_incremental(executable, file);
+    }
+    // if the file contains no "main", run with "--crate-type lib"
+    let has_main = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .contains("fn main(");
+
+    //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    //let tempdir_path = tempdir.path();
+    let output_file = String::from("-o/dev/null");
+    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
+
+    let mut cmd = Command::new(executable);
+    cmd.arg(&file)
+        .args(rustc_flags)
+        // always keep these:
+        .arg(&output_file)
+        .arg(&dump_mir_dir);
+    if !has_main {
+        cmd.args(&["--crate-type", "lib"]);
+    }
+    //dbg!(&cmd);
+
+    let actual_args = cmd
+        .get_args()
+        .map(|s| s.to_owned())
+        .collect::<Vec<OsString>>();
+
+    // run the command
+    let output = systemdrun_command(&mut cmd)
+        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+    (output, get_cmd_string(&cmd), actual_args)
+    // remove tempdir
+    //tempdir.close().unwrap();
 }
 
 pub(crate) fn systemdrun_command(

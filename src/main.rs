@@ -269,7 +269,7 @@ fn main() {
                     let exec_path = executable.path();
 
                     match executable {
-                        Executable::Rustc => {
+                        Executable::Rustc | Executable::RustcCGClif => {
                             // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
                             RUSTC_FLAGS
                                 // note: this can be dangerous in case of max memory usage, if a file needs a lot

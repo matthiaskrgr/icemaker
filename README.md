@@ -4,7 +4,7 @@ A small program to automatically find crashes in the rust compiler, clippy, rust
 Runs executable on a vast number of rust files (such as rustcs testsuit or glacier) and filters all the crashes.
 
 Features:
-* run rustc, clippy, rustdoc, rustfmt or miri on a file and check if there is a crash
+* run rustc, clippy, rustdoc, rustfmt, miri or cg_clif on a file and check if there is a crash
 * parallel execution
 * check different combinations of RUSTFLAGS
 * try to find minimal set of RUSTFLAGS that reproduces the internal compiler error

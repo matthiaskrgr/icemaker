@@ -126,7 +126,8 @@ fn main() {
                 &Executable::Rustdoc,
                 &Executable::Clippy,
                 &Executable::Rustfmt,
-                &Executable::Miri,
+                // disable miri until https://github.com/rust-lang/miri/issues/2340 is fixed
+                //&Executable::Miri,
             ]
         }
     };

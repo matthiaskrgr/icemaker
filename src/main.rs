@@ -163,8 +163,7 @@ fn main() {
     // search for rust files inside CWD
     let mut files = WalkDir::new(".")
         .into_iter()
-        .filter(|entry| entry.is_ok())
-        .map(|e| e.unwrap())
+        .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();

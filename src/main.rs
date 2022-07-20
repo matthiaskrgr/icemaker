@@ -124,8 +124,8 @@ fn main() {
             vec![
                 &Executable::Rustc,
                 &Executable::Rustdoc,
-                &Executable::Clippy,
                 &Executable::Rustfmt,
+                &Executable::Clippy,
                 // disable miri until https://github.com/rust-lang/miri/issues/2340 is fixed
                 //&Executable::Miri,
             ]
@@ -528,6 +528,7 @@ impl ICE {
             exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
 
         // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
+        #[allow(clippy::format_in_format_args)]
         if exit_code_looks_like_crash && found_error.is_some()
     // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
         || (matches!(executable, Executable::Miri) && found_error.is_some())
@@ -977,8 +978,7 @@ pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
     // gather all rust files
     let files = WalkDir::new(".")
         .into_iter()
-        .filter(|entry| entry.is_ok())
-        .map(|e| e.unwrap())
+        .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();

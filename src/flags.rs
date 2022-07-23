@@ -21,16 +21,14 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wmissing-copy-implementations",
         "-Wmissing-debug-implementations",
         "-Wmissing-docs",
+    ],
+    &[
         "-Wmust-not-suspend",
         "-Zcrate-attr=feature(must_not_suspend)",
         "-Wnon-ascii-idents",
         "-Zcrate-attr=feature(non_exhaustive_omitted_patterns_lint)",
         "-Wnon-exhaustive-omitted-patterns",
         "-Wnoop-method-call",
-        "-Wpointer-structural-match",
-        "-Wrust-2021-incompatible-closure-captures",
-    ],
-    &[
         "-Wrust-2021-incompatible-or-patterns",
         "-Wrust-2021-prefixes-incompatible-syntax",
         "-Wrust-2021-prelude-collisions",
@@ -39,6 +37,8 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wtrivial-numeric-casts",
         "-Wunreachable-pub",
         "-Wunsafe-code",
+    ],
+    &[
         "-Wunsafe-op-in-unsafe-fn",
         "-Wunstable-features",
         "-Wunused-crate-dependencies",
@@ -49,6 +49,8 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-qualifications",
         "-Wunused-results",
         "-Wvariant-size-differences",
+        "-Wpointer-structural-match",
+        "-Wrust-2021-incompatible-closure-captures",
     ],
     &[
         "-Zvalidate-mir",
@@ -156,7 +158,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(unsized_locals)",
     ],
-    &["-Cinstrument-coverage"],
+    /*  &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
     &["-Zsanitizer=address"],
@@ -176,7 +178,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
     &["-Zthir-unsafeck=yes"],
-    &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
+    &["-Zdump-mir=all", "-Zdump-mir-dataflow"], */
     /*
     &[
         "-Zmir-opt-level=3",

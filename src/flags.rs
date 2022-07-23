@@ -4,7 +4,7 @@
 pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
     // I might fix this at some point by making it work lists of &str instead of String
-    /*&[
+    &[
         // must_not_suspend and non_exhaustive_omitted_patterns are unstable :(
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
@@ -12,6 +12,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Welided-lifetimes-in-paths",
         "-Wexplicit-outlives-requirements",
         "-Wfuzzy-provenance-casts",
+        "-Zcrate-attr=feature(strict_provenance)",
         "-Wlossy-provenance-casts",
         "-Wkeyword-idents",
         "-Wmacro-use-extern-crate",
@@ -20,9 +21,11 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wmissing-copy-implementations",
         "-Wmissing-debug-implementations",
         "-Wmissing-docs",
-        // "-Wmust-not-suspend",
+        "-Wmust-not-suspend",
+        "-Zcrate-attr=feature(must_not_suspend)",
         "-Wnon-ascii-idents",
-        // "-Wnon-exhaustive-omitted-patterns",
+        "-Zcrate-attr=feature(non_exhaustive_omitted_patterns_lint)",
+        "-Wnon-exhaustive-omitted-patterns",
         "-Wnoop-method-call",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
@@ -47,7 +50,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wunused-results",
         "-Wvariant-size-differences",
     ],
-    /*  &[
+    &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -63,7 +66,7 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zprint-mono-items=full",
         "-Zpolymorphize=on",
         "-Zalways-encode-mir",
-    ], */
+    ],
     &[
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -130,14 +133,14 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["INCR_COMP"],
     // &["-Zborrowck=mir", "-Zcrate-attr=feature(nll)"],
     // temporary disable these for more throughput... haven't found new bugs with these in a long time
-    */&[
+    &[
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
-        "--edition=2018",
+        "--edition=2021",
         "-Cdebuginfo=2",
         "-Zcrate-attr=feature(adt_const_params)",
         "-Zcrate-attr=feature(generic_associated_types)",
@@ -153,7 +156,6 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(unsized_locals)",
     ],
-    /*
     &["-Cinstrument-coverage"],
     &["-Cprofile-generate=/tmp/icemaker_pgo/"],
     &["-Copt-level=z"],
@@ -173,10 +175,9 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
     &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
-    &["-Zunpretty=ast,expanded"],
     &["-Zthir-unsafeck=yes"],
     &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
-    */ /*
+    /*
     &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -212,7 +213,10 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Zsanitizer=thread",
         "-Clto",
     ],
+
     &["-Zpolonius"],
+
+    &["-Zvirtual-function-elimination=yes", "-Clto=fat"],
     */
 ];
 

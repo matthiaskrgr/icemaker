@@ -64,8 +64,10 @@ pub fn uses_feature(file: &std::path::Path) -> bool {
 pub fn get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
+    // optimization: only check the first 5000 combinations to avoid OOM, usually that is good enough...
     let combs: Vec<Vec<&&str>> = (0..=flags.len())
         .flat_map(|numb_comb| flags.iter().combinations(numb_comb))
+        .take(5000)
         .collect();
 
     // UPDATE: special cased in par_iter loop

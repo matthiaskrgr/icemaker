@@ -21,9 +21,6 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wmissing-copy-implementations",
         "-Wmissing-debug-implementations",
         "-Wmissing-docs",
-    ],
-    // lints #2
-    &[
         "-Wmust-not-suspend",
         "-Zcrate-attr=feature(must_not_suspend)",
         "-Wnon-ascii-idents",
@@ -38,9 +35,6 @@ pub(crate) static RUSTC_FLAGS: &[&[&str]] = &[
         "-Wtrivial-numeric-casts",
         "-Wunreachable-pub",
         "-Wunsafe-code",
-    ],
-    // lints #3
-    &[
         "-Wunsafe-op-in-unsafe-fn",
         "-Wunstable-features",
         "-Wunused-crate-dependencies",

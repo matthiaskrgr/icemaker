@@ -642,6 +642,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
         "-Zmiri-mute-stdout-stderr",
+        "-Zmiri-retag-fields",
         //"-Zmir-opt-level=4",
         // "-Zrandomize-layout",
     ],

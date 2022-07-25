@@ -67,7 +67,7 @@ pub fn get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str
     // optimization: only check the first 5000 combinations to avoid OOM, usually that is good enough...
     let combs: Vec<Vec<&&str>> = (0..=flags.len())
         .flat_map(|numb_comb| flags.iter().combinations(numb_comb))
-        .take(5000)
+        .take(10000)
         .collect();
 
     // UPDATE: special cased in par_iter loop

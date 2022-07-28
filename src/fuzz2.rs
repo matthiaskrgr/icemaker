@@ -15,6 +15,9 @@ const TYPES: &[Ty] = &[
     Ty::String,
 ];
 
+const LIFETIMES: &[&str] = &["a", "b", "c", "d", "_", "&",
+ "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "12a"];
+
 struct FunctionGenerator {
     id: usize,
     // keep a list of generated functions so we can reference them in other functions..?
@@ -30,12 +33,18 @@ impl FunctionGenerator {
     }
 
     fn gen_fn(&mut self) -> Function {
-        let mut rng = rand::thread_rng();
-        let ty = TYPES.iter().choose(&mut rng).unwrap();
+        //let mut rng = rand::thread_rng();
+        let ty = TYPES.iter().choose(&mut rand::thread_rng()).unwrap();
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
         let fun = Function {
+            keyword: Vec::new(),
+            lifetimes: LIFETIMES.iter().map(|x| x.to_string()).choose_multiple(
+                &mut rand::thread_rng(),
+                (0..10).into_iter().choose(&mut rand::thread_rng()).unwrap(),
+            ),
+
             name: function_id,
             return_ty: ty.clone(),
             args: Vec::new(),
@@ -83,6 +92,9 @@ impl std::fmt::Display for Ty {
 
 #[derive(Debug, Clone)]
 struct Function {
+    /// such as const, async etc
+    keyword: Vec<String>,
+    lifetimes: Vec<String>,
     name: String,
     return_ty: Ty,
     args: Vec<Ty>,

@@ -46,6 +46,9 @@ pub(crate) struct Args {
     #[clap(long)]
     pub(crate) cranelift: bool,
 
+    #[clap(long)]
+    pub(crate) expensive_flags: bool,
+
     #[clap(short = 'j', long = "jobs", long = "threads", default_value_t = 0)]
     pub(crate) threads: usize,
 }

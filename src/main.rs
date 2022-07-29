@@ -592,25 +592,27 @@ impl ICE {
 
         let mut ret = None;
         if let Some(error_reason) = found_error {
-            // PRECHECK
-            // optimization: check if rustc crashes on the file without needing any flags, if yes, return that as an ICE
-            // we might produce several of those if we check different flags but they should all be deduplicated laster on?
-            let mut pure_rustc_cmd = Command::new(Executable::Rustc.path());
-            pure_rustc_cmd.arg(file);
+            if !matches!(executable, Executable::Miri) {
+                // PRECHECK
+                // optimization: check if rustc crashes on the file without needing any flags, if yes, return that as an ICE
+                // we might produce several of those if we check different flags but they should all be deduplicated laster on?
+                let mut pure_rustc_cmd = Command::new(Executable::Rustc.path());
+                pure_rustc_cmd.arg(file);
 
-            let pure_rustc_output = systemdrun_command(&mut pure_rustc_cmd).unwrap();
-            let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
-            if found_error0.is_some() {
-                let ice = ICE {
-                    regresses_on: Regression::Master,
-                    needs_feature: uses_feature,
-                    file: file.to_owned(),
-                    args: Vec::new(),
-                    error_reason: found_error0.unwrap_or_default(),
-                    ice_msg,
-                    executable: Executable::Rustc,
-                };
-                return Some(ice);
+                let pure_rustc_output = systemdrun_command(&mut pure_rustc_cmd).unwrap();
+                let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
+                if found_error0.is_some() {
+                    let ice = ICE {
+                        regresses_on: Regression::Master,
+                        needs_feature: uses_feature,
+                        file: file.to_owned(),
+                        args: Vec::new(),
+                        error_reason: found_error0.unwrap_or_default(),
+                        ice_msg,
+                        executable: Executable::Rustc,
+                    };
+                    return Some(ice);
+                }
             }
 
             // rustc or clippy crashed, we have an ice

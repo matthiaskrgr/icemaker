@@ -90,8 +90,8 @@ pub(crate) fn run_rustc_incremental(
             .arg("-Cdebuginfo=2")
             // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly
             //.arg("-Csave-temps=yes")
-            .arg("--edition=2021")
-            .arg("-Cpasses=lint");
+            .arg("--edition=2021");
+        //   .arg("-Cpasses=lint");
 
         //dbg!(&command);
 

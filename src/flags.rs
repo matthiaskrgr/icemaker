@@ -449,6 +449,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zcrate-attr=feature(thread_local)",
                 "-Zcrate-attr=feature(trait_alias)",
                 "-Zcrate-attr=feature(trait_upcasting)",
+                "-Zcrate-attr=feature(transmutability)",
                 "-Zcrate-attr=feature(transparent_unions)",
                 "-Zcrate-attr=feature(trivial_bounds)",
                 "-Zcrate-attr=feature(try_blocks)",

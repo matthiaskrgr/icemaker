@@ -1206,6 +1206,12 @@ mod tests {
 
     #[test]
     fn rustc_flags_are_valid() {
+        // rustc testrunner might override LD_LIBRARY_PATH with a path for nightly toolchain,
+        // which then makes the master toolchain look there and crash
+        //
+        // cargo might set that for doc tests or proc macros or whatever
+        // another workaround is to always compile the crate with master toolchain instead of nightly
+        std::env::remove_var("LD_LIBRARY_PATH");
         // make sure we don't have invalid rustc flags
         for (i, batch_of_flags) in RUSTC_FLAGS
             .iter()

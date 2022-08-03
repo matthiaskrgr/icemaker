@@ -1218,15 +1218,19 @@ mod tests {
             let rustfile_path = tempdir_path.join("file.rs");
             let mut rustfile = File::create(&rustfile_path).unwrap();
             writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+            assert!(rustfile_path.is_file());
+            assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
+            let mut cmd = std::process::Command::new(&Executable::Rustc.path());
+            cmd.args(*batch_of_flags).arg("/tmp/a.rs");
 
-            let output = &std::process::Command::new(&Executable::Rustc.path())
-                .args(*batch_of_flags)
-                .arg(&rustfile_path)
-                .output()
-                .unwrap();
-
-            dbg!(output);
-            assert!(output.status.success());
+            let mut output = cmd.output();
+            let status = output.as_ref().unwrap().status;
+            if !status.success() {
+                dbg!(&cmd);
+                dbg!(&output);
+                panic!("bad exit status!")
+            }
+            assert!(output.as_ref().unwrap().status.success());
         }
     }
 

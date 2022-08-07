@@ -1,6 +1,10 @@
 use std::path::PathBuf;
 
+use clap::Parser;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+
+use crate::lib::Args;
 
 // represents a crash that we found by running an `Executable` with a set of flags on a .rs file
 #[allow(clippy::upper_case_acronyms)]
@@ -80,17 +84,22 @@ pub enum Executable {
     RustcCGClif,
 }
 
+static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().expensive_flags);
+
 impl Executable {
     pub fn path(&self) -> String {
         match self {
             Executable::Rustc => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustc");
-                p.display().to_string()
-                //String::from("/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc")
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from("/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc")
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("rustc");
+                    p.display().to_string()
+                }
             }
             Executable::Clippy => {
                 let mut p = home::rustup_home().unwrap();

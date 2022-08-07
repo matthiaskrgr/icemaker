@@ -49,6 +49,10 @@ pub(crate) struct Args {
     #[clap(long)]
     pub(crate) expensive_flags: bool,
 
+    // use path to local rustc build with debug assertions
+    #[clap(long)]
+    pub(crate) local_debug_assertions: bool,
+
     #[clap(short = 'j', long = "jobs", long = "threads", default_value_t = 0)]
     pub(crate) threads: usize,
 }

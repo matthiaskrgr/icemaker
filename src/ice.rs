@@ -84,7 +84,7 @@ pub enum Executable {
     RustcCGClif,
 }
 
-static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().expensive_flags);
+static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
 
 impl Executable {
     pub fn path(&self) -> String {

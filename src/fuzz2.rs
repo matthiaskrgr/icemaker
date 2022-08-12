@@ -58,7 +58,7 @@ impl FunctionGenerator {
                 (0..10).into_iter().choose(&mut rand::thread_rng()).unwrap(),
             ),
 
-            name: function_id,
+            name: format!("fn_{}", function_id),
             return_ty: ty,
             args: args.collect::<Vec<String>>(),
             body: "todo!()".into(),
@@ -82,8 +82,12 @@ struct Function {
 impl Function {
     fn gen_call(&self) -> String {
         let name = &self.name;
-        let args = self.args.join("unimplemented!(), ");
-        format!("{name}({args};")
+        let args = self
+            .args
+            .iter()
+            .map(|x| "unimplemented!(), ")
+            .collect::<String>();
+        format!("{name}({args});")
     }
 }
 
@@ -98,7 +102,7 @@ impl std::fmt::Display for Function {
         let body = &self.body;
         write!(
             f,
-            "fn fn_{}({}) -> {} {{ {body} }}",
+            "fn {}({}) -> {} {{ {body} }}",
             &self.name, args_fmtd, self.return_ty
         )
     }
@@ -107,7 +111,7 @@ impl std::fmt::Display for Function {
 pub(crate) fn fuzz2main() {
     let mut fngen = FunctionGenerator::new();
 
-    let mut output = String::new();
+    let mut output = String::from("pub fn main() {");
 
     const MAX_FNS: u32 = 1000;
 
@@ -116,13 +120,12 @@ pub(crate) fn fuzz2main() {
         let fun_call = fun.gen_call();
         eprintln!("{fun}\n{fun_call}");
 
-
         output.push_str(&fun.to_string());
         output.push('\n');
         output.push_str(&fun_call.to_string());
         output.push('\n');
     }
-    output.push_str("pub fn main() {}");
+    output.push('}'); // fn main
 
     let mut file = File::create("out.rs").unwrap_or(File::open("out.rs").unwrap());
     file.write_all(output.as_bytes())

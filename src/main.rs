@@ -967,7 +967,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                         .unwrap()
                         .args
                         .iter()
-                        .cloned()
+                        .map(|s| format!("{} ", s))
                         .collect::<String>(),
                 );
             }
@@ -1110,8 +1110,8 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                         .unwrap()
                         .args
                         .iter()
-                        .cloned()
-                        .collect::<String>(),
+                        .map(|s| format!("{} ", s))
+                        .collect::<String>()
                 );
             }
             ice

@@ -1,5 +1,7 @@
 use rand::prelude::IteratorRandom;
 use std::fmt;
+use std::fs::File;
+use std::io::prelude::*;
 
 const TYPES: &[Ty] = &[
     Ty::u8,
@@ -39,10 +41,13 @@ impl FunctionGenerator {
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
-        let args_number = (0..20).into_iter().choose(&mut rand::thread_rng()).unwrap();
+        let args_number = (0..10000)
+            .into_iter()
+            .choose(&mut rand::thread_rng())
+            .unwrap();
         let args = (0..args_number)
             .into_iter()
-            .map(|argnr| format!("a_{argnr}: {}", tygen.random_ty()));
+            .map(|argnr| format!("{}", tygen.random_ty()));
 
         let fun = Function {
             keyword: Vec::new(),
@@ -92,11 +97,18 @@ impl std::fmt::Display for Function {
 pub(crate) fn fuzz2main() {
     let mut fngen = FunctionGenerator::new();
 
+    let mut output = String::new();
+
     for _ in 0..1000 {
         let fun = fngen.gen_fn();
-
         eprintln!("{fun}");
+
+        output.push_str(&fun.to_string());
     }
+
+    let mut file = File::create("out.rs").unwrap_or(File::open("out.rs").unwrap());
+    file.write_all(output.as_bytes())
+        .expect("failed to write to file");
 }
 
 // lets us

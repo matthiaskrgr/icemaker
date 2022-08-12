@@ -47,7 +47,7 @@ impl FunctionGenerator {
             ),
 
             name: function_id,
-            return_ty: ty.clone(),
+            return_ty: ty,
             args: Vec::new(),
             body: "todo!()".into(),
         };

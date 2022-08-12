@@ -1230,7 +1230,7 @@ mod tests {
             let mut cmd = std::process::Command::new(&Executable::Rustc.path());
             cmd.args(*batch_of_flags).arg("/tmp/a.rs");
 
-            let mut output = cmd.output();
+            let output = cmd.output();
             let status = output.as_ref().unwrap().status;
             if !status.success() {
                 dbg!(&cmd);

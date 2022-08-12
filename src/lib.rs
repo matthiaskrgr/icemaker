@@ -55,6 +55,9 @@ pub(crate) struct Args {
 
     #[clap(short = 'j', long = "jobs", long = "threads", default_value_t = 0)]
     pub(crate) threads: usize,
+
+    #[clap(long = "order", long = "chain-order", default_value_t = 4)]
+    pub(crate) chain_order: usize,
 }
 
 /// check whether a file uses features or not

@@ -142,7 +142,8 @@ fn main() {
     }
 
     if args.heat {
-        let _ = run_space_heater(executable);
+        let chain_order = args.chain_order;
+        let _ = run_space_heater(executable, chain_order);
         return;
     }
 
@@ -984,10 +985,12 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
     dbg!(&ICEs);
     ICEs
 }
-pub(crate) fn run_space_heater(executable: Executable) -> Vec<ICE> {
+pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Vec<ICE> {
     println!("Using executable: {}", executable.path());
 
-    let chain_order: usize = std::num::NonZeroUsize::new(4).expect("no 0 please").get();
+    let chain_order: usize = std::num::NonZeroUsize::new(chain_order)
+        .expect("no 0 please")
+        .get();
     const LIMIT: usize = 100000;
     let counter = std::sync::atomic::AtomicUsize::new(0);
     let exec_path = executable.path();

@@ -39,6 +39,11 @@ impl FunctionGenerator {
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
+        let args_number = (0..20).into_iter().choose(&mut rand::thread_rng()).unwrap();
+        let args = (0..args_number)
+            .into_iter()
+            .map(|argnr| format!("a_{argnr}: {}", tygen.random_ty()));
+
         let fun = Function {
             keyword: Vec::new(),
             lifetimes: LIFETIMES.iter().map(|x| x.to_string()).choose_multiple(
@@ -48,7 +53,7 @@ impl FunctionGenerator {
 
             name: function_id,
             return_ty: ty,
-            args: Vec::new(),
+            args: args.collect::<Vec<String>>(),
             body: "todo!()".into(),
         };
         self.functions.push(fun.clone());
@@ -63,7 +68,7 @@ struct Function {
     lifetimes: Vec<String>,
     name: String,
     return_ty: Ty,
-    args: Vec<Ty>,
+    args: Vec<String>,
     body: String,
 }
 
@@ -87,7 +92,7 @@ impl std::fmt::Display for Function {
 pub(crate) fn fuzz2main() {
     let mut fngen = FunctionGenerator::new();
 
-    for _ in 0..100000 {
+    for _ in 0..1000 {
         let fun = fngen.gen_fn();
 
         eprintln!("{fun}");

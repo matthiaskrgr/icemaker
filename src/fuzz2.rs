@@ -79,6 +79,14 @@ struct Function {
     body: String,
 }
 
+impl Function {
+    fn gen_call(&self) -> String {
+        let name = &self.name;
+        let args = self.args.join("unimplemented!(), ");
+        format!("{name}({args};")
+    }
+}
+
 impl std::fmt::Display for Function {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let args_fmtd = self
@@ -105,9 +113,13 @@ pub(crate) fn fuzz2main() {
 
     for _ in 0..MAX_FNS {
         let fun = fngen.gen_fn();
-        eprintln!("{fun}");
+        let fun_call = fun.gen_call();
+        eprintln!("{fun}\n{fun_call}");
+
 
         output.push_str(&fun.to_string());
+        output.push('\n');
+        output.push_str(&fun_call.to_string());
         output.push('\n');
     }
     output.push_str("pub fn main() {}");

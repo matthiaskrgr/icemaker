@@ -33,8 +33,9 @@ impl FunctionGenerator {
     }
 
     fn gen_fn(&mut self) -> Function {
+        let tygen = TyGen::new();
         //let mut rng = rand::thread_rng();
-        let ty = TYPES.iter().choose(&mut rand::thread_rng()).unwrap();
+        let ty = tygen.random_ty();
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
@@ -52,41 +53,6 @@ impl FunctionGenerator {
         };
         self.functions.push(fun.clone());
         fun
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, Clone)]
-enum Ty {
-    u8,
-    u16,
-    u32,
-    u64,
-    i8,
-    i16,
-    i32,
-    i64,
-    usize,
-    isize,
-    String,
-}
-
-impl std::fmt::Display for Ty {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = match self {
-            Self::u8 => "u8",
-            Self::u16 => "u16",
-            Self::u32 => "u32",
-            Self::u64 => "u64",
-            Self::i8 => "i8",
-            Self::i16 => "i16",
-            Self::i32 => "i32",
-            Self::i64 => "i64",
-            Self::usize => "usize",
-            Self::isize => "isize",
-            Self::String => "String",
-        };
-        write!(f, "{}", x)
     }
 }
 
@@ -125,5 +91,62 @@ pub(crate) fn fuzz2main() {
         let fun = fngen.gen_fn();
 
         eprintln!("{fun}");
+    }
+}
+
+// lets us
+trait Fuzzable {
+    fn insert_pre(&self) -> String;
+    fn insert_post(&self) -> String;
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone)]
+enum Ty {
+    u8,
+    u16,
+    u32,
+    u64,
+    i8,
+    i16,
+    i32,
+    i64,
+    usize,
+    isize,
+    String,
+}
+
+impl std::fmt::Display for Ty {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let x = match self {
+            Self::u8 => "u8",
+            Self::u16 => "u16",
+            Self::u32 => "u32",
+            Self::u64 => "u64",
+            Self::i8 => "i8",
+            Self::i16 => "i16",
+            Self::i32 => "i32",
+            Self::i64 => "i64",
+            Self::usize => "usize",
+            Self::isize => "isize",
+            Self::String => "String",
+        };
+        write!(f, "{}", x)
+    }
+}
+
+// get a random type
+struct TyGen {}
+impl TyGen {
+    fn new() -> Self {
+        TyGen {}
+    }
+
+    fn random_ty(&self) -> Ty {
+        TYPES
+            .iter()
+            .choose(&mut rand::thread_rng())
+            .unwrap()
+            .clone()
     }
 }

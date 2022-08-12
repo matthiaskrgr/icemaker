@@ -41,7 +41,9 @@ impl FunctionGenerator {
         let function_id = format!("{:X?}", self.id);
         self.id += 1;
 
-        let args_number = (0..10000)
+        const MAX_FN_ARGS: u32 = 100;
+
+        let args_number = (0..MAX_FN_ARGS)
             .into_iter()
             .choose(&mut rand::thread_rng())
             .unwrap();
@@ -99,12 +101,16 @@ pub(crate) fn fuzz2main() {
 
     let mut output = String::new();
 
-    for _ in 0..1000 {
+    const MAX_FNS: u32 = 1000;
+
+    for _ in 0..MAX_FNS {
         let fun = fngen.gen_fn();
         eprintln!("{fun}");
 
         output.push_str(&fun.to_string());
+        output.push('\n');
     }
+    output.push_str("pub fn main() {}");
 
     let mut file = File::create("out.rs").unwrap_or(File::open("out.rs").unwrap());
     file.write_all(output.as_bytes())

@@ -34,7 +34,6 @@ mod run_commands;
 
 use crate::flags::*;
 use crate::fuzz::*;
-use crate::fuzz2::*;
 use crate::ice::*;
 use crate::lib::*;
 use crate::run_commands::*;
@@ -151,7 +150,7 @@ fn main() {
         let _ = run_random_fuzz(executable);
         return;
     } else if args.fuzz2 {
-        fuzz2main();
+        crate::fuzz2::fuzz2::fuzz2main();
         return;
     }
 

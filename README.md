@@ -15,6 +15,8 @@ Requirements:
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
 
 Trophy case (190+):  
+https://github.com/rust-lang/rust/issues/100485  
+https://github.com/rust-lang/rust/issues/100484  
 https://github.com/rust-lang/rust/issues/100191  
 https://github.com/rust-lang/rust/issues/100187  
 https://github.com/rust-lang/rust/issues/100154  

@@ -533,8 +533,8 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zsanitizer=thread",
                 "-Clto",
             ],
-            &["-Cdebuginfo=2", "--crate-type bin", "-Copt-level=3"],
-            &["-Cdebuginfo=2", "--crate-type lib", "-Copt-level=3"],
+            &["-Cdebuginfo=2", "--crate-type=bin", "-Copt-level=3"],
+            &["-Cdebuginfo=2", "--crate-type=lib", "-Copt-level=3"],
             // chalk is not ready yet, but polonius?
             /*
             &["-Zchalk"],
@@ -1229,6 +1229,11 @@ mod tests {
             .filter(|flags| flags != &&["INCR_COMP"])
             .enumerate()
         {
+            // check that a flag does not contain spaces :/
+            batch_of_flags
+                .iter()
+                .for_each(|flag| assert!(!flag.contains(' '), "{}", flag));
+
             let tempdir = TempDir::new(&i.to_string()).expect("failed to create tempdir!");
             let tempdir_path = tempdir.path();
             let rustfile_path = tempdir_path.join("file.rs");

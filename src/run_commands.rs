@@ -32,20 +32,22 @@ pub(crate) fn run_rustc(
         .unwrap_or_default()
         .contains("fn main(");
 
-    //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-    //let tempdir_path = tempdir.path();
-    let output_file = String::from("-o/dev/null");
-    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
+    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path().display();
+    let output_file = format!("-o{}/outfile", tempdir_path);
+
+    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path);
 
     let mut cmd = Command::new(executable);
     cmd.arg(&file)
-        .args(rustc_flags)
         // always keep these:
         .arg(&output_file)
         .arg(&dump_mir_dir);
     if !has_main {
         cmd.args(&["--crate-type", "lib"]);
     }
+    cmd.args(rustc_flags);
+
     //dbg!(&cmd);
 
     let actual_args = cmd
@@ -56,6 +58,8 @@ pub(crate) fn run_rustc(
     // run the command
     let output = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+    // dbg!(&output);
+
     (output, get_cmd_string(&cmd), actual_args)
     // remove tempdir
     //tempdir.close().unwrap();

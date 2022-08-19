@@ -46,9 +46,10 @@ pub(crate) fn run_rustc(
     if !has_main {
         cmd.arg("--crate-type=lib");
     }
+    // be able to override --crate-type=lib/bin
     cmd.args(rustc_flags);
 
-    dbg!(&cmd);
+    //dbg!(&cmd);
 
     let actual_args = cmd
         .get_args()

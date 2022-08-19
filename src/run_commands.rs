@@ -48,7 +48,7 @@ pub(crate) fn run_rustc(
     }
     cmd.args(rustc_flags);
 
-    //dbg!(&cmd);
+    dbg!(&cmd);
 
     let actual_args = cmd
         .get_args()

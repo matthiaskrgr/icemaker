@@ -592,6 +592,7 @@ impl ICE {
 
         let mut ret = None;
         if let Some(error_reason) = found_error {
+            eprintln!("ICE\n\n\nICE\n\n");
             if !matches!(executable, Executable::Miri) {
                 // PRECHECK
                 // optimization: check if rustc crashes on the file without needing any flags, if yes, return that as an ICE

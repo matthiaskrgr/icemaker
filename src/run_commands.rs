@@ -44,7 +44,7 @@ pub(crate) fn run_rustc(
         .arg(&output_file)
         .arg(&dump_mir_dir);
     if !has_main {
-        cmd.args(&["--crate-type", "lib"]);
+        cmd.arg("--crate-type=lib");
     }
     cmd.args(rustc_flags);
 
@@ -82,7 +82,7 @@ pub(crate) fn run_rustc_incremental(
     for i in &[0, 1] {
         let mut command = Command::new(executable);
         if !has_main {
-            command.args(&["--crate-type", "lib"]);
+            command.arg("--crate-type=lib");
         }
         command
             .arg(&file)
@@ -122,7 +122,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
     let mut cmd = Command::new(executable);
 
     if !has_main {
-        cmd.args(&["--crate-type", "lib"]);
+        cmd.arg("--crate-type=lib");
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
@@ -186,7 +186,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let mut cmd = Command::new(executable);
 
     if !has_main {
-        cmd.args(&["--crate-type", "lib"]);
+        cmd.arg("--crate-type=lib");
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
@@ -540,7 +540,7 @@ pub(crate) fn run_cranelift(
         .arg(&output_file)
         .arg(&dump_mir_dir);
     if !has_main {
-        cmd.args(&["--crate-type", "lib"]);
+        cmd.arg("--crate-type=lib");
     }
     //dbg!(&cmd);
 
@@ -613,7 +613,7 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
 
     let mut compile_passes_check_cmd = Command::new(executable);
     if !has_main {
-        compile_passes_check_cmd.args(&["--crate-type", "lib"]);
+        compile_passes_check_cmd.arg("--crate-type=lib");
     }
     compile_passes_check_cmd.arg(&file).arg("-Zno-codegen");
     compile_passes_check_cmd.current_dir(tempdir_path);
@@ -662,7 +662,7 @@ pub(crate) fn incremental_stress_test(
         let mut command = Command::new(executable);
 
         if !has_main {
-            command.args(&["--crate-type", "lib"]);
+            command.arg("--crate-type=lib");
         }
         command
             .arg(&file)

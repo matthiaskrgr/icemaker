@@ -689,8 +689,9 @@ impl ICE {
                         dbg!(file); */
                         debug_assert!(
                             false,
-                            "full set of flags on '{}' did not reproduce the ICE??",
-                            file.display()
+                            "full set of flags on '{}' did not reproduce the ICE??\n\nflags:{:?}\n\n",
+                            file.display(),
+                            args3
                         );
                     }
                 }

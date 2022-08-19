@@ -533,6 +533,8 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zsanitizer=thread",
                 "-Clto",
             ],
+            &["-Cdebuginfo=2", "--crate-type bin", "-Copt-level=3"],
+            &["-Cdebuginfo=2", "--crate-type lib", "-Copt-level=3"],
             // chalk is not ready yet, but polonius?
             /*
             &["-Zchalk"],
@@ -542,6 +544,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
             // &["-Zvirtual-function-elimination=yes", "-Clto=fat"],
         ]
     } else {
+        // cheaper default flags
         &[
             // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
             // I might fix this at some point by making it work lists of &str instead of se();

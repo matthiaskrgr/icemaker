@@ -535,13 +535,18 @@ impl ICE {
             print!("\r");
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-                kind = if matches!(executable, Executable::Miri) { "UB" } else {"ICE"},
+                kind = if matches!(executable, Executable::Miri) {
+                    "UB"
+                } else {
+                    "ICE"
+                },
                 msg = {
                     let s = found_error
                         .clone()
                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
                         .unwrap_or(format!("No error found but exit code: {}", exit_status));
-                    s.replace("error: internal compiler error:", "ICE:")
+                    let s = s.replace("error: internal compiler error:", "ICE:");
+                    s.replace("unexpected panic: ", "ICE:")
                 },
                 feat = if uses_feature { "        " } else { "no feat!" },
                 flags = format!("{:?}", compiler_flags)

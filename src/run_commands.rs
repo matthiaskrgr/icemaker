@@ -34,15 +34,25 @@ pub(crate) fn run_rustc(
 
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path().display();
-    let output_file = format!("-o{}/outfile", tempdir_path);
+
+    // decide whether we want rustc to do codegen (slow!) or not
+    let output_file = if rustc_flags.contains(&"-ocodegen") {
+        Some(format!("-o{}/outfile", tempdir_path))
+    } else {
+        // this will prevent rustc from codegening since "nocodegen" is not a dir
+        Some("-o/tmp/nocodegen/nocodege".into())
+    };
+    //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
+    let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");
 
     let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path);
 
     let mut cmd = Command::new(executable);
     cmd.arg(&file)
         // always keep these:
-        .arg(&output_file)
         .arg(&dump_mir_dir);
+    cmd.args(output_file);
+
     if !has_main {
         cmd.arg("--crate-type=lib");
     }

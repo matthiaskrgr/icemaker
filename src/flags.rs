@@ -476,11 +476,9 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zcrate-attr=feature(yeet_expr)",
             ],
             // Zunprettty etc cant be combined unfortunately
-            &["-Cinstrument-coverage"],
-            &["-Cprofile-generate=/tmp/icemaker_pgo/"],
-            &["-Copt-level=z"],
-            &["-Zsanitizer=address"],
-            &["-Zsanitizer=memory"],
+            &["-Cinstrument-coverage", "-ocodegen"],
+            &["-Cprofile-generate=/tmp/icemaker_pgo/", "-ocodegen"],
+            &["-Copt-level=z", "-ocodegen"],
             &["-Zunpretty=normal"],
             &["-Zunpretty=identified"],
             &["-Zunpretty=expanded"],
@@ -504,6 +502,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Copt-level=3",
                 "-Zsanitizer=address",
                 "-Clto",
+                "-ocodegen",
             ],
             &[
                 "-Zmir-opt-level=3",
@@ -511,6 +510,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Copt-level=3",
                 "-Zsanitizer=cfi",
                 "-Clto",
+                "-ocodegen",
             ],
             &[
                 "-Zmir-opt-level=3",
@@ -518,6 +518,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Copt-level=3",
                 "-Zsanitizer=leak",
                 "-Clto",
+                "-ocodegen",
             ],
             &[
                 "-Zmir-opt-level=3",
@@ -525,6 +526,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Copt-level=3",
                 "-Zsanitizer=memory",
                 "-Clto",
+                "-ocodegen",
             ],
             &[
                 "-Zmir-opt-level=3",
@@ -532,9 +534,20 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Copt-level=3",
                 "-Zsanitizer=thread",
                 "-Clto",
+                "-ocodegen",
             ],
-            &["-Cdebuginfo=2", "--crate-type=bin", "-Copt-level=3"],
-            &["-Cdebuginfo=2", "--crate-type=lib", "-Copt-level=3"],
+            &[
+                "-Cdebuginfo=2",
+                "--crate-type=bin",
+                "-Copt-level=3",
+                "-ocodegen",
+            ],
+            &[
+                "-Cdebuginfo=2",
+                "--crate-type=lib",
+                "-Copt-level=3",
+                "-ocodegen",
+            ],
             // chalk is not ready yet, but polonius?
             /*
             &["-Zchalk"],

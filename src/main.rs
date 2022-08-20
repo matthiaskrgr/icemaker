@@ -534,7 +534,8 @@ impl ICE {
         {
             print!("\r");
             println!(
-                "ICE: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
+                "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
+                kind = if matches!(executable, Executable::Miri) { "UB" } else {"ICE"},
                 msg = {
                     let s = found_error
                         .clone()

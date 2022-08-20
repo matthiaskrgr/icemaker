@@ -546,7 +546,9 @@ impl ICE {
                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
                         .unwrap_or(format!("No error found but exit code: {}", exit_status));
                     let s = s.replace("error: internal compiler error:", "ICE:");
-                    s.replace("unexpected panic: ", "ICE:")
+                    let mut s = s.replace("unexpected panic: ", "ICE:");
+                    s.push_str(&ice_msg);
+                    s
                 },
                 feat = if uses_feature { "        " } else { "no feat!" },
                 flags = format!("{:?}", compiler_flags)

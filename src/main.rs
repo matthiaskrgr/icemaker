@@ -523,8 +523,7 @@ impl ICE {
         // check if the file enables any compiler features
         let uses_feature: bool = uses_feature(file);
 
-        let exit_code_looks_like_crash =
-            exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status);
+        let exit_code_looks_like_crash = exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status) ||  /* llvm crash / assertion failure etc */ exit_status == 254;
 
         // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
         #[allow(clippy::format_in_format_args)]
@@ -874,6 +873,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "^fatal runtime error: stack overflow",
             "^Unusual: ",
             "^Undefined behavior:",
+            "(SIGABRT)"
         ],
     };
 

@@ -75,7 +75,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdrop-tracking",
                 "-Zverbose",
                 "-Zextra-const-ub-checks",
-                "-Zmeta-stats",
+                // "-Zmeta-stats",
                 "--edition=2015",
             ],
             // basic stuff, edition 2018
@@ -99,7 +99,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdrop-tracking",
                 "-Zverbose",
                 "-Zextra-const-ub-checks",
-                "-Zmeta-stats",
+                //"-Zmeta-stats",
                 "--edition=2018",
             ],
             // basic stuff, edition 2021
@@ -123,7 +123,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdrop-tracking",
                 "-Zverbose",
                 "-Zextra-const-ub-checks",
-                "-Zmeta-stats",
+                //  "-Zmeta-stats",
                 "--edition=2021",
             ],
             // incremental compilation, keep this!

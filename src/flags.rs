@@ -2,7 +2,7 @@ use crate::lib::Args;
 use clap::Parser;
 use once_cell::sync::Lazy;
 
-// -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=full
+// -Zvalidate-mir -Zverify-llvm-ir=yes -Zincremental-verify-ich=yes -Zmir-opt-level=0 -Zmir-opt-level=1 -Zmir-opt-level=2 -Zmir-opt-level=3 -Zdump-mir=all --emit=mir -Zsave-analysis -Zprint-mono-items=eager
 //&q["-Zcrate-attr=feature(generic_associated_types)"],
 // git grep -o  "unstable(feature = \"[A-Za-z_-]*"   | grep -o "\ .*$" | grep -o "\".*" | sed s/\"// | sort -n | uniq | grep "...."
 pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
@@ -68,7 +68,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 // "-Cpasses=lint",
@@ -92,7 +92,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 //"-Cpasses=lint",
@@ -116,7 +116,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 // "-Cpasses=lint",
@@ -622,7 +622,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 // "-Cpasses=lint",
@@ -645,7 +645,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 //"-Cpasses=lint",
@@ -668,7 +668,7 @@ pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {
                 "-Zdump-mir=all",
                 "--emit=mir",
                 "-Zsave-analysis",
-                "-Zprint-mono-items=full",
+                "-Zprint-mono-items=eager",
                 "-Zpolymorphize=on",
                 "-Zalways-encode-mir",
                 // "-Cpasses=lint",

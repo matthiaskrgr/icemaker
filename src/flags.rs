@@ -432,7 +432,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(proc_macro_hygiene)",
         "-Zcrate-attr=feature(raw_dylib)",
         "-Zcrate-attr=feature(raw_ref_op)",
-        "-Zcrate-attr=feature(register_attr)",
         "-Zcrate-attr=feature(register_tool)",
         "-Zcrate-attr=feature(repr128)",
         "-Zcrate-attr=feature(repr_simd)",

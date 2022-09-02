@@ -505,14 +505,14 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto",
         "-ocodegen",
     ],
-    &[
+   /* */ &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
         "-Zsanitizer=cfi",
         "-Clto",
         "-ocodegen",
-    ],
+    ], */
     &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",

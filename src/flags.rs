@@ -505,7 +505,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto",
         "-ocodegen",
     ],
-   /* */ &[
+    /*  &[
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
@@ -713,6 +713,8 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "./library/stdarch/crates/core_arch/src/lib.rs",
     // memory 2.0
     "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
+    // infinite recursion in rustdoc, can take tens of minutes in ci
+    "./src/test/ui/recursion/issue-38591-non-regular-dropck-recursion.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

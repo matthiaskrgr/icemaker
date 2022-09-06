@@ -599,9 +599,11 @@ pub(crate) fn systemdrun_command(
             .arg("MemoryMax=3G")
             .arg("-p");
         if full_miri {
+            // miri timout: 20 seconds
             cmd.arg("RuntimeMaxSec=20");
         } else {
-            cmd.arg("RuntimeMaxSec=90");
+            // all other timeouts: 90 seconds
+            cmd.arg("RuntimeMaxSec=91");
         }
 
         cmd.arg(program);

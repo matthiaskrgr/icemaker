@@ -745,16 +745,16 @@ impl ICE {
         } */
 
         // print a warning if a file takes longer than X to process
+        // @TODO this only reports if the file finishes running, if we are stuck, we wont
         let seconds_elapsed = thread_start.elapsed().as_secs();
-        let minutes_elapsed: u64 = seconds_elapsed / 60;
-        const MINUTE_LIMIT: u64 = 1;
-        if minutes_elapsed > (MINUTE_LIMIT) {
+        const SECONDS_LIMIT: u64 = 90;
+        if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(
-                "{} running for more ({} minutes) than {} minute",
+                "{} ran for more ({} seconds) than {} seconds!",
                 file.display(),
-                seconds_elapsed / 60,
-                MINUTE_LIMIT
+                seconds_elapsed,
+                SECONDS_LIMIT
             );
         }
 

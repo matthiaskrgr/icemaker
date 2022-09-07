@@ -751,7 +751,8 @@ impl ICE {
         if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(
-                "{} ran for more ({} seconds) than {} seconds, killed!",
+                "{:?} {} ran for more ({} seconds) than {} seconds, killed!",
+                executable,
                 file.display(),
                 seconds_elapsed,
                 SECONDS_LIMIT

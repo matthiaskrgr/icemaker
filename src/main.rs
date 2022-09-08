@@ -751,11 +751,16 @@ impl ICE {
         if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(
-                "{:?} {} ran for more ({} seconds) than {} seconds, killed!",
+                "HANG: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
                 executable,
                 file.display(),
                 seconds_elapsed,
-                SECONDS_LIMIT
+                SECONDS_LIMIT,
+                actual_args
+                    .iter()
+                    .cloned()
+                    .map(|s| s.into_string().unwrap())
+                    .collect::<Vec<String>>(),
             );
         }
 

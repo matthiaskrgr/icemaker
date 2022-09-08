@@ -874,6 +874,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
             "^fatal runtime error: stack overflow",
             "^Unusual: ",
             "^Undefined behavior:",
+            // llvm assertion failure
+            "Assertion `.*' failed",
             "(SIGABRT)"
         ],
     };

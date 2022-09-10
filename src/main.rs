@@ -130,6 +130,11 @@ fn main() {
         }
     };
 
+    if args.codegen {
+        codegen_git();
+        return;
+    }
+
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
         println!("Running cargo miri setup");
         let _ = std::process::Command::new("cargo")
@@ -151,11 +156,6 @@ fn main() {
         return;
     } else if args.fuzz2 {
         crate::fuzz2::fuzz2::fuzz2main();
-        return;
-    }
-
-    if args.codegen {
-        codegen_git();
         return;
     }
 

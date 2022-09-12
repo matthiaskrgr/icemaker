@@ -61,6 +61,11 @@ https://github.com/bjorn3/rustc_codegen_cranelift/issues/1237
 https://github.com/bjorn3/rustc_codegen_cranelift/issues/1236  
 https://github.com/bjorn3/rustc_codegen_cranelift/issues/1235  
 https://github.com/rust-lang/miri/issues/2340  
+
+```
+Apparently githubs servers are not powerful enough to
+generate a readme with ~200+ gh issues urls without timing out.
+This is the work around
 https://github.com/rust-lang/rust/issues/98821  
 https://github.com/rust-lang/rust/issues/98372  
 https://github.com/rust-lang/rust/issues/98250  
@@ -231,6 +236,7 @@ https://github.com/rust-lang/rust/issues/67641
 https://github.com/rust-lang/rust/issues/67640  
 https://github.com/rust-lang/rust/issues/67639  
 https://github.com/rust-lang/rust/issues/67550  
+```
 
 #### License:
 

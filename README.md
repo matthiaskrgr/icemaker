@@ -62,42 +62,7 @@ https://github.com/rust-lang/rust/issues/95978 https://github.com/rust-lang/rust
 https://github.com/rust-lang/rust/issues/95878 https://github.com/rust-lang/rust/issues/95640  
 https://github.com/rust-lang/rust/issues/95327 https://github.com/rust-lang/rust/issues/95307  
 https://github.com/rust-lang/rust/issues/95163 https://github.com/rust-lang/rust/issues/95128  
-https://github.com/rust-lang/rust/issues/95023 https://github.com/rust-lang/rust/issues/94961  
-https://github.com/rust-lang/rust/issues/94953 https://github.com/rust-lang/rust/issues/94903  
-https://github.com/rust-lang/rust/issues/94822 https://github.com/rust-lang/rust/issues/94725  
-https://github.com/rust-lang/rust/issues/94654 https://github.com/rust-lang/rust/issues/94629  
-https://github.com/rust-lang/rust/issues/94627 https://github.com/rust-lang/rust/issues/94516  
-https://github.com/rust-lang/rust/issues/94382 https://github.com/rust-lang/rust/issues/94380  
-https://github.com/rust-lang/rust/issues/94379 https://github.com/rust-lang/rust/issues/94378  
-https://github.com/rust-lang/rust/issues/94171 https://github.com/rust-lang/rust/issues/94149  
-https://github.com/rust-lang/rust/issues/94073 https://github.com/rust-lang/rust/issues/93871  
-https://github.com/rust-lang/rust/issues/93788 https://github.com/rust-lang/rust/issues/93688  
-https://github.com/rust-lang/rust/issues/93578 https://github.com/rust-lang/rust/issues/93117  
-https://github.com/rust-lang/rust-clippy/issues/8245 https://github.com/rust-lang/rust-clippy/issues/8244  
-https://github.com/rust-lang/rust/issues/92495 https://github.com/rust-lang/rust/issues/92240  
-https://github.com/rust-lang/rust/issues/91745 https://github.com/rust-lang/rust/issues/90192  
-https://github.com/rust-lang/rust/issues/90191 https://github.com/rust-lang/rust/issues/90189  
-https://github.com/rust-lang/rust/issues/89312 https://github.com/rust-lang/rust/issues/89271  
-https://github.com/rust-lang/rust/issues/89066 https://github.com/rust-lang/rust/issues/88536  
-https://github.com/rust-lang/rustfmt/issues/4968 https://github.com/rust-lang/rust/issues/88434  
-https://github.com/rust-lang/rust/issues/88433 https://github.com/rust-lang/rust/issues/88171  
-https://github.com/rust-lang/rust/issues/87563 https://github.com/rust-lang/rust/issues/87308  
-https://github.com/rust-lang/rust/issues/87219 https://github.com/rust-lang/rust/issues/87218  
-https://github.com/rust-lang/rust/issues/85871 https://github.com/rust-lang/rust/issues/85552  
-https://github.com/rust-lang/rust/issues/85480 https://github.com/rust-lang/rust/issues/83921  
-https://github.com/rust-lang/rust/issues/83190 https://github.com/rust-lang/rust/issues/83048  
-https://github.com/rust-lang/rust/issues/82678 https://github.com/rust-lang/rust/issues/82329  
-https://github.com/rust-lang/rust/issues/82328 https://github.com/rust-lang/rust/issues/82327  
-https://github.com/rust-lang/rust/issues/82326 https://github.com/rust-lang/rust/issues/82325  
-https://github.com/rust-lang/rust/issues/81627 https://github.com/rust-lang/rust/issues/81403  
-https://github.com/rust-lang/rust/issues/80589 https://github.com/rust-lang/rust/issues/80251  
-https://github.com/rust-lang/rust/issues/80231 https://github.com/rust-lang/rust/issues/80230  
-https://github.com/rust-lang/rust/issues/80229 https://github.com/rust-lang/rust/issues/80228  
-https://github.com/rust-lang/rust/issues/80060 https://github.com/rust-lang/rustfmt/issues/4587  
-https://github.com/rust-lang/rustfmt/issues/4586 https://github.com/rust-lang/rust/issues/79699  
-https://github.com/rust-lang/rust/issues/79669 https://github.com/rust-lang/rust/issues/79569  
 
-https://github.com/rust-lang/rust/issues/67639 https://github.com/rust-lang/rust/issues/67550  
 
 #### License:
 

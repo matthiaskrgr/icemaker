@@ -719,6 +719,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
     // infinite recursion in rustdoc, can take tens of minutes in ci
     "./src/test/ui/recursion/issue-38591-non-regular-dropck-recursion.rs",
+    "./src/test/ui/dropck/dropck_no_diverge_on_nonregular_2.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

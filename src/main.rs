@@ -557,10 +557,10 @@ impl ICE {
                     "ICE".red()
                 },
                 msg = {
-                    let s = found_error.clone(); /*
+                    let s = found_error; /*
 
-                                                 // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                                                 .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
+                                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                                         .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
                     let s = s.replace("error: internal compiler error:", "ICE:");
                     let mut s = s.replace("unexpected panic:", "ICE:");
                     s.push_str(&ice_msg);
@@ -639,7 +639,7 @@ impl ICE {
 
                 // shitty destructing
                 let found_error0 = match found_error0 {
-                    Some((x, y)) => Some(x),
+                    Some((x, _y)) => Some(x),
                     _ => None,
                 };
 
@@ -890,36 +890,6 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
 fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, ICEKind)> {
-    let ice_keywords = match executable {
-        Executable::Miri => vec![
-            "error: Undefined Behavior",
-            // "the evaluated program leaked memory", // memleaks are save apparently
-            "this indicates a bug in the program",
-        ],
-        Executable::ClippyFix => vec![
-            "indicates a bug in either rustc or cargo itself",
-        ],
-
-        _ => vec![
-            "^LLVM ERROR",
-            "^thread '.*' panicked at:",
-            "^query stack during panic:$",
-            "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
-            "^error: internal compiler error: ",
-            "RUST_BACKTRACE=",
-            "error: Undefined Behavior",
-            //"MIRIFLAGS",
-            "segmentation fault",
-            "(core dumped)",
-            "^fatal runtime error: stack overflow",
-            "^Unusual: ",
-            "^Undefined behavior:",
-            // llvm assertion failure
-            "Assertion `.*' failed",
-            "(SIGABRT)"
-        ],
-    };
-
     let keywords_miri_ub = [
         "error: Undefined Behavior",
         // "the evaluated program leaked memory", // memleaks are save apparently
@@ -960,14 +930,14 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
 
     //stdout
 
-    let line_outer = [&output.stdout, &output.stderr]
+    [&output.stdout, &output.stderr]
         .into_iter()
         .find_map(|executable_output| {
             let mut lines = std::io::Cursor::new(executable_output)
                 .lines()
                 .filter_map(|line| line.ok());
 
-            let line = match executable {
+            match executable {
                 Executable::Miri => {
                     // find the line where any (the first) ub keywords is contained in it
                     let ub_line = lines.find(|line| {
@@ -1015,11 +985,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                             .any(|regex| regex.is_match(line))
                     })
                     .map(|line| (line, ICEKind::Ice)),
-            };
-
-            line
-        });
-    line_outer
+            }
+        })
 }
 
 pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {

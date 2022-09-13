@@ -813,9 +813,7 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS,
-    };
+    use super::{DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS};
     use crate::ice::*;
     use std::fs::File;
     use std::io::Write;

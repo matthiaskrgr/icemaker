@@ -519,7 +519,7 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let found_error = find_ICE_string(executable, cmd_output).map(|(string, _icekind)| string);
+        let found_error = find_ICE_string(executable, cmd_output);
 
         // check if the file enables any compiler features
         let uses_feature: bool = uses_feature(file);
@@ -532,19 +532,20 @@ impl ICE {
     // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
         || (matches!(executable, Executable::Miri) && found_error.is_some())
         {
+            let (found_error, ice_kind) = found_error.clone().unwrap();
             print!("\r");
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-                kind = if matches!(executable, Executable::Miri) {
+                kind = if matches!(ice_kind, ICEKind::Ub) {
                     "UB ".green()
                 } else {
                     "ICE".red()
                 },
                 msg = {
-                    let s = found_error
-                        .clone()
-                        // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                        .unwrap_or(format!("No error found but exit code: {}", exit_status));
+                    let s = found_error.clone(); /*
+
+                                                 // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                                                 .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
                     let s = s.replace("error: internal compiler error:", "ICE:");
                     let mut s = s.replace("unexpected panic:", "ICE:");
                     s.push_str(&ice_msg);
@@ -580,6 +581,7 @@ impl ICE {
 
         // incremental ices don't need to have their flags reduced
         if incremental && found_error.is_some() {
+            let (found_error, kind) = found_error.unwrap();
             return Some(ICE {
                 regresses_on: Regression::Nightly,
 
@@ -591,15 +593,15 @@ impl ICE {
                     "-Cdebuginfo=2".into(),
                 ],
                 // executable: rustc_path.to_string(),
-                error_reason: found_error.clone().unwrap_or_default(),
+                error_reason: found_error,
                 ice_msg,
                 executable: executable.clone(),
-                kind: ICEKind::Ice,
+                kind,
             });
         }
 
         let mut ret = None;
-        if let Some(error_reason) = found_error {
+        if let Some((error_reason, ice_kind)) = found_error.clone() {
             //            eprintln!("ICE\n\n\nICE\n\n");
             if !matches!(executable, Executable::Miri) {
                 // PRECHECK
@@ -739,7 +741,7 @@ impl ICE {
                 error_reason,
                 ice_msg,
                 executable: executable.clone(),
-                kind: ICEKind::Ice,
+                kind: ice_kind,
                 //cmd,
             };
 

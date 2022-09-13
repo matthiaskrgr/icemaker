@@ -548,7 +548,11 @@ impl ICE {
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
                 kind = if matches!(ice_kind, ICEKind::Ub(..)) {
-                    "UB ".green()
+                    if miri_finding_is_potentially_interesting {
+                        " UB".green()
+                    } else {
+                        "UB ".normal()
+                    }
                 } else {
                     "ICE".red()
                 },

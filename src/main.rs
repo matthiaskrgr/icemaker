@@ -519,7 +519,7 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let found_error: Option<String> = find_ICE_string(executable, cmd_output);
+        let found_error = find_ICE_string(executable, cmd_output).map(|(string, _icekind)| string);
 
         // check if the file enables any compiler features
         let uses_feature: bool = uses_feature(file);
@@ -594,7 +594,7 @@ impl ICE {
                 error_reason: found_error.clone().unwrap_or_default(),
                 ice_msg,
                 executable: executable.clone(),
-                //cmd,
+                kind: ICEKind::Ice,
             });
         }
 
@@ -610,6 +610,13 @@ impl ICE {
 
                 let pure_rustc_output = systemdrun_command(&mut pure_rustc_cmd).unwrap();
                 let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
+
+                // shitty destructing
+                let found_error0 = match found_error0 {
+                    Some((x, y)) => Some(x),
+                    _ => None,
+                };
+
                 if found_error0.is_some() {
                     let ice = ICE {
                         regresses_on: Regression::Master,
@@ -619,6 +626,7 @@ impl ICE {
                         error_reason: found_error0.unwrap_or_default(),
                         ice_msg,
                         executable: Executable::Rustc,
+                        kind: ICEKind::Ice,
                     };
                     return Some(ice);
                 }
@@ -731,6 +739,7 @@ impl ICE {
                 error_reason,
                 ice_msg,
                 executable: executable.clone(),
+                kind: ICEKind::Ice,
                 //cmd,
             };
 
@@ -854,16 +863,14 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
 
 /// check if the given output looks like rustc crashed
 #[allow(non_snake_case)]
-fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
+fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, ICEKind)> {
     let ice_keywords = match executable {
         Executable::Miri => vec![
             "error: Undefined Behavior",
             // "the evaluated program leaked memory", // memleaks are save apparently
-            "internal compiler error:",
             "this indicates a bug in the program",
         ],
         Executable::ClippyFix => vec![
-            "internal compiler error:",
             "indicates a bug in either rustc or cargo itself",
         ],
 
@@ -887,45 +894,106 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<String> {
         ],
     };
 
-    let ice_keywords = ice_keywords
+    let keywords_miri_ub = [
+        "error: Undefined Behavior",
+        // "the evaluated program leaked memory", // memleaks are save apparently
+        "this indicates a bug in the program",
+    ]
+    .into_iter()
+    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+    .collect::<Vec<_>>();
+
+    let keywords_clippyfix_failure = ["indicates a bug in either rustc or cargo itself"]
         .into_iter()
         .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
         .collect::<Vec<_>>();
 
+    let keywords_generic_ice = [
+        "^LLVM ERROR",
+        "^thread '.*' panicked at:",
+        "^query stack during panic:$",
+        "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
+        "^error: internal compiler error: ",
+        "RUST_BACKTRACE=",
+        "error: Undefined Behavior",
+        //"MIRIFLAGS",
+        "segmentation fault",
+        "(core dumped)",
+        "^fatal runtime error: stack overflow",
+        "^Unusual: ",
+        "^Undefined behavior:",
+        // llvm assertion failure
+        "Assertion `.*' failed",
+        "(SIGABRT)"
+    ] .into_iter()
+    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+    .collect::<Vec<_>>();
+
     // let output = cmd.output().unwrap();
-    let _exit_status = output.status;
+    // let _exit_status = output.status;
 
     //stdout
-    let line = std::io::Cursor::new(&output.stdout)
-        .lines()
-        .filter_map(|line| line.ok())
-        .find(|line| {
-            ice_keywords.iter().any(|regex| {
-                if &regex.to_string() == "panicked at:" {
-                    // do not warn when the checked .rs file contains something like const A = panic!()
-                    regex.is_match(line) && !line.contains("the evaluated program panicked at")
-                } else {
-                    regex.is_match(line)
+
+    let line_outer = [&output.stdout, &output.stderr]
+        .into_iter()
+        .find_map(|executable_output| {
+            let mut lines = std::io::Cursor::new(executable_output)
+                .lines()
+                .filter_map(|line| line.ok());
+
+            let line = match executable {
+                Executable::Miri => {
+                    // find the line where any (the first) ub keywords is contained in it
+                    let ub_line = lines.find(|line| {
+                        keywords_miri_ub.iter().any(|regex| {
+                            // if the regex is equal to "panicked at: ", make sure the line does NOT contain "the evaluated program panicked at..."
+                            // because that would be caused by somethink like panic!() in the code miri executes and we don't care about that
+                            if regex.to_string() == "panicked at:" {
+                                regex.is_match(line) && !line.contains("the evaluated program")
+                            } else {
+                                regex.is_match(line)
+                            }
+                        })
+                    });
+                    if ub_line.is_some() {
+                        ub_line.map(|line| (line, ICEKind::Ub))
+                    } else {
+                        // we didn't find ub, but perhaps miri crashed?
+                        lines
+                            .find(|line| {
+                                keywords_generic_ice
+                                    .iter()
+                                    .any(|regex| regex.is_match(line))
+                            })
+                            .map(|line| (line, ICEKind::Ice))
+                    }
                 }
-            })
+
+                Executable::ClippyFix => lines
+                    .find(|line| {
+                        keywords_clippyfix_failure
+                            .iter()
+                            .any(|regex| regex.is_match(line))
+                    })
+                    .map(|line| (line, ICEKind::ClippyFix)),
+
+                Executable::Rustc
+                | Executable::Clippy
+                | Executable::RustAnalyzer
+                | Executable::RustcCGClif
+                | Executable::Rustdoc
+                | Executable::Rustfmt => lines
+                    .find(|line| {
+                        keywords_generic_ice
+                            .iter()
+                            .any(|regex| regex.is_match(line))
+                    })
+                    .map(|line| (line, ICEKind::Ice)),
+            };
+
+            line
         });
-
-    if line.is_some() {
-        return line;
-    }
-
-    // stderr
-    let line = std::io::Cursor::new(&output.stderr)
-        .lines()
-        .filter_map(|line| line.ok())
-        .find(|line| ice_keywords.iter().any(|regex| regex.is_match(line)));
-    drop(output);
-
-    if line.is_some() {
-        return line;
-    }
-
-    None
+    line_outer
 }
 
 pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {

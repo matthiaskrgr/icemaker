@@ -27,6 +27,27 @@ pub struct ICE {
     // the full command that we used to reproduce the crash
     //cmd: String,
     pub executable: Executable,
+    // what kind of ice is this?
+    pub kind: ICEKind,
+}
+
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub enum ICEKind {
+    // something crahed
+    Ice,
+    // miri found undefined behaviour
+    Ub,
+    // program didn't terminate in time
+    Hang,
+    // clippy failed to apply fixes
+    ClippyFix,
+}
+
+impl Default for ICEKind {
+    fn default() -> Self {
+        Self::Ice
+    }
 }
 
 // is this actually used?

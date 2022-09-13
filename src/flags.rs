@@ -814,7 +814,7 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
 #[cfg(test)]
 mod tests {
     use super::{
-        DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS, RUSTC_FLAGS,
+        DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS,
     };
     use crate::ice::*;
     use std::fs::File;
@@ -929,7 +929,7 @@ mod tests {
             cmd.arg("new")
                 .args(["--vcs", "none"])
                 .arg(crate_name)
-                .current_dir(&tempdir_path);
+                .current_dir(tempdir_path);
 
             let status = cmd
                 .output()

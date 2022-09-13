@@ -669,7 +669,7 @@ impl ICE {
                             let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
                             let mut cmd = Command::new(exec_path);
-                            cmd.arg(&file)
+                            cmd.arg(file)
                                 .args(flag_combination.iter())
                                 .arg(output_file)
                                 .arg(dump_mir_dir);
@@ -806,7 +806,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
         &Executable::Rustc,
         systemdrun_command(
             Command::new(stable_path)
-                .arg(&file)
+                .arg(file)
                 .args(&bad_but_no_nightly_flags)
                 .arg(&output_file), //.arg(&dump_mir_dir)
         )
@@ -818,7 +818,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
         &Executable::Rustc,
         systemdrun_command(
             Command::new(beta_path)
-                .arg(&file)
+                .arg(file)
                 .args(&bad_but_no_nightly_flags)
                 .arg(&output_file), //.arg(&dump_mir_dir)
         )
@@ -830,7 +830,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
         &Executable::Rustc,
         systemdrun_command(
             Command::new(nightly_path)
-                .arg(&file)
+                .arg(file)
                 .args(bad_flags)
                 .arg(&output_file)
                 .arg(&dump_mir_dir),

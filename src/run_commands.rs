@@ -28,7 +28,7 @@ pub(crate) fn run_rustc(
         return run_rustc_incremental(executable, file);
     }
     // if the file contains no "main", run with "--crate-type lib"
-    let has_main = std::fs::read_to_string(&file)
+    let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
@@ -48,7 +48,7 @@ pub(crate) fn run_rustc(
     let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path);
 
     let mut cmd = Command::new(executable);
-    cmd.arg(&file)
+    cmd.arg(file)
         // always keep these:
         .arg(&dump_mir_dir);
     cmd.args(output_file);
@@ -83,7 +83,7 @@ pub(crate) fn run_rustc_incremental(
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let has_main = std::fs::read_to_string(&file)
+    let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
@@ -96,7 +96,7 @@ pub(crate) fn run_rustc_incremental(
             command.arg("--crate-type=lib");
         }
         command
-            .arg(&file)
+            .arg(file)
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
@@ -127,7 +127,7 @@ pub(crate) fn run_rustc_incremental(
 }
 
 pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
-    let has_main = std::fs::read_to_string(&file)
+    let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("pub(crate) fn main(");
     let mut cmd = Command::new(executable);
@@ -137,7 +137,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(&file)
+        .arg(file)
         .arg("-Aclippy::cargo") // allow cargo lints
         //.arg("-Wclippy::internal")
         .arg("-Wclippy::complexity")
@@ -171,8 +171,8 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
-        .args(&["--cap-lints", "warn"])
-        .args(&["-o", "/dev/null"]);
+        .args(["--cap-lints", "warn"])
+        .args(["-o", "/dev/null"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
@@ -188,10 +188,9 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
-        .replace('[', "_")
-        .replace(']', "_");
+        .replace(['[', ']'], "_");
 
-    let file_string = std::fs::read_to_string(&file).unwrap_or_default();
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
 
     let has_main = file_string.contains("pub(crate) fn main(");
     let mut cmd = Command::new(executable);
@@ -201,7 +200,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(&file)
+        .arg(file)
         .arg("-Aclippy::cargo") // allow cargo lints
         //.arg("-Wclippy::internal")
         .arg("-Wclippy::restriction")
@@ -231,7 +230,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
-        .args(&["--cap-lints", "warn"]);
+        .args(["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
@@ -257,7 +256,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("new")
         .args(["--vcs", "none"])
         .arg(file_stem)
-        .current_dir(&tempdir_path)
+        .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new")
         .status
@@ -331,7 +330,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
-        .args(&["--cap-lints", "warn"]);
+        .args(["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
@@ -344,25 +343,25 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(&file)
+        .arg(file)
         .arg("-Zunstable-options")
         .arg("--document-private-items")
         .arg("--document-hidden-items")
-        .args(&["--output-format", "json"])
-        .args(&["--cap-lints", "warn"])
+        .args(["--output-format", "json"])
+        .args(["--cap-lints", "warn"])
         .arg("-Wrustdoc::invalid-html-tags")
         .arg("-Wrustdoc::missing-crate-level-docs")
         .arg("-Wrustdoc::missing-doc-code-examples")
         .arg("-Wrustdoc::private-doc-tests")
         .arg("--show-type-layout")
-        .args(&["-o", "/dev/null"]);
+        .args(["-o", "/dev/null"]);
     let output = systemdrun_command(&mut cmd).unwrap();
 
     (output, get_cmd_string(&cmd), Vec::new())
 }
 
 pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
-    let file_content = std::fs::read_to_string(&file).expect("failed to read file ");
+    let file_content = std::fs::read_to_string(file).expect("failed to read file ");
 
     let mut cmd = Command::new(executable)
         .arg("symbols")
@@ -388,9 +387,9 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
 pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let mut cmd = Command::new(executable);
     cmd.env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(&file)
+        .arg(file)
         .arg("--check")
-        .args(&["--edition", "2018"]);
+        .args(["--edition", "2018"]);
     let output = systemdrun_command(&mut cmd).unwrap();
     (output, get_cmd_string(&cmd), Vec::new())
 }
@@ -402,10 +401,9 @@ pub(crate) fn run_miri(
 ) -> (Output, String, Vec<OsString>) {
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
-        .replace('[', "_")
-        .replace(']', "_");
+        .replace(['[', ']'], "_");
 
-    let file_string = std::fs::read_to_string(&file).unwrap_or_default();
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
     /*    // only check files that have main() as entrypoint
     // assume that if we find "fn main() {\n", the main contains something
     let has_main = file_string.contains("fn main() {\n");
@@ -452,7 +450,7 @@ pub(crate) fn run_miri(
         .arg("new")
         .arg(file_stem)
         .args(["--vcs", "none"])
-        .current_dir(&tempdir_path)
+        .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new")
         .status
@@ -535,7 +533,7 @@ pub(crate) fn run_cranelift(
         return run_rustc_incremental(executable, file);
     }
     // if the file contains no "main", run with "--crate-type lib"
-    let has_main = std::fs::read_to_string(&file)
+    let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
@@ -545,7 +543,7 @@ pub(crate) fn run_cranelift(
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
     let mut cmd = Command::new(executable);
-    cmd.arg(&file)
+    cmd.arg(file)
         .args(rustc_flags)
         // always keep these:
         .arg(&output_file)
@@ -616,7 +614,7 @@ pub(crate) fn systemdrun_command(
     }
 }
 pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool {
-    let has_main = std::fs::read_to_string(&file)
+    let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
@@ -668,7 +666,7 @@ pub(crate) fn incremental_stress_test(
     for i in &[0_usize, 1_usize] {
         let file = files[*i];
 
-        let has_main = std::fs::read_to_string(&file)
+        let has_main = std::fs::read_to_string(file)
             .unwrap_or_default()
             .contains("fn main(");
 
@@ -678,7 +676,7 @@ pub(crate) fn incremental_stress_test(
             command.arg("--crate-type=lib");
         }
         command
-            .arg(&file)
+            .arg(file)
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))

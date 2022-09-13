@@ -62,7 +62,7 @@ pub(crate) struct Args {
 
 /// check whether a file uses features or not
 pub fn uses_feature(file: &std::path::Path) -> bool {
-    match std::fs::read_to_string(&file) {
+    match std::fs::read_to_string(file) {
         Ok(file) => file.contains("feature("),
         _ => {
             eprintln!("Failed to read '{}'", file.display());

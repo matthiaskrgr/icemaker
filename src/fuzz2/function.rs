@@ -36,7 +36,7 @@ impl FunctionGenerator {
             .unwrap();
         let args = (0..args_number)
             .into_iter()
-            .map(|argnr| format!("{}", tygen.random_ty()));
+            .map(|_argnr| format!("{}", tygen.random_ty()));
 
         let fun = Function {
             keyword: Vec::new(),
@@ -72,7 +72,7 @@ impl Function {
         let args = self
             .args
             .iter()
-            .map(|x| "unimplemented!(), ")
+            .map(|_x| "unimplemented!(), ")
             .collect::<String>();
         format!("{name}({args});")
     }

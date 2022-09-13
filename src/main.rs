@@ -48,6 +48,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
 use clap::Parser;
+use colored::Colorize;
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
@@ -535,9 +536,9 @@ impl ICE {
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
                 kind = if matches!(executable, Executable::Miri) {
-                    "UB "
+                    "UB ".green()
                 } else {
-                    "ICE"
+                    "ICE".red()
                 },
                 msg = {
                     let s = found_error
@@ -751,7 +752,8 @@ impl ICE {
         if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(
-                "HANG: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                "HANG".blue(),
                 executable,
                 file.display(),
                 seconds_elapsed,

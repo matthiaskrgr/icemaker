@@ -37,7 +37,7 @@ pub enum ICEKind {
     // something crahed
     Ice,
     // miri found undefined behaviour
-    Ub,
+    Ub(UbKind),
     // program didn't terminate in time
     Hang,
     // clippy failed to apply fixes
@@ -48,6 +48,12 @@ impl Default for ICEKind {
     fn default() -> Self {
         Self::Ice
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub enum UbKind {
+    Interesting,
+    Uninteresting,
 }
 
 // is this actually used?

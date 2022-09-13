@@ -526,6 +526,17 @@ impl ICE {
 
         let exit_code_looks_like_crash = exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status) ||  /* llvm crash / assertion failure etc */ exit_status == 254;
 
+        let miri_finding_is_potentially_interesting: bool =
+            if matches!(executable, Executable::Miri) && found_error.is_some() {
+                let miri_input_file = std::fs::read_to_string(file).unwrap_or_default();
+                // finding is interesting if input file contains none of those strings
+                !["unsafe", "repr(simd)"]
+                    .into_iter()
+                    .any(|kw| miri_input_file.contains(kw))
+            } else {
+                false
+            };
+
         // @TODO merge the two  found_error.is_some() branches and print ice reason while checking
         #[allow(clippy::format_in_format_args)]
         if exit_code_looks_like_crash && found_error.is_some()
@@ -536,7 +547,7 @@ impl ICE {
             print!("\r");
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-                kind = if matches!(ice_kind, ICEKind::Ub) {
+                kind = if matches!(ice_kind, ICEKind::Ub(..)) {
                     "UB ".green()
                 } else {
                     "ICE".red()
@@ -601,7 +612,16 @@ impl ICE {
         }
 
         let mut ret = None;
-        if let Some((error_reason, ice_kind)) = found_error.clone() {
+        if let Some((error_reason, ice_kind)) = found_error {
+            let ice_kind = if matches!(ice_kind, ICEKind::Ub(..)) {
+                if miri_finding_is_potentially_interesting {
+                    ICEKind::Ub(UbKind::Interesting)
+                } else {
+                    ICEKind::Ub(UbKind::Uninteresting)
+                }
+            } else {
+                ice_kind
+            };
             //            eprintln!("ICE\n\n\nICE\n\n");
             if !matches!(executable, Executable::Miri) {
                 // PRECHECK
@@ -958,7 +978,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                         })
                     });
                     if ub_line.is_some() {
-                        ub_line.map(|line| (line, ICEKind::Ub))
+                        ub_line.map(|line| (line, ICEKind::Ub(UbKind::Uninteresting)))
                     } else {
                         // we didn't find ub, but perhaps miri crashed?
                         lines

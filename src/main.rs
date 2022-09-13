@@ -513,7 +513,7 @@ impl ICE {
             .unwrap_or_default()
             .to_string();
 
-        ice_msg = ice_msg.replace("error: internal compiler error:", "ICE");
+        ice_msg = ice_msg.replace("error: internal compiler error:", "ICE:");
 
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
@@ -535,7 +535,7 @@ impl ICE {
             println!(
                 "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
                 kind = if matches!(executable, Executable::Miri) {
-                    "UB"
+                    "UB "
                 } else {
                     "ICE"
                 },
@@ -545,7 +545,7 @@ impl ICE {
                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
                         .unwrap_or(format!("No error found but exit code: {}", exit_status));
                     let s = s.replace("error: internal compiler error:", "ICE:");
-                    let mut s = s.replace("unexpected panic: ", "ICE:");
+                    let mut s = s.replace("unexpected panic:", "ICE:");
                     s.push_str(&ice_msg);
                     s
                 },

@@ -197,7 +197,7 @@ fn main() {
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
     ctrlc::set_handler(move || {
-        println!("Ctrl+C: TERMINATED");
+        println!("\n\nCtrl+C: TERMINATED\n");
 
         ALL_ICES_WITH_FLAGS
             .lock()

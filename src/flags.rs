@@ -720,6 +720,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     // infinite recursion in rustdoc, can take tens of minutes in ci
     "./src/test/ui/recursion/issue-38591-non-regular-dropck-recursion.rs",
     "./src/test/ui/dropck/dropck_no_diverge_on_nonregular_2.rs",
+    "./src/test/ui/dropck/dropck_no_diverge_on_nonregular_1.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

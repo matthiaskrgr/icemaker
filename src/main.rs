@@ -139,6 +139,7 @@ fn main() {
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
         println!("Running cargo miri setup");
         let _ = std::process::Command::new("cargo")
+            .arg("+master")
             .arg("miri")
             .arg("setup")
             .status()

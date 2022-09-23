@@ -1254,10 +1254,9 @@ fn codegen_git() {
             .expect("git cat-file -p <obj> failed")
             .stdout;
         let text = String::from_utf8(stdout).unwrap();
-        std::fs::create_dir_all(format!("{}/{}", first, second))
-            .expect("failed to create directories");
-        std::fs::write(format!("{}/{}/{}.rs", first, second, obj), text)
-            .expect("failed to write file");
+        let dir = format!("{}{}", first, second);
+        std::fs::create_dir_all(dir).expect("failed to create directories");
+        std::fs::write(format!("{}/{}.rs", dir, obj), text).expect("failed to write file");
     })
 }
 

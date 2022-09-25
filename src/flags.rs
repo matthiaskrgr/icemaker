@@ -796,10 +796,10 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
     ], */
     // and without
     &[
-        "-Zmiri-check-number-validity",
+        //"-Zmiri-check-number-validity", // default
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
-        "-Zmiri-tag-raw-pointers",
+        // "-Zmiri-tag-raw-pointers", // default
         "-Zmiri-mute-stdout-stderr",
         "-Zmiri-retag-fields",
         //"-Zmir-opt-level=4",
@@ -960,18 +960,21 @@ mod tests {
 
             let mut cmd = std::process::Command::new("cargo");
 
+            let output = cmd
+                .arg("+master")
+                .arg("miri")
+                .arg("run")
+                .current_dir(crate_path)
+                .env("MIRIFLAGS", batch_of_flags.join(" "))
+                .env("RUSTFLAGS", "-Zvalidate-mir")
+                .output()
+                .unwrap();
+
             assert!(
-                cmd.arg("miri")
-                    .arg("run")
-                    .current_dir(crate_path)
-                    .env("MIRIFLAGS", batch_of_flags.join(" "))
-                    .env("RUSTFLAGS", "-Zvalidate-mir")
-                    .output()
-                    .unwrap()
-                    .status
-                    .success(),
-                "miri flags bad: '{:?}'",
-                batch_of_flags
+                output.status.success(),
+                "miri flags bad: '{:?}'\n\noutput. {:?}",
+                batch_of_flags,
+                output
             );
         }
     }

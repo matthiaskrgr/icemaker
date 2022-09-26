@@ -127,6 +127,8 @@ pub(crate) fn run_rustc_incremental(
 }
 
 pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+    // runs clippy-driver, not cargo-clippy!
+
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("pub(crate) fn main(");
@@ -171,6 +173,8 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         .arg("-Wunused-qualifications")
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
+        .arg("--edition=2021")
+        .arg("-Zvalidate-mir")
         .args(["--cap-lints", "warn"])
         .args(["-o", "/dev/null"]);
 

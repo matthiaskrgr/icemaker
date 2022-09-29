@@ -852,7 +852,7 @@ mod tests {
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(&Executable::Rustc.path());
-            cmd.args(*batch_of_flags).arg("/tmp/a.rs");
+            cmd.args(*batch_of_flags).arg("dummy.rs");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;
@@ -893,7 +893,7 @@ mod tests {
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(&Executable::Rustc.path());
-            cmd.args(*batch_of_flags).arg("/tmp/a.rs");
+            cmd.args(*batch_of_flags).arg("dummy.rs");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;

@@ -58,6 +58,9 @@ pub(crate) struct Args {
 
     #[clap(long = "order", long = "chain-order", default_value_t = 4)]
     pub(crate) chain_order: usize,
+
+    #[clap(long = "projects", num_args = 1..)]
+    pub(crate) projects: Vec<std::path::PathBuf>,
 }
 
 /// check whether a file uses features or not

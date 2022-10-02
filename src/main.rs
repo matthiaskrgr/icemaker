@@ -84,25 +84,20 @@ fn executable_from_args(args: &Args) -> Executable {
     }
 }
 
-fn main() {
-    // how long did we take?
-    let start_time = Instant::now();
+/// run on a project, each project having its own errors.json
 
+fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
-    let errors_before: Vec<ICE> = if std::path::PathBuf::from("errors.json").exists() {
-        serde_json::from_str(&std::fs::read_to_string("errors.json").unwrap())
+    let errors_json = dbg!(root_path.join("errors.json"));
+    let errors_before: Vec<ICE> = if errors_json.exists() {
+        serde_json::from_str(&std::fs::read_to_string(&errors_json).unwrap())
             .expect("Failed to parse errors.json, is it a json file?")
     } else {
         Vec::new()
     };
 
-    let args = Args::parse();
-
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(args.threads)
-        .build_global()
-        .unwrap();
+    std::env::set_current_dir(&root_path).is_ok()
 
     let executable = executable_from_args(&args);
     let executables = if !matches!(executable, Executable::Rustc) ||  /* may have passed --rustc to disable clippy rustdoc etc */ args.rustc
@@ -133,7 +128,7 @@ fn main() {
 
     if args.codegen {
         codegen_git();
-        return;
+        return Vec::new();
     }
 
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
@@ -150,19 +145,19 @@ fn main() {
     if args.heat {
         let chain_order = args.chain_order;
         let _ = run_space_heater(executable, chain_order);
-        return;
+        return Vec::new();
     }
 
     if args.fuzz {
         let _ = run_random_fuzz(executable);
-        return;
+        return Vec::new();
     } else if args.fuzz2 {
         crate::fuzz2::fuzz2::fuzz2main();
-        return;
+        return Vec::new();
     }
 
     // search for rust files inside CWD
-    let mut files = WalkDir::new(".")
+    let mut files = WalkDir::new(root_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
@@ -197,27 +192,6 @@ fn main() {
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
-    ctrlc::set_handler(move || {
-        println!("\n\nCtrl+C: TERMINATED\n");
-
-        ALL_ICES_WITH_FLAGS
-            .lock()
-            .unwrap()
-            .iter()
-            .for_each(|flags| {
-                let flags = flags
-                    .iter()
-                    .map(|x| x.to_str().unwrap().to_string())
-                    .collect::<Vec<String>>();
-                if !flags.is_empty() {
-                    println!("{}", flags.join(" "))
-                }
-            });
-
-        std::process::exit(42);
-    })
-    .expect("Error setting Ctrl-C handler");
-
     let rustc_exec_path = Executable::Rustc.path();
 
     if args.incremental_test {
@@ -249,7 +223,7 @@ fn main() {
             .collect::<Vec<_>>();
 
         dbg!(incr_crashes);
-        return;
+        return Vec::new();
     }
 
     let mut errors: Vec<ICE> = files
@@ -400,7 +374,10 @@ fn main() {
 
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();
-    std::fs::write("errors.json", &errors_new).expect("failed to write to file");
+    std::fs::write(&errors_json, &errors_new).expect(&format!(
+        "error: failed to write to {}",
+        errors_json.display()
+    ));
 
     println!("\ndiff: \n");
     // get the diff
@@ -424,9 +401,66 @@ fn main() {
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{:#?}", new_ices);
+    files
+}
+
+fn main() {
+    // how long did we take?
+    let start_time = Instant::now();
+
+    let args = Args::parse();
 
     // print a warning if a file takes longer than X to process
     let seconds_elapsed = start_time.elapsed().as_secs();
+
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(args.threads)
+        .build_global()
+        .unwrap();
+
+    ctrlc::set_handler(move || {
+        println!("\n\nCtrl+C: TERMINATED\n");
+
+        ALL_ICES_WITH_FLAGS
+            .lock()
+            .unwrap()
+            .iter()
+            .for_each(|flags| {
+                let flags = flags
+                    .iter()
+                    .map(|x| x.to_str().unwrap().to_string())
+                    .collect::<Vec<String>>();
+                if !flags.is_empty() {
+                    println!("{}", flags.join(" "))
+                }
+            });
+
+        std::process::exit(42);
+    })
+    .expect("Error setting Ctrl-C handler");
+
+    let projs = args.projects.clone();
+    let projects = if projs.is_empty() {
+        // if we didn't get anything passed, use cwd
+        vec![std::env::current_dir().expect("cwd not found or does not exist!")]
+    } else {
+        println!(
+            "checking projects: {}",
+            projs
+                .iter()
+                .map(|p| p.display().to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+        projs
+    };
+
+    let files = projects
+        .iter()
+        .map(|dir| check_dir(dir, &args))
+        .flat_map(|v| v.into_iter())
+        .collect::<Vec<PathBuf>>();
+
     let files_number = files.len();
     if seconds_elapsed == 0 {
         println!("Checked {} files in <1 second", files_number);

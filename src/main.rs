@@ -89,7 +89,7 @@ fn executable_from_args(args: &Args) -> Executable {
 fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
-    let errors_json = dbg!(root_path.join("errors.json"));
+    let errors_json = root_path.join("errors.json");
     let errors_before: Vec<ICE> = if errors_json.exists() {
         serde_json::from_str(&std::fs::read_to_string(&errors_json).unwrap())
             .expect("Failed to parse errors.json, is it a json file?")

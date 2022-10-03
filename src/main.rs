@@ -464,6 +464,14 @@ fn main() {
         );
         projs
     };
+    // assert these are all valid directories
+    if let Some(invalid_path) = projects.iter().find(|proj_path| !proj_path.is_dir()) {
+        eprintln!(
+            "ERROR: --projects '{}' is not a directory",
+            invalid_path.display()
+        );
+        std::process::exit(1);
+    }
 
     let files = projects
         .iter()

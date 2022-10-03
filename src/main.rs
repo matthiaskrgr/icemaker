@@ -97,8 +97,6 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         Vec::new()
     };
 
-    std::env::set_current_dir(&root_path).is_ok()
-
     let executable = executable_from_args(&args);
     let executables = if !matches!(executable, Executable::Rustc) ||  /* may have passed --rustc to disable clippy rustdoc etc */ args.rustc
     {
@@ -371,6 +369,18 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         println!("{}", debug);
     });
     */
+
+    // if the ices start with the root path, we need to strip the root path
+    errors.iter_mut().for_each(|ice| {
+        let mut ice_path = ice.file.clone();
+        if ice_path.starts_with(root_path) {
+            ice_path = ice_path
+                .strip_prefix(root_path)
+                .expect("strip_prefix failed, could not fix ice.file")
+                .to_owned();
+            ice.file = ice_path;
+        }
+    });
 
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();

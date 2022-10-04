@@ -525,6 +525,8 @@ impl ICE {
         silent: bool,
     ) -> Option<Self> {
         let thread_start = Instant::now();
+        const SECONDS_LIMIT: u64 = 90;
+        const SECONDS_LIMIT_MIRI: u64 = 20;
 
         let incremental = if compiler_flags == ["INCR_COMP"] {
             true
@@ -697,6 +699,24 @@ impl ICE {
                     _ => None,
                 };
 
+                let seconds_elapsed = thread_start.elapsed().as_secs();
+                if seconds_elapsed > (SECONDS_LIMIT_MIRI) {
+                    print!("\r");
+                    println!(
+                        "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                        "HANG".blue(),
+                        executable,
+                        file.display(),
+                        seconds_elapsed,
+                        SECONDS_LIMIT_MIRI,
+                        actual_args
+                            .iter()
+                            .cloned()
+                            .map(|s| s.into_string().unwrap())
+                            .collect::<Vec<String>>(),
+                    );
+                }
+
                 if found_error0.is_some() {
                     let ice = ICE {
                         regresses_on: Regression::Master,
@@ -837,7 +857,6 @@ impl ICE {
         // print a warning if a file takes longer than X to process
         // @TODO this only reports if the file finishes running, if we are stuck, we wont
         let seconds_elapsed = thread_start.elapsed().as_secs();
-        const SECONDS_LIMIT: u64 = 90;
         if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(

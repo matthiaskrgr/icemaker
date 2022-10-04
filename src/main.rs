@@ -378,7 +378,8 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                 .strip_prefix(root_path)
                 .expect("strip_prefix failed, could not fix ice.file")
                 .to_owned();
-            ice.file = ice_path;
+            // readd the leading "./" that was stripped previously
+            ice.file = PathBuf::from("./").join(ice_path);
         }
     });
 

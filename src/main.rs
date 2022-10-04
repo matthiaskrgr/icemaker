@@ -421,9 +421,6 @@ fn main() {
 
     let args = Args::parse();
 
-    // print a warning if a file takes longer than X to process
-    let seconds_elapsed = start_time.elapsed().as_secs();
-
     rayon::ThreadPoolBuilder::new()
         .num_threads(args.threads)
         .build_global()
@@ -479,6 +476,9 @@ fn main() {
         .map(|dir| check_dir(dir, &args))
         .flat_map(|v| v.into_iter())
         .collect::<Vec<PathBuf>>();
+
+    // print a warning if a file takes longer than X to process
+    let seconds_elapsed = start_time.elapsed().as_secs();
 
     let files_number = files.len();
     if seconds_elapsed == 0 {

@@ -723,6 +723,13 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "./src/test/ui/recursion/issue-38591-non-regular-dropck-recursion.rs",
     "./src/test/ui/dropck/dropck_no_diverge_on_nonregular_2.rs",
     "./src/test/ui/dropck/dropck_no_diverge_on_nonregular_1.rs",
+    // 900 mb output, can take 5-10 minutes
+    "./src/test/run-make-fulldeps/issue-47551/eh_frame-terminator.rs",
+    // very slow
+    "./library/stdarch/crates/core_arch/src/x86/mod.rs",
+    "./library/core/src/lib.rs",
+    "./library/stdarch/crates/core_arch/src/mod.rs",
+    "./compiler/rustc_middle/src/lib.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

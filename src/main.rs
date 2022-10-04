@@ -412,6 +412,29 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{:#?}", new_ices);
+
+    let root_path_string = root_path.display().to_string();
+
+    // crashing commands
+    ALL_ICES_WITH_FLAGS
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|flags| {
+            let flags = flags
+                .iter()
+                .map(|x| x.to_str().unwrap().to_string())
+                .collect::<Vec<String>>();
+            // miri for example has no flags, don't spam a bunch of empty lines into stdout
+            flags
+        })
+        .filter(|flags| !flags.is_empty())
+        .map(|flags| flags.join(" "))
+        .filter(|flag| flag.starts_with(&root_path_string))
+        .for_each(|line| {
+            println!("{}", line);
+        });
+
     files
 }
 

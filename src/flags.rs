@@ -572,13 +572,13 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=amdfam10",
     ],
-    &[
+   /*   &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
         "-Ctarget-cpu=athlon-4",
     ],
-    /* &[
+   &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",

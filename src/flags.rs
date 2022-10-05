@@ -572,42 +572,42 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=amdfam10",
     ],
-   /*   &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon-4",
-    ],
-   &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon",
-    ],
+    /*   &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon-4",
+     ],
     &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon-fx",
-    ],
-      &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon-mp",
-    ],
-    &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon-tbird",
-    ],
-    &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=athlon-xp",
-    ], */
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon",
+     ],
+     &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon-fx",
+     ],
+       &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon-mp",
+     ],
+     &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon-tbird",
+     ],
+     &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=athlon-xp",
+     ], */
     // ^ LLVM ERROR: 64-bit code requested on a subtarget that doesn't support it!
     &[
         "-ocodegen",
@@ -681,7 +681,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=btver2",
     ],
-/*    &["-ocodegen", "-Copt-level=3", "-Clto=fat", "-Ctarget-cpu=c3"],
+    /*    &["-ocodegen", "-Copt-level=3", "-Clto=fat", "-Ctarget-cpu=c3"],
     &[
         "-ocodegen",
         "-Copt-level=3",
@@ -742,7 +742,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=generic",
     ],
- /*    &[
+    /*    &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
@@ -766,30 +766,30 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=haswell",
     ],
-  /*   &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=i386",
-    ],
-   &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=i486",
-    ],
+    /*   &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=i386",
+     ],
     &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=i586",
-    ],
-    &[
-        "-ocodegen",
-        "-Copt-level=3",
-        "-Clto=fat",
-        "-Ctarget-cpu=i686",
-    ], */
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=i486",
+     ],
+     &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=i586",
+     ],
+     &[
+         "-ocodegen",
+         "-Copt-level=3",
+         "-Clto=fat",
+         "-Ctarget-cpu=i686",
+     ], */
     &[
         "-ocodegen",
         "-Copt-level=3",
@@ -808,7 +808,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=ivybridge",
     ],
- /*   &["-ocodegen", "-Copt-level=3", "-Clto=fat", "-Ctarget-cpu=k6"],
+    /*   &["-ocodegen", "-Copt-level=3", "-Clto=fat", "-Ctarget-cpu=k6"],
     &[
         "-ocodegen",
         "-Copt-level=3",
@@ -819,7 +819,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
-        "-Ctarget-cpu=k6-3", 
+        "-Ctarget-cpu=k6-3",
     ],*/
     &["-ocodegen", "-Copt-level=3", "-Clto=fat", "-Ctarget-cpu=k8"],
     &[
@@ -840,7 +840,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=knm",
     ],
-  /*  &[
+    /*  &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
@@ -876,7 +876,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=penryn",
     ],
-  /*  &[
+    /*  &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
@@ -928,8 +928,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
-        "-Ctarget-cpu=pentiumpro", 
-    ], 
+        "-Ctarget-cpu=pentiumpro",
+    ],
     &[
         "-ocodegen",
         "-Copt-level=3",
@@ -1002,7 +1002,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=westmere",
     ],
- /*   &[
+    /*   &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",
@@ -1038,7 +1038,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=x86-64-v4",
     ],
-   /* &[
+    /* &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto=fat",

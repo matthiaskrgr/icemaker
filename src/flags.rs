@@ -730,6 +730,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "./library/core/src/lib.rs",
     "./library/stdarch/crates/core_arch/src/mod.rs",
     "./compiler/rustc_middle/src/lib.rs",
+    "./library/stdarch/crates/core_arch/src/x86/avx512f.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

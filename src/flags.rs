@@ -560,6 +560,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     // &["-Zvirtual-function-elimination=yes", "-Clto=fat"],
 
     // llvm fuzzing \o/
+    /* 
     &[
         "-ocodegen",
         "-Copt-level=3",
@@ -1061,7 +1062,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Copt-level=3",
         "-Clto=fat",
         "-Ctarget-cpu=znver3",
-    ],
+    ], */
 ];
 
 static DEFAULT_RUSTFLAGS: &[&[&str]] = &[

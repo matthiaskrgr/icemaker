@@ -9,7 +9,7 @@ use once_cell::sync::Lazy;
 static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
     // I might fix this at some point by making it work lists of &str instead of se();
-    /*   &[
+    &[
         // lints #1
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
@@ -550,7 +550,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "--crate-type=lib",
         "-Copt-level=3",
         "-ocodegen",
-    ], */
+    ],
     // chalk is not ready yet, but polonius?
     /*
     &["-Zchalk"],
@@ -1063,7 +1063,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Clto=fat",
         "-Ctarget-cpu=znver3",
     ], */
-    &[
+    /*&[
         "-Ctarget-feature=+adx",
         "-ocodegen",
         "-Copt-level=3",
@@ -2934,7 +2934,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
         "-Copt-level=3",
         "-Clto",
-    ],
+    ], */
 ];
 
 static DEFAULT_RUSTFLAGS: &[&[&str]] = &[

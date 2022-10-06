@@ -183,9 +183,19 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
     // files that take too long (several minutes) to check or cause other problems
     #[allow(non_snake_case)]
-    let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS.iter().map(PathBuf::from).collect();
+    let EXCEPTION_LIST: Vec<PathBuf> = EXCEPTIONS
+        .iter()
+        .map(PathBuf::from)
+        // otherwise we don't match
+        .map(|p| root_path.join(p))
+        .collect();
     #[allow(non_snake_case)]
-    let MIRI_EXCEPTION_LIST: Vec<PathBuf> = MIRI_EXCEPTIONS.iter().map(PathBuf::from).collect();
+    let MIRI_EXCEPTION_LIST: Vec<PathBuf> = MIRI_EXCEPTIONS
+        .iter()
+        .map(PathBuf::from)
+        // otherwise we don't match
+        .map(|p| root_path.join(p))
+        .collect();
 
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);

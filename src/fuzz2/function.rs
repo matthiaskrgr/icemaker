@@ -22,6 +22,14 @@ impl FunctionGenerator {
     }
 
     pub(crate) fn gen_fn(&mut self) -> Function {
+        let possible_fn_keywords: &[FnKeyword] = &[
+            FnKeyword::FnConst,
+            FnKeyword::FnAsync,
+            FnKeyword::FnExtern,
+            FnKeyword::FnUnsafe,
+            FnKeyword::Other(String::from("foo")),
+        ];
+
         let tygen = TyGen::new();
         //let mut rng = rand::thread_rng();
         let ty = tygen.random_ty();
@@ -38,8 +46,14 @@ impl FunctionGenerator {
             .into_iter()
             .map(|_argnr| format!("{}", tygen.random_ty()));
 
+        let keywords = (0..=std::mem::variant_count::<FnKeyword>())
+            .into_iter()
+            .filter_map(|_| possible_fn_keywords.iter().choose(&mut rand::thread_rng()))
+            .cloned()
+            .collect::<Vec<FnKeyword>>();
+
         let fun = Function {
-            keyword: Vec::new(),
+            keywords,
             lifetimes: LIFETIMES.iter().map(|x| x.to_string()).choose_multiple(
                 &mut rand::thread_rng(),
                 (0..10).into_iter().choose(&mut rand::thread_rng()).unwrap(),
@@ -58,7 +72,7 @@ impl FunctionGenerator {
 #[derive(Debug, Clone)]
 pub(crate) struct Function {
     /// such as const, async etc
-    keyword: Vec<String>,
+    keywords: Vec<FnKeyword>,
     lifetimes: Vec<String>,
     name: String,
     return_ty: Ty,
@@ -75,6 +89,31 @@ impl Function {
             .map(|_x| "unimplemented!(), ")
             .collect::<String>();
         format!("{name}({args});")
+    }
+}
+
+#[derive(Debug, Clone)]
+enum FnKeyword {
+    FnConst,
+    FnAsync,
+    FnExtern,
+    FnUnsafe,
+    Other(String),
+}
+
+impl std::fmt::Display for FnKeyword {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                FnKeyword::FnConst => "const",
+                FnKeyword::FnAsync => "async",
+                FnKeyword::FnExtern => "extern",
+                FnKeyword::FnUnsafe => "unsafe",
+                FnKeyword::Other(kw) => kw,
+            }
+        )
     }
 }
 

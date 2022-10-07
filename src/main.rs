@@ -1,3 +1,5 @@
+#![feature(variant_count)]
+
 mod flags;
 /// Run rustc its own tests with different parameters
 /// If an ICE (internal compiler error/crash/panic) is found, find out

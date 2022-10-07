@@ -94,11 +94,11 @@ impl Function {
 
 #[derive(Debug, Clone)]
 enum FnKeyword {
-    FnConst,
-    FnAsync,
-    FnExtern,
-    FnUnsafe,
-    Other(String),
+    FnConst,       // const
+    FnAsync,       // async
+    FnExtern,      // extern
+    FnUnsafe,      // unsafe
+    Other(String), // we can do custom stuff here
 }
 
 impl std::fmt::Display for FnKeyword {
@@ -133,7 +133,7 @@ impl std::fmt::Display for Function {
             .collect::<String>();
         write!(
             f,
-            "fn {keywords} {}({}) -> {} {{ {body} }}",
+            "{keywords} fn {}({}) -> {} {{ {body} }}",
             &self.name, args_fmtd, self.return_ty
         )
     }

@@ -3008,6 +3008,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2015",
         "-Ztranslate-lang=en_US",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=10000",
     ],
     // basic stuff, edition 2018
     &[
@@ -3032,6 +3034,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2018",
         "-Ztranslate-lang=en_US",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=10000",
     ],
     // basic stuff, edition 2021
     &[
@@ -3056,6 +3060,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2021",
         "-Ztranslate-lang=en_US",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=10000",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

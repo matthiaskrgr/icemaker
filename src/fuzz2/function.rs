@@ -46,7 +46,12 @@ impl FunctionGenerator {
             .into_iter()
             .map(|_argnr| format!("{}", tygen.random_ty()));
 
-        let keywords = (0..=std::mem::variant_count::<FnKeyword>())
+        let num_keywords = (0..=std::mem::variant_count::<FnKeyword>())
+            .into_iter()
+            .choose(&mut rand::thread_rng())
+            .unwrap_or_default();
+
+        let keywords = (0..num_keywords)
             .into_iter()
             .filter_map(|_| possible_fn_keywords.iter().choose(&mut rand::thread_rng()))
             .cloned()
@@ -111,7 +116,7 @@ impl std::fmt::Display for FnKeyword {
                 FnKeyword::FnAsync => "async",
                 FnKeyword::FnExtern => "extern",
                 FnKeyword::FnUnsafe => "unsafe",
-                FnKeyword::Other(kw) => kw,
+                FnKeyword::Other(kw) => " ",
             }
         )
     }

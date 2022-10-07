@@ -126,9 +126,14 @@ impl std::fmt::Display for Function {
             .map(|(i, arg_ty)| format!("arg_{i}: {arg_ty}, "))
             .collect::<String>();
         let body = &self.body;
+        let keywords = self
+            .keywords
+            .iter()
+            .map(|kw| format!(" {} ", kw))
+            .collect::<String>();
         write!(
             f,
-            "fn {}({}) -> {} {{ {body} }}",
+            "fn {keywords} {}({}) -> {} {{ {body} }}",
             &self.name, args_fmtd, self.return_ty
         )
     }

@@ -3860,7 +3860,7 @@ mod tests {
         let paths_iter = EXCEPTIONS.iter().chain(MIRI_EXCEPTIONS.iter());
 
         paths_iter.for_each(|file| {
-            assert!(file.starts_with("./"), "{}", file);
+            assert!(!file.starts_with("./"), "{}", file);
             assert!(file.ends_with(".rs"), "{}", file);
         });
     }

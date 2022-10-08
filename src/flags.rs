@@ -76,6 +76,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         // "-Zmeta-stats",
         "--edition=2015",
+        "-Zstack-protector=all",
+        "-Zstrict-init-checks=yes",
     ],
     // basic stuff, edition 2018
     &[
@@ -100,6 +102,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         //"-Zmeta-stats",
         "--edition=2018",
+        "-Zstack-protector=all",
+        "-Zstrict-init-checks=yes",
     ],
     // basic stuff, edition 2021
     &[
@@ -124,6 +128,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         //  "-Zmeta-stats",
         "--edition=2021",
+        "-Zstack-protector=all",
+        "-Zstrict-init-checks=yes",
     ],
     // incremental compilation, keep this!
     &["INCR_COMP"],

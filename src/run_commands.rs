@@ -348,6 +348,7 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(file)
+        .arg("-Znormalize-docs")
         .arg("-Zunstable-options")
         .arg("--document-private-items")
         .arg("--document-hidden-items")

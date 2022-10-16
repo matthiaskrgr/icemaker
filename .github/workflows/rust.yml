@@ -15,8 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: cargo check
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
-      - run: cargo check --all-targets
+        run: cargo check --all-targets

@@ -18,4 +18,5 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+      - run: rustup default nightly
       - run: cargo check --all-targets

@@ -872,7 +872,7 @@ impl ICE {
                     .collect::<Vec<String>>(),
                 // executable: rustc_path.to_string(),
                 error_reason,
-                ice_msg,
+                ice_msg: ice_msg.clone(),
                 executable: executable.clone(),
                 kind: ice_kind,
                 //cmd,
@@ -907,6 +907,23 @@ impl ICE {
                     .map(|s| s.into_string().unwrap())
                     .collect::<Vec<String>>(),
             );
+
+            // the process was killed by systemd because it exceeded time limit
+            let ret_hang = ICE {
+                regresses_on: Regression::Master,
+                needs_feature: uses_feature,
+                file: file.to_owned(),
+                args: compiler_flags
+                    .iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>(),
+
+                error_reason: String::from("HANG"),
+                ice_msg,
+                executable: executable.clone(),
+                kind: ICEKind::Hang,
+            };
+            ret = Some(ret_hang);
         }
 
         ret

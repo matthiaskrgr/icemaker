@@ -40,6 +40,7 @@ pub enum ICEKind {
     Ub(UbKind),
     // program didn't terminate in time
     Hang,
+    OOM,
     // clippy failed to apply fixes
     ClippyFix,
 }

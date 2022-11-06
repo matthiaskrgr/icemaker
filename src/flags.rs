@@ -11,6 +11,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     // I might fix this at some point by making it work lists of &str instead of se();
     &[
         // lints #1
+        "-Zunstable-options",
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
         "-Wdeprecated-in-future",
@@ -55,6 +56,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2015
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -81,6 +83,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2018
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -107,6 +110,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2021
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -144,6 +148,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
      */
     // enable different rustc features
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -163,6 +168,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(intrinsics)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -180,6 +186,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(with_negative_coherence)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -199,6 +206,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(panic_runtime)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -218,6 +226,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(bpf_target_feature)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -237,6 +246,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(sse4a_target_feature)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -256,6 +266,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(adt_const_params)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -275,6 +286,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(associated_type_defaults)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -294,6 +306,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(cfg_target_thread_local)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -313,6 +326,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_mut_refs)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -332,6 +346,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(default_type_parameter_fallback)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -353,6 +368,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(ffi_pure)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -375,6 +391,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(inline_const)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -393,6 +410,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(macro_metavar_expr)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -411,6 +429,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(never_type)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -430,6 +449,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(precise_pointer_size_matching)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -447,6 +467,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(simd_ffi)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -468,6 +489,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(type_alias_impl_trait)",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=4",
         "-Zdump-mir=all",
@@ -2954,6 +2976,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     // I might fix this at some point by making it work lists of &str instead of se();
     &[
         // lints #1
+        "-Zunstable-options",
         "-Wabsolute-paths-not-starting-with-crate",
         "-Wbox-pointers",
         "-Wdeprecated-in-future",
@@ -2999,6 +3022,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2015
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -3023,6 +3047,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2018
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",
@@ -3047,6 +3072,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2021
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
         "-Zincremental-verify-ich=yes",

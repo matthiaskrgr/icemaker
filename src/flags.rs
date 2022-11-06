@@ -506,6 +506,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
     // Sanitizers
     &[
+        "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
@@ -522,6 +523,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ], */
     &[
+        "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
@@ -530,6 +532,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
@@ -538,6 +541,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
         "-Copt-level=3",
@@ -546,12 +550,14 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zvalidate-mir",
         "-Cdebuginfo=2",
         "--crate-type=bin",
         "-Copt-level=3",
         "-ocodegen",
     ],
     &[
+        "-Zvalidate-mir",
         "-Cdebuginfo=2",
         "--crate-type=lib",
         "-Copt-level=3",

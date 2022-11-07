@@ -778,11 +778,12 @@ impl ICE {
                 .collect::<Vec<String>>();
             let args3 = &args2.iter().map(String::as_str).collect::<Vec<&str>>()[..];
 
-            let flag_combinations = get_flag_combination(args3);
-            //dbg!(&flag_combinations);
-
             // the last one should be the full combination of flags
-            let last = flag_combinations[&flag_combinations.len() - 1].clone();
+            let last = args3.iter().collect::<Vec<&&str>>();
+
+            let mut flag_combinations = get_flag_combination(args3);
+            flag_combinations.push(last.clone());
+            let flag_combinations = flag_combinations;
 
             match executable {
                 Executable::Rustc | Executable::RustcCGClif => {
@@ -802,10 +803,11 @@ impl ICE {
                     let found_error2 = find_ICE_string(executable, output);
                     // remove the tempdir
                     tempdir.close().unwrap();
-                    // the full set of flags did reproduce the ice
+
                     if found_error2.is_some() {
                         // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
                         flag_combinations.iter().any(|flag_combination| {
+                            //dbg!(&flag_combination);
                             let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
                             let tempdir_path = tempdir.path();
                             let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -833,11 +835,6 @@ impl ICE {
                         // find out if this is a beta/stable/nightly regression
                     } else {
                         // full set of flags did NOT reproduce the ice...????
-                        /*   eprintln!("full set of flags:");
-                        dbg!(&last);
-                        eprintln!("originl (actual) args:");
-                        dbg!(&actual_args);
-                        dbg!(file); */
                         debug_assert!(
                             false,
                             "full set of flags on '{}' did not reproduce the ICE??\n\nflags:{:?}\n\n",

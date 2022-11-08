@@ -835,8 +835,7 @@ impl ICE {
                         // find out if this is a beta/stable/nightly regression
                     } else {
                         // full set of flags did NOT reproduce the ice...????
-                        debug_assert!(
-                            false,
+                        panic!(
                             "full set of flags on '{}' did not reproduce the ICE??\n\nflags:{:?}\n\n",
                             file.display(),
                             args3

@@ -22,12 +22,12 @@ impl FunctionGenerator {
     }
 
     pub(crate) fn gen_fn(&mut self) -> Function {
-        let possible_fn_keywords: &[FnKeyword] = &[
-            FnKeyword::FnConst,
-            FnKeyword::FnAsync,
-            FnKeyword::FnExtern,
-            FnKeyword::FnUnsafe,
-            FnKeyword::Other(String::from("foo")),
+        let possible_fn_keywords: &[FnQualifier] = &[
+            FnQualifier::FnConst,
+            FnQualifier::FnAsync,
+            FnQualifier::FnExtern,
+            FnQualifier::FnUnsafe,
+            FnQualifier::Other(String::from("foo")),
         ];
 
         let tygen = TyGen::new();
@@ -46,7 +46,7 @@ impl FunctionGenerator {
             .into_iter()
             .map(|_argnr| format!("{}", tygen.random_ty()));
 
-        let num_keywords = (0..=std::mem::variant_count::<FnKeyword>())
+        let num_keywords = (0..=std::mem::variant_count::<FnQualifier>())
             .into_iter()
             .choose(&mut rand::thread_rng())
             .unwrap_or_default();
@@ -55,7 +55,7 @@ impl FunctionGenerator {
             .into_iter()
             .filter_map(|_| possible_fn_keywords.iter().choose(&mut rand::thread_rng()))
             .cloned()
-            .collect::<Vec<FnKeyword>>();
+            .collect::<Vec<FnQualifier>>();
 
         let fun = Function {
             keywords,
@@ -67,6 +67,7 @@ impl FunctionGenerator {
             name: format!("fn_{}", function_id),
             return_ty: ty,
             args: args.collect::<Vec<String>>(),
+            // @FIXME
             body: "todo!()".into(),
         };
         self.functions.push(fun.clone());
@@ -77,7 +78,7 @@ impl FunctionGenerator {
 #[derive(Debug, Clone)]
 pub(crate) struct Function {
     /// such as const, async etc
-    keywords: Vec<FnKeyword>,
+    keywords: Vec<FnQualifier>,
     lifetimes: Vec<String>,
     name: String,
     return_ty: Ty,
@@ -98,7 +99,7 @@ impl Function {
 }
 
 #[derive(Debug, Clone)]
-enum FnKeyword {
+enum FnQualifier {
     FnConst,       // const
     FnAsync,       // async
     FnExtern,      // extern
@@ -106,17 +107,17 @@ enum FnKeyword {
     Other(String), // we can do custom stuff here
 }
 
-impl std::fmt::Display for FnKeyword {
+impl std::fmt::Display for FnQualifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                FnKeyword::FnConst => "const",
-                FnKeyword::FnAsync => "async",
-                FnKeyword::FnExtern => "extern",
-                FnKeyword::FnUnsafe => "unsafe",
-                FnKeyword::Other(kw) => " ",
+                FnQualifier::FnConst => "const",
+                FnQualifier::FnAsync => "async",
+                FnQualifier::FnExtern => "extern",
+                FnQualifier::FnUnsafe => "unsafe",
+                FnQualifier::Other(kw) => " ",
             }
         )
     }

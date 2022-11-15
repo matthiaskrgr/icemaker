@@ -4,6 +4,8 @@ use rand::prelude::IteratorRandom;
 
 use crate::fuzz2::ty::*;
 
+//  https://doc.rust-lang.org/reference/items/functions.html
+
 pub(crate) const LIFETIMES: &[&str] = &["a", "b", "c", "d", "_", "&",
  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "12a"];
 

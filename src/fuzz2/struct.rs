@@ -2,6 +2,7 @@ use std::fmt;
 
 use rand::prelude::IteratorRandom;
 
+use crate::fuzz2::lifetime::*;
 use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
@@ -26,8 +27,6 @@ impl Struct {
     fn push_lifetime(&mut self, lifetime: Lifetime) {
         self.lifetimes.push(lifetime);
     }
-
-    
 }
 
 pub(crate) struct StructField {

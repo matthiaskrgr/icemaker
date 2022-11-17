@@ -2,6 +2,7 @@ use std::fmt;
 
 use rand::prelude::IteratorRandom;
 
+use crate::fuzz2::lifetime::*;
 use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
@@ -81,6 +82,12 @@ pub(crate) struct Function {
     return_ty: Ty,
     args: Vec<String>,
     body: String,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct FunctionArg {
+    name: String,
+    ty: Ty,
 }
 
 impl Function {

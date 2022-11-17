@@ -31,6 +31,7 @@ impl Code for Lifetime {
     }
 }
 
+// TODO make this more generic
 impl From<String> for Lifetime {
     fn from(lifetime: String) -> Self {
         Self(lifetime)

@@ -14,3 +14,10 @@ impl Vis {
         .to_string()
     }
 }
+
+pub(crate) type Lifetime = String;
+
+/// the item can be represented as code
+pub(crate) trait Code {
+    fn to_code(&self) -> String;
+}

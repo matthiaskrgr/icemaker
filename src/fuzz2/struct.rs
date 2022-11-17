@@ -2,8 +2,8 @@ use std::fmt;
 
 use rand::prelude::IteratorRandom;
 
-use crate::fuzz2::ty::*;
 use crate::fuzz2::misc::*;
+use crate::fuzz2::ty::*;
 
 pub(crate) const LIFETIMES: &[&str] = &["a", "b", "c", "d", "_", "&",
  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "12a"];
@@ -15,10 +15,19 @@ pub(crate) struct StructGenerator {
 }
 
 pub(crate) struct Struct {
-    lifetimes: Vec<String>,
+    lifetimes: Vec<Lifetime>,
     fields: Vec<StructField>,
     vis: Vis,
     tuplestruct: bool,
+}
+
+impl Struct {
+    /// adds a lifetime to the struct, but not a specific Field
+    fn push_lifetime(&mut self, lifetime: Lifetime) {
+        self.lifetimes.push(lifetime);
+    }
+
+    
 }
 
 pub(crate) struct StructField {

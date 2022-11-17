@@ -58,6 +58,9 @@ use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
 
+// local debug assertions: run with:
+// LD_LIBRARY_PATH=/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/x86_64-unknown-linux-gnu/lib/
+
 lazy_static! {
     static ref ALL_ICES_WITH_FLAGS: Mutex<Vec<Vec<OsString>>> =
         Mutex::new(vec![vec![OsString::new()]]);

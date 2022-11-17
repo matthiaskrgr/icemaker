@@ -2,12 +2,10 @@ use std::fmt;
 
 use rand::prelude::IteratorRandom;
 
+use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
 //  https://doc.rust-lang.org/reference/items/functions.html
-
-pub(crate) const LIFETIMES: &[&str] = &["a", "b", "c", "d", "_", "&",
- "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "12a"];
 
 pub(crate) struct FunctionGenerator {
     id: usize,
@@ -61,10 +59,7 @@ impl FunctionGenerator {
 
         let fun = Function {
             keywords,
-            lifetimes: LIFETIMES.iter().map(|x| x.to_string()).choose_multiple(
-                &mut rand::thread_rng(),
-                (0..10).into_iter().choose(&mut rand::thread_rng()).unwrap(),
-            ),
+            lifetimes: vec![Lifetime::get_random()],
 
             name: format!("fn_{}", function_id),
             return_ty: ty,
@@ -81,7 +76,7 @@ impl FunctionGenerator {
 pub(crate) struct Function {
     /// such as const, async etc
     keywords: Vec<FnQualifier>,
-    lifetimes: Vec<String>,
+    lifetimes: Vec<Lifetime>,
     name: String,
     return_ty: Ty,
     args: Vec<String>,

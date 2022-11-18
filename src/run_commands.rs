@@ -237,6 +237,20 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .args(["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
+    // ^ this is the original clippy warning output, without --fix.
+    // from this we can know what kind of lints were actually applied to the code
+    let lint_output = String::from_utf8(output.clone().stderr).unwrap();
+    let mut lint_lines = lint_output
+        .lines()
+        .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
+        .map(|l| l.split('#').last().unwrap())
+        .map(|s| s.into())
+        .collect::<Vec<OsString>>();
+    lint_lines.sort();
+    lint_lines.dedup();
+    let used_lints = lint_lines;
+
+    dbg!(&used_lints);
 
     //dbg!(&output);
     // if the snippet "compiles" fine, try to run clippy with --fix
@@ -345,7 +359,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     //  dbg!(&output);
     //  }
 
-    (output, get_cmd_string(&cmd), Vec::new())
+    (output, get_cmd_string(&cmd), used_lints)
 }
 
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {

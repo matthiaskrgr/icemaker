@@ -3,9 +3,24 @@ use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
 pub(crate) struct StructGenerator {
-    id: usize,
     // keep a list of generated functions so we can reference them in other functions..?
     structs: Vec<Struct>,
+    id: u32,
+}
+
+impl StructGenerator {
+    pub(crate) fn new() -> Self {
+        Self {
+            id: 0,
+            structs: Vec::new(),
+        }
+    }
+
+    pub(crate) fn gen_struct(&mut self) -> Struct {
+        let new = Struct::new(&format!("struct_{}", self.id));
+        self.id += 1;
+        new
+    }
 }
 
 pub(crate) struct Struct {

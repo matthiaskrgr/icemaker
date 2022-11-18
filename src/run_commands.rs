@@ -257,6 +257,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg("new")
         .args(["--vcs", "none"])
         .arg(file_stem)
@@ -298,12 +299,15 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
             .env("MIRIFLAGS", miri_flags.join(" "));
     } else { */
 
-    let mut cmd = Command::new(cargo_clippy);
+    let mut cmd = Command::new("cargo");
 
-    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    cmd.arg("+master")
+        .arg("clippy")
+        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .current_dir(crate_path)
         .arg("--fix")
+        .arg("--allow-no-vcs")
         .arg("--")
         .arg("-Aclippy::cargo") // allow cargo lints
         //.arg("-Wclippy::internal")
@@ -338,6 +342,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
+    //  dbg!(&output);
     //  }
 
     (output, get_cmd_string(&cmd), Vec::new())

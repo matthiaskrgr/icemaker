@@ -1025,10 +1025,13 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
     .collect::<Vec<_>>();
 
-    let keywords_clippyfix_failure = ["indicates a bug in either rustc or cargo itself"]
-        .into_iter()
-        .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
-        .collect::<Vec<_>>();
+    let keywords_clippyfix_failure = [
+        ".*indicates a bug in either rustc or cargo itself.*",
+        ".*after fixes were automatically applied the compiler reported errors within these files.*",
+    ]
+    .into_iter()
+    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+    .collect::<Vec<_>>();
 
     let keywords_generic_ice = [
         "^LLVM ERROR",

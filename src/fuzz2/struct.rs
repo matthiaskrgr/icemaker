@@ -90,7 +90,13 @@ impl StructField {
 
 impl std::fmt::Display for StructField {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{} {}: {},", self.name, self.ty, self.vis.to_string())
+        write!(
+            f,
+            "    {} {}: {},",
+            self.vis.to_string(),
+            self.name,
+            self.ty
+        )
     }
 }
 
@@ -101,8 +107,8 @@ impl std::fmt::Display for Struct {
         write!(
             f,
             "{} struct {} {{
-            {}
-            }}
+{}
+}}
             ",
             self.vis.to_string(),
             self.name,

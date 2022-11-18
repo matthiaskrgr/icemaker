@@ -447,7 +447,8 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         .map(|flags| flags.join(" "))
         .filter(|flag| flag.starts_with(&root_path_string))
         .for_each(|line| {
-            println!("{}", line);
+            // @HERE avoid spam
+            // println!("{}", line);
         });
 
     files

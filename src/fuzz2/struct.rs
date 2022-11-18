@@ -6,9 +6,6 @@ use crate::fuzz2::lifetime::*;
 use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
-pub(crate) const LIFETIMES: &[&str] = &["a", "b", "c", "d", "_", "&",
- "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "12a"];
-
 pub(crate) struct StructGenerator {
     id: usize,
     // keep a list of generated functions so we can reference them in other functions..?

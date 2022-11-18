@@ -17,12 +17,7 @@ impl From<String> for Lifetime {
     }
 }
 
-// FIXME
-impl std::fmt::Display for dyn Code {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "a")
-    }
-}
+
 
 impl Lifetime {
     /// returns a random lifetime

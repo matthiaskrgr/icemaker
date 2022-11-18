@@ -21,3 +21,10 @@ impl Vis {
         .to_string()
     }
 }
+
+// FIXME
+impl std::fmt::Display for dyn Code {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_code())
+    }
+}

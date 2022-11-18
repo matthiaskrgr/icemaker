@@ -88,6 +88,7 @@ pub(crate) struct Function {
 pub(crate) struct FunctionArg {
     name: String,
     ty: Ty,
+    lifetime: Lifetime,
 }
 
 impl Function {
@@ -141,10 +142,31 @@ impl std::fmt::Display for Function {
             .iter()
             .map(|kw| format!(" {} ", kw))
             .collect::<String>();
-        write!(
-            f,
-            "{keywords} fn {}({}) -> {} {{ {body} }}",
-            &self.name, args_fmtd, self.return_ty
-        )
+
+        if self.lifetimes.is_empty() {
+            write!(
+                f,
+                "{keywords} fn {}({}) -> {} {{ {body} }}",
+                &self.name, args_fmtd, self.return_ty
+            )
+        } else {
+            let lifetimes = self
+                .lifetimes
+                .iter()
+                .map(|l| l.to_code())
+                .collect::<Vec<String>>()
+                .join(", ");
+            write!(
+                f,
+                "{keywords} fn {}<{lifetimes}>({}) -> {} {{ {body} }}",
+                &self.name, args_fmtd, self.return_ty
+            )
+        }
+    }
+}
+
+impl Code for Function {
+    fn to_code(&self) -> String {
+        self.to_string()
     }
 }

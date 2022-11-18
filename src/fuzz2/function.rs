@@ -60,7 +60,7 @@ impl FunctionGenerator {
 
         let fun = Function {
             keywords,
-            lifetimes: vec![Lifetime::get_random()],
+            lifetimes: vec![Lifetime::get_random(); /*number of lifetimes: */ 3],
 
             name: format!("fn_{}", function_id),
             return_ty: ty,

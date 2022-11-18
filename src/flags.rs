@@ -1,4 +1,4 @@
-use crate::lib::Args;
+use crate::library::Args;
 use clap::Parser;
 use once_cell::sync::Lazy;
 

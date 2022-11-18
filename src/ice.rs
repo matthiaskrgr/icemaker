@@ -4,7 +4,7 @@ use clap::Parser;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use crate::lib::Args;
+use crate::library::Args;
 
 // represents a crash that we found by running an `Executable` with a set of flags on a .rs file
 #[allow(clippy::upper_case_acronyms)]

@@ -31,13 +31,13 @@ mod flags;
 mod fuzz;
 mod fuzz2;
 mod ice;
-mod lib;
+mod library;
 mod run_commands;
 
 use crate::flags::*;
 use crate::fuzz::*;
 use crate::ice::*;
-use crate::lib::*;
+use crate::library::*;
 use crate::run_commands::*;
 
 use std::collections::HashSet;

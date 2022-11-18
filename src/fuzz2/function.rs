@@ -122,7 +122,7 @@ impl std::fmt::Display for FnQualifier {
                 FnQualifier::FnAsync => "async",
                 FnQualifier::FnExtern => "extern",
                 FnQualifier::FnUnsafe => "unsafe",
-                FnQualifier::Other(kw) => " ",
+                FnQualifier::Other(kw) => kw,
             }
         )
     }

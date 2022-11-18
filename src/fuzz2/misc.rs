@@ -1,5 +1,3 @@
-use rand::prelude::IteratorRandom;
-
 /// the item can be represented as code
 pub(crate) trait Code {
     fn to_code(&self) -> String;
@@ -12,7 +10,7 @@ pub(crate) enum Vis {
 }
 
 impl Vis {
-    fn to_String(&self) -> String {
+    pub(crate) fn to_string(&self) -> String {
         match &self {
             Vis::Pub => "pub ",
             Vis::PubCrate => "pub(crate) ",

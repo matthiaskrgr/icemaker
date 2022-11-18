@@ -1,7 +1,3 @@
-use std::fmt;
-
-use rand::prelude::IteratorRandom;
-
 use crate::fuzz2::lifetime::*;
 use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;

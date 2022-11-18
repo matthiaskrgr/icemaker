@@ -14,9 +14,9 @@ pub(crate) enum Vis {
 impl Vis {
     fn to_String(&self) -> String {
         match &self {
-            Pub => "pub ",
-            PubCrate => "pub(crate) ",
-            Private => "",
+            Vis::Pub => "pub ",
+            Vis::PubCrate => "pub(crate) ",
+            Vis::Private => "",
         }
         .to_string()
     }

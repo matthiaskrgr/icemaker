@@ -64,7 +64,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -91,7 +91,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -118,7 +118,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -150,7 +150,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -170,7 +170,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -188,7 +188,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -208,7 +208,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -228,7 +228,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -248,7 +248,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -268,7 +268,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -288,7 +288,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -308,7 +308,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -328,7 +328,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -348,7 +348,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -370,7 +370,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -393,7 +393,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -412,7 +412,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -431,7 +431,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -451,7 +451,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -469,7 +469,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -491,7 +491,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",
         "-Zvalidate-mir",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zdump-mir=all",
         "--emit=mir",
         "-Zalways-encode-mir",
@@ -3030,7 +3030,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -3055,7 +3055,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -3080,7 +3080,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmir-opt-level=1",
         "-Zmir-opt-level=2",
         "-Zmir-opt-level=3",
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         //  "-Zunsound-mir-opts",
         "-Zdump-mir=all",
         "--emit=mir",
@@ -3213,7 +3213,7 @@ pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
 pub(crate) static MIRIFLAGS: &[&[&str]] = &[
     // with mir opt level
     /*  &[
-        "-Zmir-opt-level=4",
+        "-Zmir-opt-level=5",
         "-Zmiri-check-number-validity",
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
@@ -3227,7 +3227,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         // "-Zmiri-tag-raw-pointers", // default
         "-Zmiri-mute-stdout-stderr",
         "-Zmiri-retag-fields",
-        //"-Zmir-opt-level=4",
+        //"-Zmir-opt-level=5",
         // "-Zrandomize-layout",
     ],
 ];

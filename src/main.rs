@@ -543,7 +543,8 @@ fn main() {
                 .collect::<Vec<String>>();
             // miri for example has no flags, don't spam a bunch of empty lines into stdout
             if !flags.is_empty() {
-                println!("{}", flags.join(" "))
+                // @FIXME ? this might no longer be needed
+                // println!("{}", flags.join(" "))
             }
         });
 }

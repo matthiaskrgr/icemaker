@@ -10,11 +10,16 @@ Features:
 * try to find minimal set of RUSTFLAGS that reproduces the internal compiler error
 * check if a file compiles stably with incremental compilation
 * build and run a file under miri
+* run clippy on a file and find out if (and which) lint does not apply successfully
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
 
 Trophy case (220+):  
+https://github.com/rust-lang/rust-clippy/issues/9885
+https://github.com/rust-lang/rust-clippy/issues/9884
+https://github.com/rust-lang/rust-clippy/issues/9883
+https://github.com/rust-lang/rust-clippy/issues/9882
 https://github.com/rust-lang/rust-clippy/issues/9866  
 https://github.com/rust-lang/rust/issues/104518  
 https://github.com/rust-lang/rust/issues/104440  

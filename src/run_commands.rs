@@ -381,7 +381,11 @@ pub(crate) fn run_clippy_fix_with_args(
     let file_string = std::fs::read_to_string(file).unwrap_or_default();
 
     let has_main = file_string.contains("pub(crate) fn main(");
-    let mut cmd = Command::new(executable);
+
+    // since we already run clippy successfully on the file we SHOULD not encounter any errors here.
+    // I assume that cargo clippy --fix throws errors somehow and that returns early here
+
+    /*let mut cmd = Command::new(executable);
 
     if !has_main {
         cmd.arg("--crate-type=lib");
@@ -389,30 +393,21 @@ pub(crate) fn run_clippy_fix_with_args(
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(file)
+        // silence all default args and only run with the supplied args
+        .arg("--")
+        .arg("-Aclippy::all")
         .args(args)
         .args(["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
-    // ^ this is the original clippy warning output, without --fix.
-    // from this we can know what kind of lints were actually applied to the code
-    let lint_output = String::from_utf8(output.clone().stderr).unwrap();
-    let mut lint_lines = lint_output
-        .lines()
-        .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
-        .map(|l| return l.split('#').last().unwrap())
-        .map(|s| s.into())
-        .collect::<Vec<OsString>>();
-    lint_lines.sort();
-    lint_lines.dedup();
-    let used_lints = lint_lines;
-
-    dbg!(&used_lints);
 
     //dbg!(&output);
     // if the snippet "compiles" fine, try to run clippy with --fix
     let exit_status = output.status.code().unwrap_or(42);
 
     if exit_status != 0 {
+        //
+        dbg!("BAD EXIT STATUS");
         // errors while checking file, abort (file may not build)
         return (
             std::process::Command::new("true")
@@ -421,7 +416,7 @@ pub(crate) fn run_clippy_fix_with_args(
             String::new(),
             Vec::new(),
         );
-    }
+    } */
 
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
@@ -479,6 +474,7 @@ pub(crate) fn run_clippy_fix_with_args(
         .arg("--fix")
         .arg("--allow-no-vcs")
         .arg("--")
+        .arg("-Aclippy::all")
         .args(args)
         .args(["--cap-lints", "warn"]);
 
@@ -489,7 +485,7 @@ pub(crate) fn run_clippy_fix_with_args(
     dbg!(&output);
     //  }
 
-    (output, get_cmd_string(&cmd), used_lints)
+    (output, get_cmd_string(&cmd), Vec::new())
 }
 
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {

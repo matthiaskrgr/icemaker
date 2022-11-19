@@ -811,14 +811,15 @@ impl ICE {
                     // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
 
                     // clippyfix for example needs special handling here
-
                     let output = if matches!(executable, Executable::ClippyFix) {
+                        dbg!("clippyfix 1");
+                        dbg!(&last);
                         let (output, _somestr, _flags) = run_clippy_fix_with_args(
-                            &executable.path(),
-                            file,
-                            &last.iter().map(|x| **x).collect::<Vec<_>>(),
+                            &dbg!(executable.path()),
+                            dbg!(file),
+                            dbg!(&last.iter().map(|x| **x).collect::<Vec<_>>()),
                         );
-                        output
+                        dbg!(output)
                     } else {
                         // let tempdir_path = tempdir.path();
                         // let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -1064,8 +1065,9 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
     .collect::<Vec<_>>();
 
     let keywords_clippyfix_failure = [
-        ".*indicates a bug in either rustc or cargo itself.*",
+        ".*likely indicates a bug in either rustc or cargo itself.*",
         ".*after fixes were automatically applied the compiler reported errors within these files.*",
+        ".*fixing code with the `--broken-code` flag.*",
     ]
     .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

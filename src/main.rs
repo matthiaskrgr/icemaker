@@ -600,6 +600,19 @@ impl ICE {
 
         //dbg!(&cmd_output);
         //dbg!(&_cmd);
+        // clippy_lint -> -Wclippy::clippy_lint
+        let actual_args = actual_args
+            .into_iter()
+            .map(|arg| {
+                if matches!(executable, Executable::ClippyFix,) {
+                    let mut flag = OsString::from("-Wclippy::");
+                    flag.push(arg);
+                    flag
+                } else {
+                    arg
+                }
+            })
+            .collect::<Vec<_>>();
 
         // find out the ice message
         let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
@@ -791,7 +804,7 @@ impl ICE {
             let flag_combinations = flag_combinations;
 
             match executable {
-                Executable::Rustc | Executable::RustcCGClif => {
+                Executable::Rustc | Executable::RustcCGClif | Executable::ClippyFix => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
 
@@ -848,7 +861,6 @@ impl ICE {
                     }
                 }
                 Executable::Clippy
-                | Executable::ClippyFix
                 | Executable::Rustdoc
                 | Executable::RustAnalyzer
                 | Executable::Rustfmt

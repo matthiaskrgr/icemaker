@@ -250,7 +250,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     lint_lines.dedup();
     let used_lints = lint_lines;
 
-    dbg!(&used_lints);
+    //c    dbg!(&used_lints);
 
     //dbg!(&output);
     // if the snippet "compiles" fine, try to run clippy with --fix
@@ -369,7 +369,7 @@ pub(crate) fn run_clippy_fix_with_args(
 ) -> (Output, String, Vec<OsString>) {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
-    dbg!(args);
+    //    dbg!(args);
     let _cargo_clippy = executable
         .to_string()
         .replace("clippy-driver", "cargo-clippy");
@@ -478,11 +478,11 @@ pub(crate) fn run_clippy_fix_with_args(
         .args(args)
         .args(["--cap-lints", "warn"]);
 
-    dbg!(&cmd);
+    //dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    dbg!(&output);
+    //  dbg!(&output);
     //  }
 
     (output, get_cmd_string(&cmd), Vec::new())

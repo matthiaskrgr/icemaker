@@ -801,7 +801,7 @@ impl ICE {
             flag_combinations.push(last.clone());
             let flag_combinations = flag_combinations;
 
-            dbg!(&flag_combinations);
+            //            dbg!(&flag_combinations);
 
             match executable {
                 Executable::Rustc | Executable::RustcCGClif | Executable::ClippyFix => {
@@ -812,14 +812,13 @@ impl ICE {
 
                     // clippyfix for example needs special handling here
                     let output = if matches!(executable, Executable::ClippyFix) {
-                        dbg!("clippyfix 1");
-                        dbg!(&last);
+                        &last;
                         let (output, _somestr, _flags) = run_clippy_fix_with_args(
-                            &dbg!(executable.path()),
-                            dbg!(file),
-                            dbg!(&last.iter().map(|x| **x).collect::<Vec<_>>()),
+                            &executable.path(),
+                            file,
+                            &last.iter().map(|x| **x).collect::<Vec<_>>(),
                         );
-                        dbg!(output)
+                        output
                     } else {
                         // let tempdir_path = tempdir.path();
                         // let output_file = format!("-o{}/file1", tempdir_path.display());
@@ -834,7 +833,6 @@ impl ICE {
 
                     // remove the tempdir
                     tempdir.close().unwrap();
-                    dbg!("here 1");
 
                     if found_error2.is_some() {
                         // walk through the flag combinations and save the first (and smallest) one that reproduces the ice

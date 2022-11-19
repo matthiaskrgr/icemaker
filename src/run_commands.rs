@@ -14,7 +14,7 @@ fn get_cmd_string(cmd: &std::process::Command) -> String {
         .collect::<Vec<String>>()
         .join(" ");
     let command = format!("{:?}", cmd);
-    format!("\"{}\" {}", envs, command).replace('"', "")
+    return format!("\"{}\" {}", envs, command).replace('"', "");
 }
 
 pub(crate) fn run_rustc(
@@ -186,7 +186,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
 pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
-    let cargo_clippy = executable
+    let _cargo_clippy = executable
         .to_string()
         .replace("clippy-driver", "cargo-clippy");
 
@@ -243,7 +243,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let mut lint_lines = lint_output
         .lines()
         .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
-        .map(|l| l.split('#').last().unwrap())
+        .map(|l| return l.split('#').last().unwrap())
         .map(|s| s.into())
         .collect::<Vec<OsString>>();
     lint_lines.sort();
@@ -357,6 +357,136 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let output = systemdrun_command(&mut cmd).unwrap();
 
     //  dbg!(&output);
+    //  }
+
+    (output, get_cmd_string(&cmd), used_lints)
+}
+
+pub(crate) fn run_clippy_fix_with_args(
+    executable: &str,
+    file: &Path,
+    args: &Vec<&str>,
+) -> (Output, String, Vec<OsString>) {
+    // we need the "cargo-clippy" executable for --fix
+    // s/clippy-driver/cargo-clippy
+    dbg!(args);
+    let _cargo_clippy = executable
+        .to_string()
+        .replace("clippy-driver", "cargo-clippy");
+
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace(['[', ']'], "_");
+
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+
+    let has_main = file_string.contains("pub(crate) fn main(");
+    let mut cmd = Command::new(executable);
+
+    if !has_main {
+        cmd.arg("--crate-type=lib");
+    }
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .arg(file)
+        .args(args)
+        .args(["--cap-lints", "warn"]);
+
+    let output = systemdrun_command(&mut cmd).unwrap();
+    // ^ this is the original clippy warning output, without --fix.
+    // from this we can know what kind of lints were actually applied to the code
+    let lint_output = String::from_utf8(output.clone().stderr).unwrap();
+    let mut lint_lines = lint_output
+        .lines()
+        .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
+        .map(|l| return l.split('#').last().unwrap())
+        .map(|s| s.into())
+        .collect::<Vec<OsString>>();
+    lint_lines.sort();
+    lint_lines.dedup();
+    let used_lints = lint_lines;
+
+    dbg!(&used_lints);
+
+    //dbg!(&output);
+    // if the snippet "compiles" fine, try to run clippy with --fix
+    let exit_status = output.status.code().unwrap_or(42);
+
+    if exit_status != 0 {
+        // errors while checking file, abort (file may not build)
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+
+    let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+    // create a new cargo project inside the tmpdir
+    if !std::process::Command::new("cargo")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .arg("new")
+        .args(["--vcs", "none"])
+        .arg(file_stem)
+        .current_dir(tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push(file_stem);
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_string).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push(file_stem);
+
+    /* if !has_main && has_test {
+        cmd.arg("miri")
+            .arg("test")
+            .current_dir(crate_path)
+            .env("MIRIFLAGS", miri_flags.join(" "));
+    } else { */
+
+    let mut cmd = Command::new("cargo");
+
+    cmd.arg("+master")
+        .arg("clippy")
+        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .current_dir(crate_path)
+        .arg("--fix")
+        .arg("--allow-no-vcs")
+        .arg("--")
+        .args(args)
+        .args(["--cap-lints", "warn"]);
+
+    dbg!(&cmd);
+
+    let output = systemdrun_command(&mut cmd).unwrap();
+
+    dbg!(&output);
     //  }
 
     (output, get_cmd_string(&cmd), used_lints)

@@ -102,7 +102,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         Vec::new()
     };
 
-    let executable = executable_from_args(&args);
+    let executable = executable_from_args(args);
     let executables = if !matches!(executable, Executable::Rustc) ||  /* may have passed --rustc to disable clippy rustdoc etc */ args.rustc
     {
         // assume that we passed something, do not take the default Rustc
@@ -400,10 +400,8 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();
-    std::fs::write(&errors_json, &errors_new).expect(&format!(
-        "error: failed to write to {}",
-        errors_json.display()
-    ));
+    std::fs::write(&errors_json, &errors_new)
+        .unwrap_or_else(|_| panic!("error: failed to write to {}", errors_json.display()));
 
     println!("\ndiff: \n");
     // get the diff
@@ -446,7 +444,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         .filter(|flags| !flags.is_empty())
         .map(|flags| flags.join(" "))
         .filter(|flag| flag.starts_with(&root_path_string))
-        .for_each(|line| {
+        .for_each(|_line| {
             // @HERE avoid spam
             // println!("{}", line);
         });
@@ -650,7 +648,7 @@ impl ICE {
         #[allow(clippy::format_in_format_args)]
         if exit_code_looks_like_crash && found_error.is_some()
     // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
-        || (matches!(executable, Executable::Miri) && found_error.is_some())
+        || (matches!(executable, Executable::Miri) && found_error.is_some()) || (matches!(executable, Executable::ClippyFix) && found_error.is_some())
         {
             let (found_error, ice_kind) = found_error.clone().unwrap();
             print!("\r");
@@ -803,6 +801,8 @@ impl ICE {
             flag_combinations.push(last.clone());
             let flag_combinations = flag_combinations;
 
+            dbg!(&flag_combinations);
+
             match executable {
                 Executable::Rustc | Executable::RustcCGClif | Executable::ClippyFix => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
@@ -810,37 +810,63 @@ impl ICE {
 
                     // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
 
-                    // let tempdir_path = tempdir.path();
-                    // let output_file = format!("-o{}/file1", tempdir_path.display());
-                    //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
-                    let mut cmd = Command::new(exec_path);
-                    cmd.args(&last);
-                    let output = systemdrun_command(&mut cmd).unwrap();
+                    // clippyfix for example needs special handling here
+
+                    let output = if matches!(executable, Executable::ClippyFix) {
+                        let (output, _somestr, _flags) = run_clippy_fix_with_args(
+                            &executable.path(),
+                            file,
+                            &last.iter().map(|x| **x).collect::<Vec<_>>(),
+                        );
+                        output
+                    } else {
+                        // let tempdir_path = tempdir.path();
+                        // let output_file = format!("-o{}/file1", tempdir_path.display());
+                        //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
+                        let mut cmd = Command::new(exec_path);
+                        cmd.args(&last);
+                        systemdrun_command(&mut cmd).unwrap()
+                    };
 
                     // dbg!(&output);
                     let found_error2 = find_ICE_string(executable, output);
+
                     // remove the tempdir
                     tempdir.close().unwrap();
+                    dbg!("here 1");
 
                     if found_error2.is_some() {
                         // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
                         flag_combinations.iter().any(|flag_combination| {
                             //dbg!(&flag_combination);
-                            let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-                            let tempdir_path = tempdir.path();
-                            let output_file = format!("-o{}/file1", tempdir_path.display());
-                            let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
 
-                            let mut cmd = Command::new(exec_path);
-                            cmd.arg(file)
-                                .args(flag_combination.iter())
-                                .arg(output_file)
-                                .arg(dump_mir_dir);
-                            let output = systemdrun_command(&mut cmd).unwrap();
+                            let output = if matches!(executable, Executable::ClippyFix) {
+                                let (output, _somestr, _flags) = run_clippy_fix_with_args(
+                                    &executable.path(),
+                                    file,
+                                    &flag_combination.iter().map(|x| **x).collect::<Vec<_>>(),
+                                );
+                                output
+                            } else {
+                                let tempdir5 = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                                let tempdir_path = tempdir5.path();
+                                let output_file = format!("-o{}/file1", tempdir_path.display());
+                                let dump_mir_dir =
+                                    format!("-Zdump-mir-dir={}", tempdir_path.display());
+
+                                let mut cmd = Command::new(exec_path);
+                                cmd.arg(file)
+                                    .args(flag_combination.iter())
+                                    .arg(output_file)
+                                    .arg(dump_mir_dir);
+                                let output = systemdrun_command(&mut cmd).unwrap();
+                                tempdir5.close();
+                                output
+                            };
 
                             let found_error3 = find_ICE_string(executable, output);
                             // remove the tempdir
-                            tempdir.close().unwrap();
+                            //  tempdir.close().unwrap();
                             if found_error3.is_some() {
                                 // save the flags that the ICE repros with
                                 bad_flags = flag_combination.clone();

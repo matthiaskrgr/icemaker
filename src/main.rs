@@ -33,12 +33,14 @@ mod fuzz2;
 mod ice;
 mod library;
 mod run_commands;
+mod smolfuzz;
 
 use crate::flags::*;
 use crate::fuzz::*;
 use crate::ice::*;
 use crate::library::*;
 use crate::run_commands::*;
+use crate::smolfuzz::*;
 
 use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
@@ -131,6 +133,11 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
     if args.codegen {
         codegen_git();
+        return Vec::new();
+    }
+
+    if args.smolfuzz {
+        codegen_smolfuzz();
         return Vec::new();
     }
 

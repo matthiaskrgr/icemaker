@@ -61,6 +61,9 @@ pub(crate) struct Args {
 
     #[clap(long = "projects", num_args = 1..)]
     pub(crate) projects: Vec<std::path::PathBuf>,
+
+    #[clap(long)]
+    pub(crate) smolfuzz: bool,
 }
 
 /// check whether a file uses features or not

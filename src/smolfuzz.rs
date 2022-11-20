@@ -14,11 +14,11 @@ fn variations_up_to_length(items: &[char]) -> impl Iterator<Item = String> + '_ 
 }
 
 pub(crate) fn gen_smol_code_char_set() -> impl Iterator<Item = String> {
-    const CHARS: &[char] = &['0', '1', '[', ']', ',', '#', 'a', 'b', 'c', '=', ':', ';'];
+    const CHARS: &[char] = &['[', ']', '#', '=', 'e', 'e', 'e'];
 
     // snippet will have length of the input charscd /
     //const SNIPPET_LENGTH: usize = 5;
-    const ITEM_LIMIT: usize = 10_000;
+    const ITEM_LIMIT: usize = 10_0000;
 
     variations_up_to_length(CHARS).take(ITEM_LIMIT)
 }

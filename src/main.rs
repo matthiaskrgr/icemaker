@@ -1143,13 +1143,31 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                     }
                 }
 
-                Executable::ClippyFix => lines
-                    .find(|line| {
-                        keywords_clippyfix_failure
-                            .iter()
-                            .any(|regex| regex.is_match(line))
-                    })
-                    .map(|line| (line, ICEKind::ClippyFix)),
+                Executable::ClippyFix => {
+                    // unfortunately, lines().filter.. isn't clone so we have to hack around :(
+
+                    let normal_ice = std::io::Cursor::new(executable_output)
+                        .lines()
+                        .filter_map(|line| line.ok())
+                        .find(|line| {
+                            keywords_generic_ice
+                                .iter()
+                                .any(|regex| regex.is_match(line))
+                        })
+                        .map(|line| (line, ICEKind::Ice));
+
+                    if normal_ice.is_some() {
+                        return normal_ice;
+                    }
+                    let clippy_fix_failure = lines
+                        .find(|line| {
+                            keywords_clippyfix_failure
+                                .iter()
+                                .any(|regex| regex.is_match(line))
+                        })
+                        .map(|line| (line, ICEKind::ClippyFix));
+                    return clippy_fix_failure;
+                }
 
                 Executable::Rustc
                 | Executable::Clippy

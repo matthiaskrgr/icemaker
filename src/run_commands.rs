@@ -191,8 +191,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let file_string = std::fs::read_to_string(file).unwrap_or_default();
 
     let has_main = file_string.contains("pub(crate) fn main(");
-    let mut cmd = Command::new(executable);
 
+
+    // run cargo clippy to check that this succeeds, so we can rule out bad exit status 
+    let mut cmd = Command::new(executable);
     if !has_main {
         cmd.arg("--crate-type=lib");
     }
@@ -240,9 +242,9 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     lint_lines.dedup();
     let used_lints = lint_lines;
 
-    //c    dbg!(&used_lints);
-
+    //dbg!(&used_lints);
     //dbg!(&output);
+
     // if the snippet "compiles" fine, try to run clippy with --fix
     let exit_status = output.status.code().unwrap_or(42);
 

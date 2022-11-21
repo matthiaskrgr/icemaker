@@ -1155,18 +1155,19 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                 .any(|regex| regex.is_match(line))
                         })
                         .map(|line| (line, ICEKind::Ice));
-
+                    // if we have encounter a "normal" ICE while running clippy --fix, this obv. takes precedece over failure to
+                    // apply clippy suggestions
                     if normal_ice.is_some() {
                         return normal_ice;
                     }
-                    let clippy_fix_failure = lines
+                    // clippy fix failure
+                    lines
                         .find(|line| {
                             keywords_clippyfix_failure
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        .map(|line| (line, ICEKind::ClippyFix));
-                    return clippy_fix_failure;
+                        .map(|line| (line, ICEKind::ClippyFix))
                 }
 
                 Executable::Rustc

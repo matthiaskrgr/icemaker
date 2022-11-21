@@ -885,7 +885,7 @@ impl ICE {
                     } else {
                         // full set of flags did NOT reproduce the ice...????
                         eprintln!(
-                            "full set of flags on '{}' did not reproduce the ICE??\n\nflags:{:?}\n\n",
+                            "\nfull set of flags on '{}' did not reproduce the ICE??\nflags:{:?}",
                             file.display(),
                             args3
                         );

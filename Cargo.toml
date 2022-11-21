@@ -30,7 +30,7 @@ colored = "2.0.0"
 codegen-units = 1
 debug = false
 incremental = false
-lto = true
+lto = "thin"
 
 [features]
 # run without systemd-run 

@@ -192,73 +192,6 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     let has_main = file_string.contains("pub(crate) fn main(");
 
-
-    // run cargo clippy to check that this succeeds, so we can rule out bad exit status 
-    let mut cmd = Command::new(executable);
-    if !has_main {
-        cmd.arg("--crate-type=lib");
-    }
-    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(file)
-        .args(flags::CLIPPYLINTS)
-        .arg("-Wmissing-doc-code-examples")
-        .arg("-Wabsolute-paths-not-starting-with-crate")
-        .arg("-Wbare-trait-objects")
-        .arg("-Wbox-pointers")
-        .arg("-Welided-lifetimes-in-paths")
-        .arg("-Wellipsis-inclusive-range-patterns")
-        .arg("-Wkeyword-idents")
-        .arg("-Wmacro-use-extern-crate")
-        .arg("-Wmissing-copy-implementations")
-        .arg("-Wmissing-debug-implementations")
-        .arg("-Wmissing-docs")
-        .arg("-Wsingle-use-lifetimes")
-        .arg("-Wtrivial-casts")
-        .arg("-Wtrivial-numeric-casts")
-        .arg("-Wunreachable-pub")
-        .arg("-Wunsafe-code")
-        .arg("-Wunstable-features")
-        .arg("-Wunused-extern-crates")
-        .arg("-Wunused-import-braces")
-        .arg("-Wunused-labels")
-        .arg("-Wunused-lifetimes")
-        .arg("-Wunused-qualifications")
-        .arg("-Wunused-results")
-        .arg("-Wvariant-size-differences")
-        .args(["--cap-lints", "warn"]);
-
-    let output = systemdrun_command(&mut cmd).unwrap();
-    // ^ this is the original clippy warning output, without --fix.
-    // from this we can know what kind of lints were actually applied to the code
-    let lint_output = String::from_utf8(output.clone().stderr).unwrap();
-    let mut lint_lines = lint_output
-        .lines()
-        .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
-        .map(|l| return l.split('#').last().unwrap())
-        .map(|s| s.into())
-        .collect::<Vec<OsString>>();
-    lint_lines.sort();
-    lint_lines.dedup();
-    let used_lints = lint_lines;
-
-    //dbg!(&used_lints);
-    //dbg!(&output);
-
-    // if the snippet "compiles" fine, try to run clippy with --fix
-    let exit_status = output.status.code().unwrap_or(42);
-
-    if exit_status != 0 {
-        // errors while checking file, abort (file may not build)
-        return (
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-        );
-    }
-
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
@@ -266,6 +199,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg("new")
         .args(["--vcs", "none"])
+        .arg(if has_main { "--bin" } else { "--lib" })
         .arg(file_stem)
         .current_dir(tempdir_path)
         .output()
@@ -297,13 +231,6 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push(file_stem);
-
-    /* if !has_main && has_test {
-        cmd.arg("miri")
-            .arg("test")
-            .current_dir(crate_path)
-            .env("MIRIFLAGS", miri_flags.join(" "));
-    } else { */
 
     let mut cmd = Command::new("cargo");
 
@@ -343,9 +270,19 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .args(["--cap-lints", "warn"]);
 
     let output = systemdrun_command(&mut cmd).unwrap();
+    // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on
+    let lint_output = String::from_utf8(output.clone().stderr).unwrap();
+    let mut lint_lines = lint_output
+        .lines()
+        .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
+        .map(|l| return l.split('#').last().unwrap())
+        .map(|s| s.into())
+        .collect::<Vec<OsString>>();
+    lint_lines.sort();
+    lint_lines.dedup();
+    let used_lints = lint_lines;
 
     //  dbg!(&output);
-    //  }
 
     (output, get_cmd_string(&cmd), used_lints)
 }

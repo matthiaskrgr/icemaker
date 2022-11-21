@@ -1096,8 +1096,9 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
         // do not include anything like libc::SIGSEGV
         //"(?!.*lib::)^.*(SIGABRT)",
         //"(?!.*libc::)^.*(SIGSEGV)",
-        "(SIGABRT)",
-        "(SIGSEGV)",
+        "process abort signal",
+        "SIGKILL: kill",
+        "SIGSEGV:"
 
     ].into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

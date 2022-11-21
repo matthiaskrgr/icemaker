@@ -819,7 +819,6 @@ impl ICE {
 
                     // clippyfix for example needs special handling here
                     let output = if matches!(executable, Executable::ClippyFix) {
-                        &last;
                         let (output, _somestr, _flags) = run_clippy_fix_with_args(
                             &executable.path(),
                             file,
@@ -866,7 +865,7 @@ impl ICE {
                                     .arg(output_file)
                                     .arg(dump_mir_dir);
                                 let output = systemdrun_command(&mut cmd).unwrap();
-                                tempdir5.close();
+                                tempdir5.close().unwrap();
                                 output
                             };
 

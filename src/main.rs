@@ -1093,7 +1093,10 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
         "^Undefined behavior:",
         // llvm assertion failure
         "Assertion `.*' failed",
-        "(SIGABRT)"
+        // do not include anything like libc::SIGSEGV
+        "(?!.*lib::)^.*(SIGABRT)",
+        "(?!.*libc::)^.*(SIGSEGV)"
+
     ] .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
     .collect::<Vec<_>>();

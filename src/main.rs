@@ -1056,7 +1056,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
     }
 }
 
-/// check if the given output looks like rustc crashed
+/// take the executable we used and the executables/runs output and determine whether the should raise an ICE or not (by looking at the exit status / stderr for example)
 #[allow(non_snake_case)]
 fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, ICEKind)> {
     let keywords_miri_ub = [

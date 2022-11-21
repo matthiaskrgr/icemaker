@@ -17,8 +17,6 @@ impl From<String> for Lifetime {
     }
 }
 
-
-
 impl Lifetime {
     /// returns a random lifetime
     pub(crate) fn get_random() -> Self {

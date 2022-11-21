@@ -3834,7 +3834,7 @@ mod tests {
             writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
-            let mut cmd = std::process::Command::new(&Executable::Rustc.path());
+            let mut cmd = std::process::Command::new(Executable::Rustc.path());
             cmd.args(*batch_of_flags).arg("dummy.rs");
 
             let output = cmd.output();
@@ -3875,7 +3875,7 @@ mod tests {
             writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
-            let mut cmd = std::process::Command::new(&Executable::Rustc.path());
+            let mut cmd = std::process::Command::new(Executable::Rustc.path());
             cmd.args(*batch_of_flags).arg("dummy.rs");
 
             let output = cmd.output();

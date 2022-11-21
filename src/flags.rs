@@ -3797,6 +3797,17 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
     ],
 ];
 
+pub(crate) static CLIPPYLINTS: &[&str] = &[
+    "-Wclippy::complexity",
+    "-Wclippy::correctness",
+    "-Wclippy::nursery",
+    "-Wclippy::pedantic",
+    "-Wclippy::style",
+    "-Wclippy::suspicious",
+    "-Aclippy::cargo",
+    //.arg("-Wclippy::internal")
+];
+
 #[cfg(test)]
 mod tests {
     use super::{DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS};

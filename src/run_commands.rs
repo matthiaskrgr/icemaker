@@ -5,6 +5,8 @@ use std::process::{Command, Output, Stdio};
 
 use tempdir::TempDir;
 
+use crate::flags;
+
 /// get a process::Command as String
 fn get_cmd_string(cmd: &std::process::Command) -> String {
     let envs: String = cmd
@@ -140,15 +142,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(file)
-        .arg("-Aclippy::cargo") // allow cargo lints
-        //.arg("-Wclippy::internal")
-        .arg("-Wclippy::complexity")
-        .arg("-Wclippy::correctness")
-        .arg("-Wclippy::nursery")
-        .arg("-Wclippy::pedantic")
-        .arg("-Wclippy::perf")
-        .arg("-Wclippy::style")
-        .arg("-Wclippy::suspicious")
+        .args(flags::CLIPPYLINTS)
         .arg("-Wmissing-doc-code-examples")
         .arg("-Wabsolute-paths-not-starting-with-crate")
         .arg("-Wbare-trait-objects")
@@ -205,11 +199,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
         .arg(file)
-        .arg("-Aclippy::cargo") // allow cargo lints
-        //.arg("-Wclippy::internal")
-        .arg("-Wclippy::restriction")
-        .arg("-Wclippy::pedantic")
-        .arg("-Wclippy::nursery")
+        .args(flags::CLIPPYLINTS)
         .arg("-Wmissing-doc-code-examples")
         .arg("-Wabsolute-paths-not-starting-with-crate")
         .arg("-Wbare-trait-objects")
@@ -323,11 +313,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("--fix")
         .arg("--allow-no-vcs")
         .arg("--")
-        .arg("-Aclippy::cargo") // allow cargo lints
-        //.arg("-Wclippy::internal")
-        .arg("-Wclippy::restriction")
-        .arg("-Wclippy::pedantic")
-        .arg("-Wclippy::nursery")
+        .args(flags::CLIPPYLINTS)
         .arg("-Wmissing-doc-code-examples")
         .arg("-Wabsolute-paths-not-starting-with-crate")
         .arg("-Wbare-trait-objects")

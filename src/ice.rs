@@ -104,12 +104,12 @@ impl std::fmt::Display for Regression {
 pub enum Executable {
     Rustc,
     Clippy,
-    ClippyFix,
     Rustdoc,
     RustAnalyzer,
     Rustfmt,
     Miri,
     RustcCGClif,
+    ClippyFix,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);

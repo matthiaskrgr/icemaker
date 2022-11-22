@@ -194,6 +194,32 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
+
+    // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
+    if !std::process::Command::new(crate::ice::Executable::Rustc.path())
+        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .args(if has_main {
+            ["--crate-type", "bin"]
+        } else {
+            ["--crate-type", "lib"]
+        })
+        .arg(file)
+        .args(["--emit", "metadata"])
+        .current_dir(tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        return (
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+        );
+    }
+
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
         .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")

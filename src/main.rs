@@ -180,7 +180,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
     //let exec_path = executable.path();
     executables.iter().for_each(|executable| {
-        println!("Using executable(s): {}", executable.path());
+        println!("Using {:?}: {}", executable, executable.path());
     });
     if matches!(executable, Executable::Rustc) {
         println!(

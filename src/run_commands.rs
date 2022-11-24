@@ -3,9 +3,14 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
+use lazy_static::lazy_static;
 use tempdir::TempDir;
 
 use crate::flags;
+
+lazy_static! {
+    static ref home_dir: PathBuf = home::home_dir().unwrap();
+}
 
 /// get a process::Command as String
 fn get_cmd_string(cmd: &std::process::Command) -> String {
@@ -140,7 +145,10 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
         cmd.arg("--crate-type=lib");
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .arg(file)
         .args(flags::CLIPPYLINTS)
         .arg("-Wmissing-doc-code-examples")
@@ -180,7 +188,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
 pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
-    let _cargo_clippy = executable
+    let cargo_clippy = executable
         .to_string()
         .replace("clippy-driver", "cargo-clippy");
 
@@ -197,7 +205,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
     if !std::process::Command::new(crate::ice::Executable::Rustc.path())
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .args(if has_main {
             ["--crate-type", "bin"]
         } else {
@@ -222,7 +233,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .arg("new")
         .args(["--vcs", "none"])
         .arg(if has_main { "--bin" } else { "--lib" })
@@ -263,7 +277,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     cmd.arg("+master")
         .arg("clippy")
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .current_dir(crate_path)
         .arg("--fix")
         .arg("--allow-no-vcs")
@@ -373,7 +390,10 @@ pub(crate) fn run_clippy_fix_with_args(
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .arg("new")
         .args(["--vcs", "none"])
         .arg(file_stem)
@@ -420,7 +440,10 @@ pub(crate) fn run_clippy_fix_with_args(
     cmd.arg("+master")
         .arg("clippy")
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .current_dir(crate_path)
         .arg("--fix")
         .arg("--allow-no-vcs")
@@ -442,7 +465,10 @@ pub(crate) fn run_clippy_fix_with_args(
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
+        .env(
+            "SYSROOT",
+            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        )
         .arg(file)
         .arg("-Znormalize-docs")
         .arg("-Zunstable-options")
@@ -487,10 +513,13 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
 }
 pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
     let mut cmd = Command::new(executable);
-    cmd.env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(file)
-        .arg("--check")
-        .args(["--edition", "2018"]);
+    cmd.env(
+        "SYSROOT",
+        format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+    )
+    .arg(file)
+    .arg("--check")
+    .args(["--edition", "2018"]);
     let output = systemdrun_command(&mut cmd).unwrap();
     (output, get_cmd_string(&cmd), Vec::new())
 }

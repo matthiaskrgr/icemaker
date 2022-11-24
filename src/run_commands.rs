@@ -221,7 +221,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new");
-    dbg!(&pre_rustc_chk);
+    //dbg!(&pre_rustc_chk);
     if !pre_rustc_chk.status.success() {
         return (
             std::process::Command::new("true")
@@ -312,7 +312,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
         .args(["--cap-lints", "warn"]);
-    dbg!(&cmd);
+    //dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
     // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on
@@ -327,7 +327,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     lint_lines.dedup();
     let used_lints = lint_lines;
 
-    dbg!(&output);
+    //dbg!(&output);
 
     (output, get_cmd_string(&cmd), used_lints)
 }

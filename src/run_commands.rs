@@ -312,6 +312,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .arg("-Wunused-results")
         .arg("-Wvariant-size-differences")
         .args(["--cap-lints", "warn"]);
+    dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
     // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on

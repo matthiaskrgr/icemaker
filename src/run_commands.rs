@@ -203,8 +203,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
+    let mut pre_rustc_chk = std::process::Command::new(crate::ice::Executable::Rustc.path());
+
     // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
-    if !std::process::Command::new(crate::ice::Executable::Rustc.path())
+    let pre_rustc_chk = pre_rustc_chk
         .env(
             "SYSROOT",
             format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
@@ -218,10 +220,9 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .args(["--emit", "metadata"])
         .current_dir(tempdir_path)
         .output()
-        .expect("failed to exec cargo new")
-        .status
-        .success()
-    {
+        .expect("failed to exec cargo new");
+    dbg!(&pre_rustc_chk);
+    if !pre_rustc_chk.status.success() {
         return (
             std::process::Command::new("true")
                 .output()
@@ -325,7 +326,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     lint_lines.dedup();
     let used_lints = lint_lines;
 
-    //  dbg!(&output);
+    dbg!(&output);
 
     (output, get_cmd_string(&cmd), used_lints)
 }

@@ -3148,7 +3148,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "library/stdarch/crates/core_arch/src/x86/avx512f.rs",
     "src/test/ui/structs-enums/struct-rec/issue-84611.rs",
     "src/test/ui/structs-enums/struct-rec/issue-74224.rs",
-    "src/test/ui/dropck/dropck_no_diverge_on_nonregular_3.rs"
+    "src/test/ui/dropck/dropck_no_diverge_on_nonregular_3.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

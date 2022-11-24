@@ -147,7 +147,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .arg(file)
         .args(flags::CLIPPYLINTS)
@@ -209,7 +209,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     let pre_rustc_chk = pre_rustc_chk
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .args(if has_main {
             ["--crate-type", "bin"]
@@ -236,7 +236,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
     if !std::process::Command::new("cargo")
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .arg("new")
         .args(["--vcs", "none"])
@@ -280,7 +280,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .current_dir(crate_path)
         .arg("--fix")
@@ -394,7 +394,7 @@ pub(crate) fn run_clippy_fix_with_args(
     if !std::process::Command::new("cargo")
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .arg("new")
         .args(["--vcs", "none"])
@@ -444,7 +444,7 @@ pub(crate) fn run_clippy_fix_with_args(
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env(
             "SYSROOT",
-            format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+            format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
         )
         .current_dir(crate_path)
         .arg("--fix")
@@ -517,7 +517,7 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
     let mut cmd = Command::new(executable);
     cmd.env(
         "SYSROOT",
-        format!("{}", home_dir.join("/.rustup/toolchains/master/").display()),
+        format!("{}", home_dir.join(".rustup/toolchains/master/").display()),
     )
     .arg(file)
     .arg("--check")

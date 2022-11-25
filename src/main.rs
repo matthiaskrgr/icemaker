@@ -592,7 +592,8 @@ impl ICE {
             Executable::Rustfmt => run_rustfmt(exec_path, file),
             Executable::Miri => run_miri(exec_path, file, miri_flags),
             Executable::RustcCGClif => run_cranelift(exec_path, file, incremental, compiler_flags),
-        };
+        }
+        .unwrap();
 
         /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
             eprintln!(
@@ -823,7 +824,8 @@ impl ICE {
                             &executable.path(),
                             file,
                             &last.iter().map(|x| **x).collect::<Vec<_>>(),
-                        );
+                        )
+                        .unwrap();
                         output
                     } else {
                         // let tempdir_path = tempdir.path();
@@ -850,7 +852,8 @@ impl ICE {
                                     &executable.path(),
                                     file,
                                     &flag_combination.iter().map(|x| **x).collect::<Vec<_>>(),
-                                );
+                                )
+                                .unwrap();
                                 output
                             } else {
                                 let tempdir5 = TempDir::new("rustc_testrunner_tmpdir").unwrap();

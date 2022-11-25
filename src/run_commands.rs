@@ -12,6 +12,34 @@ lazy_static! {
     static ref HOME_DIR: PathBuf = home::home_dir().unwrap();
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct CommandOutput {
+    output: std::process::Output,
+    cmd_string: String,
+    flags: Vec<OsString>,
+    exec: crate::Executable,
+}
+
+impl CommandOutput {
+    pub(crate) fn unwrap(self) -> (std::process::Output, String, Vec<OsString>) {
+        (self.output, self.cmd_string, self.flags)
+    }
+
+    fn new(
+        output: std::process::Output,
+        cmd_string: String,
+        flags: Vec<OsString>,
+        exec: crate::Executable,
+    ) -> Self {
+        Self {
+            output,
+            cmd_string,
+            flags,
+            exec,
+        }
+    }
+}
+
 /// get a process::Command as String
 fn get_cmd_string(cmd: &std::process::Command) -> String {
     let envs: String = cmd
@@ -29,7 +57,7 @@ pub(crate) fn run_rustc(
     file: &Path,
     incremental: bool,
     rustc_flags: &[&str],
-) -> (Output, String, Vec<OsString>) {
+) -> CommandOutput {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -78,15 +106,17 @@ pub(crate) fn run_rustc(
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
     // dbg!(&output);
 
-    (output, get_cmd_string(&cmd), actual_args)
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        actual_args,
+        crate::Executable::Rustc,
+    )
     // remove tempdir
     //tempdir.close().unwrap();
 }
 
-pub(crate) fn run_rustc_incremental(
-    executable: &str,
-    file: &Path,
-) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> CommandOutput {
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
@@ -130,10 +160,15 @@ pub(crate) fn run_rustc_incremental(
 
     tempdir.close().unwrap();
     //dbg!(&output);
-    (output, get_cmd_string(&cmd), actual_args)
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        actual_args,
+        crate::Executable::Rustc,
+    )
 }
 
-pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
     // runs clippy-driver, not cargo-clippy!
 
     let has_main = std::fs::read_to_string(file)
@@ -182,10 +217,15 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> (Output, String, Vec<
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    (output, get_cmd_string(&cmd), Vec::new())
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::Clippy,
+    )
 }
 
-pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     let cargo_clippy = executable
@@ -223,12 +263,13 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .expect("failed to exec cargo new");
     //dbg!(&pre_rustc_chk);
     if !pre_rustc_chk.status.success() {
-        return (
+        return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
                 .expect("failed to run 'true'"),
             String::new(),
             Vec::new(),
+            crate::Executable::ClippyFix,
         );
     }
 
@@ -249,12 +290,13 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem);
-        return (
+        return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
                 .expect("failed to run 'true'"),
             String::new(),
             Vec::new(),
+            crate::Executable::ClippyFix,
         );
     }
     let source_path = {
@@ -329,14 +371,19 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> (Output, String, 
 
     //dbg!(&output);
 
-    (output, get_cmd_string(&cmd), used_lints)
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        used_lints,
+        crate::Executable::ClippyFix,
+    )
 }
 
 pub(crate) fn run_clippy_fix_with_args(
     executable: &str,
     file: &Path,
     args: &Vec<&str>,
-) -> (Output, String, Vec<OsString>) {
+) -> CommandOutput {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     //    dbg!(args);
@@ -406,12 +453,13 @@ pub(crate) fn run_clippy_fix_with_args(
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem);
-        return (
+        return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
                 .expect("failed to run 'true'"),
             String::new(),
             Vec::new(),
+            crate::Executable::ClippyFix,
         );
     }
     let source_path = {
@@ -461,10 +509,15 @@ pub(crate) fn run_clippy_fix_with_args(
     //  dbg!(&output);
     //  }
 
-    (output, get_cmd_string(&cmd), Vec::new())
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::ClippyFix,
+    )
 }
 
-pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env(
@@ -486,10 +539,15 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> (Output, String, Vec
         .args(["-o", "/dev/null"]);
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    (output, get_cmd_string(&cmd), Vec::new())
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::Rustdoc,
+    )
 }
 
-pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> CommandOutput {
     let file_content = std::fs::read_to_string(file).expect("failed to read file ");
 
     let mut cmd = Command::new(executable)
@@ -501,10 +559,11 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
 
     let stdin = &mut cmd.stdin.as_mut().unwrap();
     stdin.write_all(file_content.as_bytes()).unwrap();
-    (
+    CommandOutput::new(
         cmd.wait_with_output().unwrap(),
         get_cmd_string(Command::new("rust-analyer").arg("symbols")),
         Vec::new(),
+        crate::Executable::RustAnalyzer,
     )
 
     /*
@@ -513,7 +572,7 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> (Output, Strin
     output
     */
 }
-pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env(
         "SYSROOT",
@@ -523,14 +582,15 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> (Output, String, Vec
     .arg("--check")
     .args(["--edition", "2018"]);
     let output = systemdrun_command(&mut cmd).unwrap();
-    (output, get_cmd_string(&cmd), Vec::new())
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::Rustfmt,
+    )
 }
 
-pub(crate) fn run_miri(
-    executable: &str,
-    file: &Path,
-    miri_flags: &[&str],
-) -> (Output, String, Vec<OsString>) {
+pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> CommandOutput {
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
         .replace(['[', ']'], "_");
@@ -566,12 +626,13 @@ pub(crate) fn run_miri(
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
     if no_std || platform_intrinsics || !has_main {
         // miri is know to not really handles this well
-        return (
+        return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
                 .expect("failed to run 'true'"),
             String::new(),
             Vec::new(),
+            crate::Executable::Miri,
         );
     }
 
@@ -589,12 +650,13 @@ pub(crate) fn run_miri(
         .success()
     {
         eprintln!("ERROR: cargo new failed for: {}", file_stem,);
-        return (
+        return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
                 .expect("failed to run 'true'"),
             String::new(),
             Vec::new(),
+            crate::Executable::Miri,
         );
     }
     let source_path = {
@@ -651,7 +713,12 @@ pub(crate) fn run_miri(
             executable, file, miri_flags, crate_path
         )
     }
-    (out, get_cmd_string(&cmd), Vec::new())
+    CommandOutput::new(
+        out,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::Miri,
+    )
 }
 
 pub(crate) fn run_cranelift(
@@ -659,7 +726,7 @@ pub(crate) fn run_cranelift(
     file: &Path,
     incremental: bool,
     rustc_flags: &[&str],
-) -> (Output, String, Vec<OsString>) {
+) -> CommandOutput {
     if incremental {
         // only run incremental compilation tests
         return run_rustc_incremental(executable, file);
@@ -693,7 +760,12 @@ pub(crate) fn run_cranelift(
     // run the command
     let output = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
-    (output, get_cmd_string(&cmd), actual_args)
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        actual_args,
+        crate::Executable::RustcCGClif,
+    )
     // remove tempdir
     //tempdir.close().unwrap();
 }

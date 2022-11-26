@@ -16,6 +16,16 @@ Requirements:
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
 
 Trophy case (280+):  
+https://github.com/rust-lang/rust-clippy/issues/9961  
+https://github.com/rust-lang/rust-clippy/issues/9960  
+https://github.com/rust-lang/rust/issues/104918  
+https://github.com/rust-lang/rust-clippy/issues/9957  
+https://github.com/rust-lang/rust-clippy/issues/9956  
+https://github.com/rust-lang/rust-clippy/issues/9955  
+https://github.com/rust-lang/rust-clippy/issues/9954  
+https://github.com/rust-lang/rust-clippy/issues/9953  
+https://github.com/rust-lang/rust-clippy/issues/9952  
+https://github.com/rust-lang/rust-clippy/issues/9951  
 https://github.com/rust-lang/rust-clippy/issues/9949  
 https://github.com/rust-lang/rust/issues/104913  
 https://github.com/rust-lang/rust-clippy/issues/9947  

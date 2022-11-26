@@ -16,6 +16,7 @@ lazy_static! {
 pub(crate) struct CommandOutput {
     output: std::process::Output,
     cmd_string: String,
+    // flags executed by the $Executable that hit the ICE
     flags: Vec<OsString>,
     exec: crate::Executable,
 }
@@ -238,6 +239,10 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     let file_string = std::fs::read_to_string(file).unwrap_or_default();
 
+    // we need to get the full path to work with --project
+    // https://github.com/matthiaskrgr/icemaker/issues/26
+    let file = std::fs::canonicalize(file).unwrap();
+
     let has_main = file_string.contains("pub(crate) fn main(");
 
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
@@ -261,6 +266,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new");
+
     //dbg!(&pre_rustc_chk);
     if !pre_rustc_chk.status.success() {
         return CommandOutput::new(

@@ -363,17 +363,43 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     //dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
+
     // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on
     let lint_output = String::from_utf8(output.clone().stderr).unwrap();
-    let mut lint_lines = lint_output
+    let mut clippy_lint_lines = lint_output
         .lines()
         .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
-        .map(|l| return l.split('#').last().unwrap())
+        .map(|l| l.split('#').last().unwrap())
+        .map(|lintname| format!("-Wclippy::{}", lintname.replace('_', "-")))
         .map(|s| s.into())
         .collect::<Vec<OsString>>();
-    lint_lines.sort();
-    lint_lines.dedup();
-    let used_lints = lint_lines;
+    clippy_lint_lines.sort();
+    clippy_lint_lines.dedup();
+
+    let rustc_lint_lines_default = lint_output
+        .lines()
+        .filter(|l| l.contains(" = note: `#[warn(") && l.contains(")]` on by default"))
+        .map(|l| l.split('(').last().unwrap())
+        .map(|l| l.split(')').nth(0).unwrap());
+
+    let rustc_lint_lints_cmdline = lint_output
+        .lines()
+        .filter(|l| l.contains(" = note: requested on the command line with `"))
+        .map(|l| l.split('`').nth(1).unwrap())
+        .map(|l| l.split("-W ").last().unwrap());
+
+    let mut rustc_lints_all = rustc_lint_lines_default
+        .chain(rustc_lint_lints_cmdline)
+        .map(|lint| format!("-W{}", lint))
+        .map(OsString::from)
+        .collect::<Vec<OsString>>();
+
+    rustc_lints_all.sort();
+    rustc_lints_all.dedup();
+
+    clippy_lint_lines.extend(rustc_lints_all);
+
+    let used_lints = clippy_lint_lines;
 
     //dbg!(&output);
 

@@ -607,18 +607,7 @@ impl ICE {
         //dbg!(&cmd_output);
         //dbg!(&_cmd);
         // clippy_lint -> -Wclippy::clippy_lint
-        let actual_args = actual_args
-            .into_iter()
-            .map(|arg| {
-                if matches!(executable, Executable::ClippyFix,) {
-                    let mut flag = OsString::from("-Wclippy::");
-                    flag.push(arg);
-                    flag
-                } else {
-                    arg
-                }
-            })
-            .collect::<Vec<_>>();
+        //let actual_args = actual_args.into_iter().map(|arg| {}).collect::<Vec<_>>();
 
         // find out the ice message
         let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)

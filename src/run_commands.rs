@@ -370,7 +370,8 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .lines()
         .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))
         .map(|l| l.split('#').last().unwrap())
-        .map(|lintname| format!("-Wclippy::{}", lintname.replace('_', "-")))
+        //  .map(|lintname| format!("-Wclippy::{}", lintname.replace('_', "-")))
+        .map(|lintname| lintname.replace('_', "-"))
         .map(|s| s.into())
         .collect::<Vec<OsString>>();
     clippy_lint_lines.sort();
@@ -390,7 +391,8 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     let mut rustc_lints_all = rustc_lint_lines_default
         .chain(rustc_lint_lints_cmdline)
-        .map(|lint| format!("-W{}", lint))
+        // added later
+        //  .map(|lint| format!("-W{}", lint))
         .map(OsString::from)
         .collect::<Vec<OsString>>();
 
@@ -416,6 +418,7 @@ pub(crate) fn run_clippy_fix_with_args(
     file: &Path,
     args: &Vec<&str>,
 ) -> CommandOutput {
+    //dbg!(&args);
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     //    dbg!(args);
@@ -531,7 +534,16 @@ pub(crate) fn run_clippy_fix_with_args(
         .arg("--allow-no-vcs")
         .arg("--")
         .arg("-Aclippy::all")
-        .args(args)
+        // need to silence all default rustc lints first so we can properly bisect them
+        // also add
+        .arg("-Awarnings")
+        .args(
+            args.iter()
+                .map(|arg|
+                    // we need to force-warn all lints due to previous "-Awarnings" which silences *all* lints (including default ones)
+                    ["--force-warn", arg].into_iter())
+                .flatten(), //  .map(|x| dbg!(x)),
+        )
         .args(["--cap-lints", "warn"]);
 
     //dbg!(&cmd);

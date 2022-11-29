@@ -1153,6 +1153,11 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                     if normal_ice.is_some() {
                         return normal_ice;
                     }
+                    // rustfix failed to do anything because different lints modified the same line, ignore this/don't report ICE
+                    if lines.any(|line| line.contains("maybe parts of it were already replaced?")) {
+                        return None;
+                    }
+
                     // clippy fix failure
                     lines
                         .find(|line| {

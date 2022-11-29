@@ -372,7 +372,8 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .map(|l| l.split('#').last().unwrap())
         //  .map(|lintname| format!("-Wclippy::{}", lintname.replace('_', "-")))
         .map(|lintname| lintname.replace('_', "-"))
-        .map(|s| s.into())
+        .map(|lint| format!("--force-warn clippy::{}", lint))
+        .map(|l| l.into())
         .collect::<Vec<OsString>>();
     clippy_lint_lines.sort();
     clippy_lint_lines.dedup();
@@ -393,6 +394,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .chain(rustc_lint_lints_cmdline)
         // added later
         //  .map(|lint| format!("-W{}", lint))
+        .map(|lint| format!("--force-warn {}", lint))
         .map(OsString::from)
         .collect::<Vec<OsString>>();
 
@@ -403,7 +405,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     let used_lints = clippy_lint_lines;
 
-    //dbg!(&output);
+    //dbg!(String::from_utf8_lossy(&output.stderr));
 
     CommandOutput::new(
         output,
@@ -418,7 +420,7 @@ pub(crate) fn run_clippy_fix_with_args(
     file: &Path,
     args: &Vec<&str>,
 ) -> CommandOutput {
-    //dbg!(&args);
+    //  dbg!(&args);
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     //    dbg!(args);
@@ -539,10 +541,8 @@ pub(crate) fn run_clippy_fix_with_args(
         .arg("-Awarnings")
         .args(
             args.iter()
-                .map(|arg|
-                    // we need to force-warn all lints due to previous "-Awarnings" which silences *all* lints (including default ones)
-                    ["--force-warn", arg].into_iter())
-                .flatten(), //  .map(|x| dbg!(x)),
+                .map(|a| a.split_whitespace().into_iter())
+                .flatten(),
         )
         .args(["--cap-lints", "warn"]);
 

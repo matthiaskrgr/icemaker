@@ -1154,11 +1154,17 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                         return normal_ice;
                     }
                     // rustfix failed to do anything because different lints modified the same line, ignore this/don't report ICE
+                    let mut lines = std::io::Cursor::new(executable_output)
+                        .lines()
+                        .filter_map(|line| line.ok());
                     if lines.any(|line| line.contains("maybe parts of it were already replaced?")) {
                         return None;
                     }
-
+                    let mut lines = std::io::Cursor::new(executable_output)
+                        .lines()
+                        .filter_map(|line| line.ok());
                     // clippy fix failure
+
                     lines
                         .find(|line| {
                             keywords_clippyfix_failure
@@ -1167,7 +1173,6 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                         })
                         .map(|line| (line, ICEKind::ClippyFix))
                 }
-
                 Executable::Rustc
                 | Executable::Clippy
                 | Executable::RustAnalyzer

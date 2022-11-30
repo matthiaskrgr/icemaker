@@ -10,7 +10,7 @@ Features:
 * try to find minimal set of RUSTFLAGS that reproduces the internal compiler error
 * check if a file compiles stably with incremental compilation
 * build and run a file under miri
-* run clippy on a file and find out if (and which) lint does not apply successfully
+* run clippy or rustc on a file and find out if (and which) lint does not apply successfully (causes compiler errors)
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process

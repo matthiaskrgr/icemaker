@@ -393,39 +393,6 @@ pub(crate) fn run_clippy_fix_with_args(
     // since we already run clippy successfully on the file we SHOULD not encounter any errors here.
     // I assume that cargo clippy --fix throws errors somehow and that returns early here
 
-    /*let mut cmd = Command::new(executable);
-
-    if !has_main {
-        cmd.arg("--crate-type=lib");
-    }
-    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env("SYSROOT", "/home/matthias/.rustup/toolchains/master")
-        .arg(file)
-        // silence all default args and only run with the supplied args
-        .arg("--")
-        .arg("-Aclippy::all")
-        .args(args)
-        .args(["--cap-lints", "warn"]);
-
-    let output = systemdrun_command(&mut cmd).unwrap();
-
-    //dbg!(&output);
-    // if the snippet "compiles" fine, try to run clippy with --fix
-    let exit_status = output.status.code().unwrap_or(42);
-
-    if exit_status != 0 {
-        //
-        dbg!("BAD EXIT STATUS");
-        // errors while checking file, abort (file may not build)
-        return (
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-        );
-    } */
-
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
@@ -469,13 +436,6 @@ pub(crate) fn run_clippy_fix_with_args(
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push(file_stem);
 
-    /* if !has_main && has_test {
-        cmd.arg("miri")
-            .arg("test")
-            .current_dir(crate_path)
-            .env("MIRIFLAGS", miri_flags.join(" "));
-    } else { */
-
     let mut cmd = Command::new("cargo");
 
     cmd.arg("+master")
@@ -493,11 +453,7 @@ pub(crate) fn run_clippy_fix_with_args(
         // need to silence all default rustc lints first so we can properly bisect them
         // also add
         .arg("-Awarnings")
-        .args(
-            args.iter()
-                .map(|a| a.split_whitespace().into_iter())
-                .flatten(),
-        )
+        .args(args.iter().flat_map(|a| a.split_whitespace()))
         .args(["--cap-lints", "warn"]);
 
     //dbg!(&cmd);

@@ -228,7 +228,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     let mut pre_rustc_chk = std::process::Command::new(crate::ice::Executable::Rustc.path());
 
     // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
-    let pre_rustc_chk = pre_rustc_chk
+    let mut pre_rustc_chk = pre_rustc_chk
         .env(
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
@@ -240,12 +240,12 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         })
         .arg(file)
         .args(["--emit", "metadata"])
-        .current_dir(tempdir_path)
-        .output()
-        .expect("failed to exec cargo new");
+        .current_dir(tempdir_path);
+    let output =
+        systemdrun_command(&mut pre_rustc_chk).expect("failed to exec pre clippy rustc new");
 
     //dbg!(&pre_rustc_chk);
-    if !pre_rustc_chk.status.success() {
+    if !output.status.success() {
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -336,7 +336,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .lines()
         .filter(|l| l.contains(" = note: `#[warn(") && l.contains(")]` on by default"))
         .map(|l| l.split('(').last().unwrap())
-        .map(|l| l.split(')').nth(0).unwrap());
+        .map(|l| l.split(')').next().unwrap());
 
     let rustc_lint_lints_cmdline = lint_output
         .lines()

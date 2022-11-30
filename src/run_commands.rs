@@ -206,9 +206,9 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
 pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
-    let cargo_clippy = executable
-        .to_string()
-        .replace("clippy-driver", "cargo-clippy");
+    /*  let cargo_clippy = executable
+    .to_string()
+    .replace("clippy-driver", "cargo-clippy"); */
 
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
@@ -228,7 +228,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     let mut pre_rustc_chk = std::process::Command::new(crate::ice::Executable::Rustc.path());
 
     // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
-    let mut pre_rustc_chk = pre_rustc_chk
+    let pre_rustc_chk = pre_rustc_chk
         .env(
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
@@ -241,8 +241,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .arg(file)
         .args(["--emit", "metadata"])
         .current_dir(tempdir_path);
-    let output =
-        systemdrun_command(&mut pre_rustc_chk).expect("failed to exec pre clippy rustc new");
+    let output = systemdrun_command(pre_rustc_chk).expect("failed to exec pre clippy rustc new");
 
     //dbg!(&pre_rustc_chk);
     if !output.status.success() {
@@ -372,7 +371,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 pub(crate) fn run_clippy_fix_with_args(
     executable: &str,
     file: &Path,
-    args: &Vec<&str>,
+    args: &[&str],
 ) -> CommandOutput {
     //  dbg!(&args);
     // we need the "cargo-clippy" executable for --fix
@@ -388,7 +387,7 @@ pub(crate) fn run_clippy_fix_with_args(
 
     let file_string = std::fs::read_to_string(file).unwrap_or_default();
 
-    let has_main = file_string.contains("pub(crate) fn main(");
+    // let has_main = file_string.contains("pub(crate) fn main(");
 
     // since we already run clippy successfully on the file we SHOULD not encounter any errors here.
     // I assume that cargo clippy --fix throws errors somehow and that returns early here

@@ -15,6 +15,11 @@ Features:
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
 
+History: 
+This project started years ago as a simple bash oneliner like 
+for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep panicked ; done 
+but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...
+
 Trophy case (310+):  
 https://github.com/rust-lang/rust/issues/105099  
 https://github.com/rust-lang/rust-clippy/issues/10002  

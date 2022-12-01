@@ -185,6 +185,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
         )
+        .env("CARGO_TERM_COLOR", "never")
         .arg(file)
         .args(flags::CLIPPYLINTS)
         .args(flags::RUSTC_ALLOW_BY_DEFAULT_LINTS)
@@ -239,6 +240,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
             ["--crate-type", "lib"]
         })
         .arg(file)
+        .env("CARGO_TERM_COLOR", "never")
         .args(["--emit", "metadata"])
         .current_dir(tempdir_path);
     let output = systemdrun_command(pre_rustc_chk).expect("failed to exec pre clippy rustc new");
@@ -261,6 +263,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
         )
+        .env("CARGO_TERM_COLOR", "never")
         .arg("new")
         .args(["--vcs", "none"])
         .arg(if has_main { "--bin" } else { "--lib" })
@@ -301,6 +304,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     cmd.arg("+master")
         .arg("clippy")
+        .env("CARGO_TERM_COLOR", "never")
         .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env(
             "SYSROOT",
@@ -400,6 +404,7 @@ pub(crate) fn run_clippy_fix_with_args(
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
         )
+        .env("CARGO_TERM_COLOR", "never")
         .arg("new")
         .args(["--vcs", "none"])
         .arg(file_stem)
@@ -444,6 +449,7 @@ pub(crate) fn run_clippy_fix_with_args(
             "SYSROOT",
             format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
         )
+        .env("CARGO_TERM_COLOR", "never")
         .current_dir(crate_path)
         .arg("--fix")
         .arg("--allow-no-vcs")
@@ -477,6 +483,7 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
             "SYSROOT",
             format!("{}", HOME_DIR.join("/.rustup/toolchains/master/").display()),
         )
+        .env("CARGO_TERM_COLOR", "never")
         .arg(file)
         .arg("-Znormalize-docs")
         .arg("-Zunstable-options")

@@ -770,6 +770,7 @@ pub(crate) fn systemdrun_command(
         cmd.output()
     }
 }
+
 pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool {
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()

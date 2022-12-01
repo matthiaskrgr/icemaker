@@ -459,12 +459,12 @@ pub(crate) fn run_clippy_fix_with_args(
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    dbg!(&output);
+    //  dbg!(&output);
     //  }
 
     CommandOutput::new(
         output,
-        dbg!(get_cmd_string(&cmd)),
+        get_cmd_string(&cmd),
         Vec::new(),
         crate::Executable::ClippyFix,
     )

@@ -179,7 +179,7 @@ impl Executable {
                 p.display().to_string()
             }
             Executable::RustcCGClif => {
-                String::from("/home/matthias/vcs/github/rustc_codegen_cranelift/build/rustc-clif")
+                String::from("/home/matthias/vcs/github/rustc_codegen_cranelift/dist/rustc-clif")
             }
         }
     }

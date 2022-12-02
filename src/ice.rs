@@ -119,7 +119,9 @@ impl Executable {
         match self {
             Executable::Rustc => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("/home/matthias/vcs/github/rust_debug_assertions/build/x86_64-unknown-linux-gnu/stage1/bin/rustc")
+                    String::from(
+                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustc",
+                    )
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -130,28 +132,46 @@ impl Executable {
                 }
             }
             Executable::Clippy => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("clippy-driver");
-                p.display().to_string()
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from(
+                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/clippy-driver",
+                    )
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("clippy-driver");
+                    p.display().to_string()
+                }
             }
             Executable::ClippyFix => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("clippy-driver");
-                p.display().to_string()
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from(
+                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/clippy-driver",
+                    )
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("clippy-driver");
+                    p.display().to_string()
+                }
             }
             Executable::Rustdoc => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustdoc");
-                p.display().to_string()
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from(
+                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustdoc",
+                    )
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("rustdoc");
+                    p.display().to_string()
+                }
             }
             Executable::RustAnalyzer => {
                 let mut p = home::rustup_home().unwrap();
@@ -162,12 +182,18 @@ impl Executable {
                 p.display().to_string()
             }
             Executable::Rustfmt => {
-                let mut p = home::rustup_home().unwrap();
-                p.push("toolchains");
-                p.push("master");
-                p.push("bin");
-                p.push("rustfmt");
-                p.display().to_string()
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from(
+                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustfmt",
+                    )
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("rustfmt");
+                    p.display().to_string()
+                }
             }
             Executable::Miri => {
                 // note: this is actually not what we run in the end, we need to run "cargo miri test"

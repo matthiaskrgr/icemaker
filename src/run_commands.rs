@@ -4,14 +4,35 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
+
+use clap::Parser;
 use tempdir::TempDir;
 
 use crate::flags;
+use crate::library::Args;
 
 lazy_static! {
     static ref HOME_DIR: PathBuf = home::home_dir().unwrap();
 }
 
+static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
+
+static SYSROOT_PATH: Lazy<String> = Lazy::new(|| {
+    format!(
+        "{}",
+        HOME_DIR
+            .join(format!(
+                ".rustup/toolchains/{}/",
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
+                } else {
+                    "master"
+                }
+            ))
+            .display()
+    )
+});
 #[derive(Clone, Debug)]
 pub(crate) struct CommandOutput {
     output: std::process::Output,
@@ -181,10 +202,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
         cmd.arg("--crate-type=lib");
     }
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
+        .env("SYSROOT", &*SYSROOT_PATH)
         .env("CARGO_TERM_COLOR", "never")
         .arg(file)
         .args(flags::CLIPPYLINTS)
@@ -230,10 +248,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
     let pre_rustc_chk = pre_rustc_chk
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
+        .env("SYSROOT", &*SYSROOT_PATH)
         .args(if has_main {
             ["--crate-type", "bin"]
         } else {
@@ -259,10 +274,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
+        .env("SYSROOT", &*SYSROOT_PATH)
         .env("CARGO_TERM_COLOR", "never")
         .arg("new")
         .args(["--vcs", "none"])
@@ -302,21 +314,22 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
 
     let mut cmd = Command::new("cargo");
 
-    cmd.arg("+master")
-        .arg("clippy")
-        .env("CARGO_TERM_COLOR", "never")
-        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
-        .current_dir(crate_path)
-        .arg("--fix")
-        .arg("--allow-no-vcs")
-        .arg("--")
-        .args(flags::CLIPPYLINTS)
-        .args(flags::RUSTC_ALLOW_BY_DEFAULT_LINTS)
-        .args(["--cap-lints", "warn"]);
+    cmd.arg(if *LOCAL_DEBUG_ASSERTIONS {
+        "+local-debug-assertions"
+    } else {
+        "+master"
+    })
+    .arg("clippy")
+    .env("CARGO_TERM_COLOR", "never")
+    .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    .env("SYSROOT", &*SYSROOT_PATH)
+    .current_dir(crate_path)
+    .arg("--fix")
+    .arg("--allow-no-vcs")
+    .arg("--")
+    .args(flags::CLIPPYLINTS)
+    .args(flags::RUSTC_ALLOW_BY_DEFAULT_LINTS)
+    .args(["--cap-lints", "warn"]);
     //dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
@@ -400,10 +413,7 @@ pub(crate) fn run_clippy_fix_with_args(
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
+        .env("SYSROOT", &*SYSROOT_PATH)
         .env("CARGO_TERM_COLOR", "never")
         .arg("new")
         .args(["--vcs", "none"])
@@ -442,24 +452,25 @@ pub(crate) fn run_clippy_fix_with_args(
 
     let mut cmd = Command::new("cargo");
 
-    cmd.arg("+master")
-        .arg("clippy")
-        .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-        )
-        .env("CARGO_TERM_COLOR", "never")
-        .current_dir(crate_path)
-        .arg("--fix")
-        .arg("--allow-no-vcs")
-        .arg("--")
-        .arg("-Aclippy::all")
-        // need to silence all default rustc lints first so we can properly bisect them
-        // also add
-        .arg("-Awarnings")
-        .args(args.iter().flat_map(|a| a.split_whitespace()))
-        .args(["--cap-lints", "warn"]);
+    cmd.arg(if *LOCAL_DEBUG_ASSERTIONS {
+        "+local-debug-assertions"
+    } else {
+        "+master"
+    })
+    .arg("clippy")
+    .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    .env("SYSROOT", &*SYSROOT_PATH)
+    .env("CARGO_TERM_COLOR", "never")
+    .current_dir(crate_path)
+    .arg("--fix")
+    .arg("--allow-no-vcs")
+    .arg("--")
+    .arg("-Aclippy::all")
+    // need to silence all default rustc lints first so we can properly bisect them
+    // also add
+    .arg("-Awarnings")
+    .args(args.iter().flat_map(|a| a.split_whitespace()))
+    .args(["--cap-lints", "warn"]);
 
     //dbg!(&cmd);
 
@@ -479,10 +490,7 @@ pub(crate) fn run_clippy_fix_with_args(
 pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
-        .env(
-            "SYSROOT",
-            format!("{}", HOME_DIR.join("/.rustup/toolchains/master/").display()),
-        )
+        .env("SYSROOT", &*SYSROOT_PATH)
         .env("CARGO_TERM_COLOR", "never")
         .arg(file)
         .arg("-Znormalize-docs")
@@ -534,13 +542,10 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> CommandOutput 
 }
 pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> CommandOutput {
     let mut cmd = Command::new(executable);
-    cmd.env(
-        "SYSROOT",
-        format!("{}", HOME_DIR.join(".rustup/toolchains/master/").display()),
-    )
-    .arg(file)
-    .arg("--check")
-    .args(["--edition", "2018"]);
+    cmd.env("SYSROOT", &*SYSROOT_PATH)
+        .arg(file)
+        .arg("--check")
+        .args(["--edition", "2018"]);
     let output = systemdrun_command(&mut cmd).unwrap();
     CommandOutput::new(
         output,

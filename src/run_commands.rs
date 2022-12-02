@@ -126,7 +126,7 @@ pub(crate) fn run_rustc(
     // run the command
     let output = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
-    // dbg!(&output);
+    dbg!(&output);
 
     CommandOutput::new(
         output,
@@ -472,7 +472,7 @@ pub(crate) fn run_clippy_fix_with_args(
     .args(args.iter().flat_map(|a| a.split_whitespace()))
     .args(["--cap-lints", "warn"]);
 
-    //dbg!(&cmd);
+    dbg!(&cmd);
 
     let output = systemdrun_command(&mut cmd).unwrap();
 

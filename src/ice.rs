@@ -120,7 +120,7 @@ impl Executable {
             Executable::Rustc => {
                 if *LOCAL_DEBUG_ASSERTIONS {
                     String::from(
-                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustc",
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc",
                     )
                 } else {
                     let mut p = home::rustup_home().unwrap();
@@ -134,7 +134,7 @@ impl Executable {
             Executable::Clippy => {
                 if *LOCAL_DEBUG_ASSERTIONS {
                     String::from(
-                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/clippy-driver",
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/clippy-driver",
                     )
                 } else {
                     let mut p = home::rustup_home().unwrap();
@@ -148,7 +148,7 @@ impl Executable {
             Executable::ClippyFix => {
                 if *LOCAL_DEBUG_ASSERTIONS {
                     String::from(
-                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/clippy-driver",
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/clippy-driver",
                     )
                 } else {
                     let mut p = home::rustup_home().unwrap();
@@ -162,7 +162,7 @@ impl Executable {
             Executable::Rustdoc => {
                 if *LOCAL_DEBUG_ASSERTIONS {
                     String::from(
-                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustdoc",
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustdoc",
                     )
                 } else {
                     let mut p = home::rustup_home().unwrap();
@@ -184,7 +184,7 @@ impl Executable {
             Executable::Rustfmt => {
                 if *LOCAL_DEBUG_ASSERTIONS {
                     String::from(
-                        "/home/matthias/rustup/toolchains/local-debug-assertions/bin/rustfmt",
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustfmt",
                     )
                 } else {
                     let mut p = home::rustup_home().unwrap();

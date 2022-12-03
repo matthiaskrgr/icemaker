@@ -1118,7 +1118,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
         .find_map(|executable_output| {
             let mut lines = std::io::Cursor::new(executable_output)
                 .lines()
-                .filter_map(|line| line.ok());
+                .filter_map(|line| line.ok())
+                .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */);
 
             match executable {
                 Executable::Miri => {

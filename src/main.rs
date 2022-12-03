@@ -246,6 +246,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         return Vec::new();
     }
 
+    // main loop that checks all the files
     let mut errors: Vec<ICE> = files
         .par_iter()
         .flat_map(|file| {
@@ -961,7 +962,18 @@ impl ICE {
             };
             ret = Some(ret_hang);
         }
-
+        if let Some(ice) = ret.clone() {
+            eprintln!(
+                "\n{:?} '{}' '{}' '{}'",
+                ice.file,
+                ice.args
+                    .iter()
+                    .map(|arg| format!("{arg},"))
+                    .collect::<String>(),
+                ice.error_reason,
+                ice.ice_msg
+            );
+        }
         ret
     }
 }

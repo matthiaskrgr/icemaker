@@ -963,8 +963,9 @@ impl ICE {
             ret = Some(ret_hang);
         }
         if let Some(ice) = ret.clone() {
-            eprintln!(
-                "\n{:?} '{}' '{}' '{}'",
+            println!(
+                "\n{:?} {:?} '{}' '{}' '{}'",
+                ice.executable,
                 ice.file,
                 ice.args
                     .iter()

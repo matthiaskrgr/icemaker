@@ -156,6 +156,7 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> CommandOut
         }
         command
             .arg(file)
+            .env("SYSROOT", &*SYSROOT_PATH)
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))

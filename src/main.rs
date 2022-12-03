@@ -1084,8 +1084,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
 
     let keywords_generic_ice = [
         "^LLVM ERROR",
-        "^thread '.*' panicked at:",
-        "^query stack during panic:$",
+        "^thread '.*' panicked at",
+        "^query stack during panic",
         "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
         "^error: internal compiler error: ",
         "RUST_BACKTRACE=",

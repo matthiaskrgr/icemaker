@@ -93,11 +93,10 @@ pub(crate) fn run_rustc(
     let tempdir_path = tempdir.path().display();
 
     // decide whether we want rustc to do codegen (slow!) or not
-    let output_file = if rustc_flags.contains(&"-ocodegen") {
+    let output_file = if !rustc_flags.contains(&"-ocodegen") {
         Some(format!("-o{}/outfile", tempdir_path))
     } else {
-        // this will prevent rustc from codegening since "nocodegen" is not a dir
-        Some("-o/tmp/nocodegen/nocodege".into())
+        Some("-Zno-codegen".into())
     };
     //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
     let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");

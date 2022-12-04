@@ -702,7 +702,7 @@ impl ICE {
         // incremental ices don't need to have their flags reduced
         if incremental && found_error.is_some() {
             let (found_error, kind) = found_error.unwrap();
-            return Some(ICE {
+            let ice = ICE {
                 regresses_on: Regression::Nightly,
 
                 needs_feature: uses_feature,
@@ -717,7 +717,9 @@ impl ICE {
                 ice_msg,
                 executable: executable.clone(),
                 kind,
-            });
+            };
+            //  dbg!(&ice);
+            return Some(ice);
         }
 
         let mut ret = None;
@@ -975,6 +977,10 @@ impl ICE {
                 ice.ice_msg
             );
         }
+
+        /*        if let Some(ret) = ret.clone() {
+            println!("\"n\n{:?}", ret);
+        }  */
         ret
     }
 }

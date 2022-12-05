@@ -839,6 +839,13 @@ impl ICE {
                         flag_combinations.iter().any(|flag_combination| {
                             //dbg!(&flag_combination);
 
+                            // check if we have to timeout
+                            // use limit * 2 to be a bit more generous since bisecting can take time
+                            if thread_start.elapsed().as_secs() > SECONDS_LIMIT {
+                                // break from the any()
+                                return true;
+                            }
+
                             let output = if matches!(executable, Executable::ClippyFix) {
                                 let (output, _somestr, _flags) = run_clippy_fix_with_args(
                                     &executable.path(),
@@ -892,6 +899,42 @@ impl ICE {
                 | Executable::Rustfmt
                 | Executable::Miri => {}
             }
+
+            let seconds_elapsed = thread_start.elapsed().as_secs();
+            if seconds_elapsed > (SECONDS_LIMIT) {
+                print!("\r");
+                println!(
+                    "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                    "HANG".blue(),
+                    executable,
+                    file.display(),
+                    seconds_elapsed,
+                    SECONDS_LIMIT,
+                    actual_args
+                        .iter()
+                        .cloned()
+                        .map(|s| s.into_string().unwrap())
+                        .collect::<Vec<String>>(),
+                );
+
+                // the process was killed by systemd because it exceeded time limit
+                let ret_hang = ICE {
+                    regresses_on: Regression::Master,
+                    needs_feature: uses_feature,
+                    file: file.to_owned(),
+                    args: compiler_flags
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect::<Vec<String>>(),
+
+                    error_reason: String::from("HANG"),
+                    ice_msg: "HANG".into(),
+                    executable: executable.clone(),
+                    kind: ICEKind::Hang,
+                };
+                ret = Some(ret_hang);
+            }
+
             let regressing_channel = find_out_crashing_channel(&bad_flags, file);
             // add these for a more accurate representation of what we ran originally
             bad_flags.push(&"-ooutputfile");

@@ -93,7 +93,8 @@ pub(crate) fn run_rustc(
     let tempdir_path = tempdir.path().display();
 
     // decide whether we want rustc to do codegen (slow!) or not
-    let output_file = if !rustc_flags.contains(&"-ocodegen") {
+    let output_file = if rustc_flags.contains(&"-ocodegen") {
+        // do codegen
         Some(format!("-o{}/outfile", tempdir_path))
     } else {
         Some("-Zno-codegen".into())

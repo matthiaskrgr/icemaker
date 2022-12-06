@@ -94,7 +94,6 @@ impl From<&Args> for Executable {
 }
 
 /// run on a project, each project having its own errors.json
-
 fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
@@ -464,7 +463,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
 fn main() {
     // how long did we take?
-    let start_time = Instant::now();
+    let global_start_time = Instant::now();
 
     let args = Args::parse();
 
@@ -525,7 +524,7 @@ fn main() {
         .collect::<Vec<PathBuf>>();
 
     // print a warning if a file takes longer than X to process
-    let seconds_elapsed = start_time.elapsed().as_secs();
+    let seconds_elapsed = global_start_time.elapsed().as_secs();
 
     let files_number = files.len();
     if seconds_elapsed == 0 {

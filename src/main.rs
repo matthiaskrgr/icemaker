@@ -420,20 +420,20 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     )
     .iter()
     .map(|diff| match diff {
-        diff::Result::Left(l) => format!("-{}\n", l),
-        diff::Result::Both(l, _) => format!(" {}\n", l),
-        diff::Result::Right(r) => format!("+{}\n", r),
+        diff::Result::Left(l) => format!("-{l}\n"),
+        diff::Result::Both(l, _) => format!(" {l}\n"),
+        diff::Result::Right(r) => format!("+{r}\n"),
     })
     .collect::<String>();
 
-    println!("{}", diff);
+    println!("{diff}");
 
     let new_ices = errors
         .iter()
         .filter(|new_ice| !errors_before.contains(new_ice))
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
-    println!("NEW ICES:\n{:#?}", new_ices);
+    println!("NEW ICES:\n{new_ices:#?}");
 
     let root_path_string = root_path.display().to_string();
 
@@ -529,12 +529,11 @@ fn main() {
         .flat_map(|v| v.into_iter())
         .collect::<Vec<PathBuf>>();
 
-    // print a warning if a file takes longer than X to process
     let seconds_elapsed = global_start_time.elapsed().as_secs();
 
     let number_of_checked_files = files.len();
     if seconds_elapsed == 0 {
-        println!("Checked {} files in <1 second", number_of_checked_files);
+        println!("Checked {number_of_checked_files} files in <1 second");
         return;
     }
     let files_per_second = number_of_checked_files as f64 / seconds_elapsed as f64;
@@ -679,7 +678,7 @@ impl ICE {
                     s
                 },
                 feat = if uses_feature { "        " } else { "no feat!" },
-                flags = format!("{:?}", compiler_flags)
+                flags = format!("{compiler_flags:?}")
             );
             print!("\r");
             let _stdout = std::io::stdout().flush();
@@ -1272,7 +1271,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
             // gen the snippet
             let rust_code = get_random_string();
 
-            let filename = format!("icemaker_{}.rs", num);
+            let filename = format!("icemaker_{num}.rs");
             let path = PathBuf::from(&filename);
             let mut file = std::fs::File::create(filename).expect("failed to create file");
             file.write_all(rust_code.as_bytes())
@@ -1317,7 +1316,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                         .unwrap()
                         .args
                         .iter()
-                        .map(|s| format!("{} ", s))
+                        .map(|s| format!("{s} "))
                         .collect::<String>(),
                 );
             }
@@ -1415,7 +1414,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                 return None;
             }
 
-            let filename = format!("icemaker_{}.rs", num);
+            let filename = format!("icemaker_{num}.rs");
             let path = PathBuf::from(&filename);
             let mut file = std::fs::File::create(filename).expect("failed to create file");
             file.write_all(rust_code.as_bytes())
@@ -1460,7 +1459,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                         .unwrap()
                         .args
                         .iter()
-                        .map(|s| format!("{} ", s))
+                        .map(|s| format!("{s} "))
                         .collect::<String>()
                 );
             }
@@ -1523,7 +1522,7 @@ fn codegen_git() {
             .expect("git cat-file -p <obj> failed")
             .stdout;
         let text = String::from_utf8(stdout).unwrap();
-        let dir = format!("{}{}", first, second);
+        let dir = format!("{first}{second}");
         std::fs::create_dir_all(&dir).expect("failed to create directories");
         std::fs::write(format!("{}/{}.rs", &dir, obj), text).expect("failed to write file");
     })
@@ -1574,9 +1573,9 @@ fn _codegen_git_and_check() {
             .expect("git cat-file -p <obj> failed")
             .stdout;
         let text = String::from_utf8(stdout).unwrap();
-        std::fs::create_dir_all(format!("{}/{}", first, second))
+        std::fs::create_dir_all(format!("{first}/{second}"))
             .expect("failed to create directories");
-        std::fs::write(format!("{}/{}/{}.rs", first, second, obj), text)
+        std::fs::write(format!("{first}/{second}/{obj}.rs"), text)
             .expect("failed to write file");
     })
 }

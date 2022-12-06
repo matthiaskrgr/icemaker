@@ -96,7 +96,7 @@ impl std::fmt::Display for Regression {
             Regression::Master => "master",
         };
 
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 

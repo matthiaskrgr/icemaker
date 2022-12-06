@@ -70,8 +70,8 @@ fn get_cmd_string(cmd: &std::process::Command) -> String {
         .map(|(x, y)| format!("{}={}", x.to_string_lossy(), y.unwrap().to_string_lossy()))
         .collect::<Vec<String>>()
         .join(" ");
-    let command = format!("{:?}", cmd);
-    return format!("\"{}\" {}", envs, command).replace('"', "");
+    let command = format!("{cmd:?}");
+    return format!("\"{envs}\" {command}").replace('"', "");
 }
 
 pub(crate) fn run_rustc(
@@ -95,14 +95,14 @@ pub(crate) fn run_rustc(
     // decide whether we want rustc to do codegen (slow!) or not
     let output_file = if rustc_flags.contains(&"-ocodegen") {
         // do codegen
-        Some(format!("-o{}/outfile", tempdir_path))
+        Some(format!("-o{tempdir_path}/outfile"))
     } else {
         Some("-Zno-codegen".into())
     };
     //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
     let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");
 
-    let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path);
+    let dump_mir_dir = format!("-Zdump-mir-dir={tempdir_path}");
 
     let mut cmd = Command::new(executable);
     cmd.arg(file)
@@ -125,7 +125,7 @@ pub(crate) fn run_rustc(
 
     // run the command
     let output = systemdrun_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
     //dbg!(&output);
 
     CommandOutput::new(
@@ -287,7 +287,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        eprintln!("ERROR: cargo new failed for: {file_stem}");
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -343,7 +343,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .map(|l| l.split('#').last().unwrap())
         //  .map(|lintname| format!("-Wclippy::{}", lintname.replace('_', "-")))
         .map(|lintname| lintname.replace('_', "-"))
-        .map(|lint| format!("--force-warn clippy::{}", lint))
+        .map(|lint| format!("--force-warn clippy::{lint}"))
         .map(|l| l.into())
         .collect::<Vec<OsString>>();
     clippy_lint_lines.sort();
@@ -365,7 +365,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
         .chain(rustc_lint_lints_cmdline)
         // added later
         //  .map(|lint| format!("-W{}", lint))
-        .map(|lint| format!("--force-warn {}", lint))
+        .map(|lint| format!("--force-warn {lint}"))
         .map(OsString::from)
         .collect::<Vec<OsString>>();
 
@@ -425,7 +425,7 @@ pub(crate) fn run_clippy_fix_with_args(
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {}", file_stem);
+        eprintln!("ERROR: cargo new failed for: {file_stem}");
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -615,7 +615,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {}", file_stem,);
+        eprintln!("ERROR: cargo new failed for: {file_stem}",);
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -659,7 +659,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
     //  }
 
     let out = systemdrun_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
 
     //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
     //eprintln!("{}", stderr);
@@ -675,8 +675,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
         */
 
         panic!(
-            "miri tried to recompile std!!\n{:?} {:?} {:?} in  {:?}\n\n",
-            executable, file, miri_flags, crate_path
+            "miri tried to recompile std!!\n{executable:?} {file:?} {miri_flags:?} in  {crate_path:?}\n\n"
         )
     }
     CommandOutput::new(
@@ -725,7 +724,7 @@ pub(crate) fn run_cranelift(
 
     // run the command
     let output = systemdrun_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {:?}, executable: {:?}", cmd, executable));
+        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
     CommandOutput::new(
         output,
         get_cmd_string(&cmd),
@@ -833,7 +832,7 @@ pub(crate) fn incremental_stress_test(
         }
     }
     // both files compile, continue with actual incremental checking
-    eprintln!("found possible pair: {:?}", files);
+    eprintln!("found possible pair: {files:?}");
     for i in &[0_usize, 1_usize] {
         let file = files[*i];
 

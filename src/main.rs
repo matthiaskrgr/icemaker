@@ -467,11 +467,13 @@ fn main() {
 
     let args = Args::parse();
 
+    // rayon thread pool so we can configure number of threads easily
     rayon::ThreadPoolBuilder::new()
         .num_threads(args.threads)
         .build_global()
         .unwrap();
 
+    // set up ctrl c handler so we can print ICEs so far when ctrl+'ing
     ctrlc::set_handler(move || {
         println!("\n\nCtrl+C: TERMINATED\n");
 
@@ -493,8 +495,11 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
-    let projs = args.projects.clone();
-    let projects = if projs.is_empty() {
+    // a path with rustc files that we want to check
+    type ProjectDir = PathBuf;
+
+    let projs: Vec<ProjectDir> = args.projects.to_vec();
+    let projects: Vec<ProjectDir> = if projs.is_empty() {
         // if we didn't get anything passed, use cwd
         vec![std::env::current_dir().expect("cwd not found or does not exist!")]
     } else {
@@ -517,6 +522,7 @@ fn main() {
         std::process::exit(1);
     }
 
+    // all checked files
     let files = projects
         .iter()
         .map(|dir| check_dir(dir, &args))
@@ -526,15 +532,15 @@ fn main() {
     // print a warning if a file takes longer than X to process
     let seconds_elapsed = global_start_time.elapsed().as_secs();
 
-    let files_number = files.len();
+    let number_of_checked_files = files.len();
     if seconds_elapsed == 0 {
-        println!("Checked {} files in <1 second", files_number);
+        println!("Checked {} files in <1 second", number_of_checked_files);
         return;
     }
-    let files_per_second = files_number / seconds_elapsed as usize;
+    let files_per_second = number_of_checked_files / seconds_elapsed as usize;
     println!(
         "\nChecked {} files in {:.2} minutes, {} files/second",
-        files_number,
+        number_of_checked_files,
         seconds_elapsed as f64 / 60_f64,
         files_per_second
     );

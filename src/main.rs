@@ -68,26 +68,28 @@ lazy_static! {
         Mutex::new(vec![vec![OsString::new()]]);
 }
 
-#[allow(clippy::if_same_then_else)]
-fn executable_from_args(args: &Args) -> Executable {
-    if args.clippy {
-        Executable::Clippy
-    } else if args.clippy_fix {
-        Executable::ClippyFix
-    } else if args.rustdoc {
-        Executable::Rustdoc
-    } else if args.analyzer {
-        Executable::RustAnalyzer
-    } else if args.rustfmt {
-        Executable::Rustfmt
-    } else if args.miri {
-        Executable::Miri
-    } else if args.rustc {
-        Executable::Rustc
-    } else if args.cranelift {
-        Executable::RustcCGClif
-    } else {
-        Executable::Rustc
+impl From<&Args> for Executable {
+    #[allow(clippy::if_same_then_else)]
+    fn from(args: &Args) -> Self {
+        if args.clippy {
+            Executable::Clippy
+        } else if args.clippy_fix {
+            Executable::ClippyFix
+        } else if args.rustdoc {
+            Executable::Rustdoc
+        } else if args.analyzer {
+            Executable::RustAnalyzer
+        } else if args.rustfmt {
+            Executable::Rustfmt
+        } else if args.miri {
+            Executable::Miri
+        } else if args.rustc {
+            Executable::Rustc
+        } else if args.cranelift {
+            Executable::RustcCGClif
+        } else {
+            Executable::Rustc
+        }
     }
 }
 
@@ -104,7 +106,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         Vec::new()
     };
 
-    let executable = executable_from_args(args);
+    let executable = Executable::from(args);
     let executables = if !matches!(executable, Executable::Rustc) ||  /* may have passed --rustc to disable clippy rustdoc etc */ args.rustc
     {
         // assume that we passed something, do not take the default Rustc

@@ -537,9 +537,9 @@ fn main() {
         println!("Checked {} files in <1 second", number_of_checked_files);
         return;
     }
-    let files_per_second = number_of_checked_files / seconds_elapsed as usize;
+    let files_per_second = number_of_checked_files as f64 / seconds_elapsed as f64;
     println!(
-        "\nChecked {} files in {:.2} minutes, {} files/second",
+        "\nChecked {} files in {:.2} minutes, {:.2} files/second",
         number_of_checked_files,
         seconds_elapsed as f64 / 60_f64,
         files_per_second

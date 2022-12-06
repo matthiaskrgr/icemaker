@@ -18,6 +18,8 @@ lazy_static! {
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
 
+static EXPENSIVE_FLAGS_ACTIVE: Lazy<bool> = Lazy::new(|| Args::parse().expensive_flags);
+
 static SYSROOT_PATH: Lazy<String> = Lazy::new(|| {
     format!(
         "{}",
@@ -93,12 +95,17 @@ pub(crate) fn run_rustc(
     let tempdir_path = tempdir.path().display();
 
     // decide whether we want rustc to do codegen (slow!) or not
-    let output_file = if rustc_flags.contains(&"-ocodegen") {
+    let mut output_file = if rustc_flags.contains(&"-ocodegen") {
         // do codegen
         Some(format!("-o{tempdir_path}/outfile"))
     } else {
         Some("-Zno-codegen".into())
     };
+    // POTENTIALLY REALLY SLOW otherwise, if we run expensive flags, do always codegen
+    if *EXPENSIVE_FLAGS_ACTIVE {
+        output_file = Some(format!("{tempdir_path}/icemaker_rustc_outputfile.obj"));
+    }
+
     //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
     let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");
 

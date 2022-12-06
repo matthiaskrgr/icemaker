@@ -245,7 +245,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    if file_compiles(&file, &crate::ice::Executable::Rustc.path()) {
+    if !file_compiles(&file, &crate::ice::Executable::Rustc.path()) {
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()

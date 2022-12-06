@@ -245,6 +245,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
+    // @FIXME should this actually be clippy to catch clippy ICEs
     if !file_compiles(&file, &crate::ice::Executable::Rustc.path()) {
         return CommandOutput::new(
             std::process::Command::new("true")
@@ -783,6 +784,8 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     }
     cmd.arg(&file)
         .arg("-Zno-codegen")
+        .arg("-Zforce-unstable-if-unmarked")
+        .args(["--cap-lints", "warn"])
         .env("CARGO_TERM_COLOR", "never")
         .current_dir(tempdir_path)
         .env("CARGO_TERM_COLOR", "never")

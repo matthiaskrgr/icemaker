@@ -245,24 +245,7 @@ pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
     let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let mut pre_rustc_chk = std::process::Command::new(crate::ice::Executable::Rustc.path());
-
-    // check if the file compiles with rustc which is much faster than running clippy. If it doesn't, abort right away
-    let pre_rustc_chk = pre_rustc_chk
-        .env("SYSROOT", &*SYSROOT_PATH)
-        .args(if has_main {
-            ["--crate-type", "bin"]
-        } else {
-            ["--crate-type", "lib"]
-        })
-        .arg(file)
-        .env("CARGO_TERM_COLOR", "never")
-        .args(["--emit", "metadata"])
-        .current_dir(tempdir_path);
-    let output = systemdrun_command(pre_rustc_chk).expect("failed to exec pre clippy rustc new");
-
-    //dbg!(&pre_rustc_chk);
-    if !output.status.success() {
+    if file_compiles(&file, &crate::ice::Executable::Rustc.path()) {
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -792,15 +775,22 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let mut compile_passes_check_cmd = Command::new(executable);
+    let mut cmd = Command::new(executable);
     if !has_main {
-        compile_passes_check_cmd.arg("--crate-type=lib");
+        cmd.arg("--crate-type=lib");
+    } else {
+        cmd.arg("--crate-type=bin");
     }
-    compile_passes_check_cmd.arg(&file).arg("-Zno-codegen");
-    compile_passes_check_cmd.current_dir(tempdir_path);
+    cmd.arg(&file)
+        .arg("-Zno-codegen")
+        .env("CARGO_TERM_COLOR", "never")
+        .current_dir(tempdir_path)
+        .env("CARGO_TERM_COLOR", "never")
+        .env("SYSROOT", &*SYSROOT_PATH);
+
     // if we fail to compile one of the files, return None (abort)
     matches!(
-        systemdrun_command(&mut compile_passes_check_cmd)
+        systemdrun_command(&mut cmd)
             .ok()
             .map(|x| x.status.success()),
         Some(true)

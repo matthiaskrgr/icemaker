@@ -95,16 +95,12 @@ pub(crate) fn run_rustc(
     let tempdir_path = tempdir.path().display();
 
     // decide whether we want rustc to do codegen (slow!) or not
-    let mut output_file = if rustc_flags.contains(&"-ocodegen") {
+    let output_file = if *EXPENSIVE_FLAGS_ACTIVE || rustc_flags.contains(&"-ocodegen") {
         // do codegen
         Some(format!("-o{tempdir_path}/outfile"))
     } else {
         Some("-Zno-codegen".into())
     };
-    // POTENTIALLY REALLY SLOW otherwise, if we run expensive flags, do always codegen
-    if *EXPENSIVE_FLAGS_ACTIVE {
-        output_file = Some(format!("{tempdir_path}/icemaker_rustc_outputfile.obj"));
-    }
 
     //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
     let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");

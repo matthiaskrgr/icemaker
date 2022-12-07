@@ -1248,11 +1248,14 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                 | Executable::RustcCGClif
                 | Executable::Rustdoc
                 | Executable::Rustfmt => lines
-                    .find(|line| {
+                    // collect all lines which might be ICE messages
+                    .filter(|line| {
                         keywords_generic_ice
                             .iter()
                             .any(|regex| regex.is_match(line))
                     })
+                    // get the ICE line which is the longest
+                    .max_by_key(|line| line.len())
                     .map(|line| (line, ICEKind::Ice)),
             }
         })
@@ -1573,9 +1576,7 @@ fn _codegen_git_and_check() {
             .expect("git cat-file -p <obj> failed")
             .stdout;
         let text = String::from_utf8(stdout).unwrap();
-        std::fs::create_dir_all(format!("{first}/{second}"))
-            .expect("failed to create directories");
-        std::fs::write(format!("{first}/{second}/{obj}.rs"), text)
-            .expect("failed to write file");
+        std::fs::create_dir_all(format!("{first}/{second}")).expect("failed to create directories");
+        std::fs::write(format!("{first}/{second}/{obj}.rs"), text).expect("failed to write file");
     })
 }

@@ -719,6 +719,10 @@ impl ICE {
                 kind,
             };
             //  dbg!(&ice);
+
+            // we know this is an ICE
+            eprintln!("{}", ice.pretty_display());
+
             return Some(ice);
         }
 
@@ -779,6 +783,8 @@ impl ICE {
                         executable: Executable::Rustc,
                         kind: ICEKind::Ice,
                     };
+                    eprintln!("{}", ice.pretty_display());
+
                     return Some(ice);
                 }
             }
@@ -918,7 +924,7 @@ impl ICE {
                 );
 
                 // the process was killed by systemd because it exceeded time limit
-                let ret_hang = ICE {
+                let hang = ICE {
                     regresses_on: Regression::Master,
                     needs_feature: uses_feature,
                     file: file.to_owned(),
@@ -932,7 +938,8 @@ impl ICE {
                     executable: executable.clone(),
                     kind: ICEKind::Hang,
                 };
-                ret = Some(ret_hang);
+                eprintln!("{}", hang.pretty_display());
+                return Some(hang);
             }
 
             let regressing_channel = find_out_crashing_channel(&bad_flags, file);
@@ -1021,9 +1028,9 @@ impl ICE {
             );
         }
 
-        /*        if let Some(ret) = ret.clone() {
-            println!("\"n\n{:?}", ret);
-        }  */
+        if let Some(ice) = ret.clone() {
+            eprintln!("{}", ice.pretty_display())
+        }
         ret
     }
 }

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::Parser;
+use colored::Colorize;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
@@ -74,6 +75,31 @@ impl std::fmt::Display for ICE {
             },
             self.error_reason,
             self.ice_msg,
+        )
+    }
+}
+
+type ICEDisplay = String;
+
+impl ICE {
+    pub(crate) fn pretty_display(&self) -> ICEDisplay {
+        let kind = match self.kind {
+            ICEKind::Ice => "ICE".red(),
+            ICEKind::Ub(UbKind::Interesting) => "UB".green(),
+            ICEKind::Ub(UbKind::Uninteresting) => "UB".normal(),
+            ICEKind::Hang => "HANG".blue(),
+            ICEKind::OOM => "OOM".red(),
+            ICEKind::ClippyFix => "RustFix".yellow(),
+        };
+
+        let flags = self.args.join(" ");
+
+        format!(
+            "\t{kind}: {:?} {} '{flags}' '{}', '{}'",
+            self.executable,
+            self.file.display(),
+            self.ice_msg,
+            self.error_reason
         )
     }
 }

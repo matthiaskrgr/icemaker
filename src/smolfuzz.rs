@@ -25,8 +25,7 @@ pub(crate) fn gen_smol_code_char_set() -> impl Iterator<Item = String> {
 
 pub(crate) fn codegen_smolfuzz() {
     gen_smol_code_char_set().enumerate().for_each(|(id, code)| {
-        let mut file =
-            std::fs::File::create(std::path::PathBuf::from(format!("{}.rs", id))).unwrap();
+        let mut file = std::fs::File::create(std::path::PathBuf::from(format!("{id}.rs"))).unwrap();
         file.write_all(code.as_bytes()).unwrap();
     })
 }

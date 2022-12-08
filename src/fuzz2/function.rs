@@ -62,7 +62,7 @@ impl FunctionGenerator {
             keywords,
             lifetimes: vec![Lifetime::get_random(); /*number of lifetimes: */ 3],
 
-            name: format!("fn_{}", function_id),
+            name: format!("fn_{function_id}"),
             return_ty: ty,
             args: args.collect::<Vec<String>>(),
             // @FIXME
@@ -140,7 +140,7 @@ impl std::fmt::Display for Function {
         let keywords = self
             .keywords
             .iter()
-            .map(|kw| format!(" {} ", kw))
+            .map(|kw| format!(" {kw} "))
             .collect::<String>();
 
         if self.lifetimes.is_empty() {

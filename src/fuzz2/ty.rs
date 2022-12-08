@@ -46,7 +46,7 @@ impl std::fmt::Display for Ty {
             Self::isize => "isize",
             Self::String => "String",
         };
-        write!(f, "{}", x)
+        write!(f, "{x}")
     }
 }
 

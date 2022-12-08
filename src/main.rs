@@ -688,13 +688,7 @@ impl ICE {
             // let stdout = std::io::stdout().flush();
 
             let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
-            print!(
-                "\r[{idx}/{total} {perc}%] Checking {output: <150}",
-                output = file_name,
-                idx = index,
-                total = total_number_of_files,
-                perc = perc
-            );
+            print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
             let _stdout = std::io::stdout().flush();
         }
 

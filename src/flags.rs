@@ -528,6 +528,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
     // Sanitizers
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -545,6 +546,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ], */
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -554,6 +556,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -563,6 +566,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zmir-opt-level=3",
         "-Cdebuginfo=2",
@@ -572,6 +576,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Cdebuginfo=2",
         "--crate-type=bin",
@@ -579,12 +584,14 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
     ],
     &[
+        "-Zunstable-options",
         "-Zvalidate-mir",
         "-Cdebuginfo=2",
         "--crate-type=lib",
         "-Copt-level=3",
         "-ocodegen",
     ],
+    &["-Zunstable-options", "-Zprint-type-sizes"],
     // chalk is not ready yet, but polonius?
     /*
     &["-Zchalk"],

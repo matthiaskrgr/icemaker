@@ -118,7 +118,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
             vec![
                 &Executable::Rustc,
                 &Executable::Rustdoc,
-                &Executable::ClippyFix,
+                &Executable::Clippy,
                 &Executable::Rustfmt,
             ]
         } else {

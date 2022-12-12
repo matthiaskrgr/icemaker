@@ -53,6 +53,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Wvariant-size-differences",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
+        "-Zprint-type-sizes",
     ],
     // basic stuff, edition 2015
     &[
@@ -591,7 +592,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Copt-level=3",
         "-ocodegen",
     ],
-    &["-Zunstable-options", "-Zprint-type-sizes"],
     // chalk is not ready yet, but polonius?
     /*
     &["-Zchalk"],
@@ -3051,6 +3051,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2015",
         "-Ztranslate-lang=en_US",
+        "-Zprint-type-sizes",
     ],
     // basic stuff, edition 2018
     &[
@@ -3076,6 +3077,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2018",
         "-Ztranslate-lang=en_US",
+        "-Zprint-type-sizes",
     ],
     // basic stuff, edition 2021
     &[
@@ -3101,6 +3103,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2021",
         "-Ztranslate-lang=en_US",
+        "-Zprint-type-sizes",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

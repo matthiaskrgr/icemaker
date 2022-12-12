@@ -794,7 +794,6 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
         .env("CARGO_TERM_COLOR", "never")
         .env("SYSROOT", &*SYSROOT_PATH);
 
-    // if we fail to compile one of the files, return None (abort)
     matches!(
         systemdrun_command(&mut cmd)
             .ok()

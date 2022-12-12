@@ -179,6 +179,19 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
     files.reverse();
 
+    /*
+    eprintln!("\n\nSTART\n\n");
+
+    // files that compile
+    let files_that_compile = files
+        .iter()
+        //        filter(|f| EXCEPTIONS.)
+        .filter(|f| file_compiles(f, &Executable::Rustc.path()))
+        .collect::<Vec<&PathBuf>>();
+
+    eprintln!("\n\nDONE\n\n");
+     */
+
     //let exec_path = executable.path();
     executables.iter().for_each(|executable| {
         println!("Using {:?}: {}", executable, executable.path());

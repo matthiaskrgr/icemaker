@@ -603,6 +603,10 @@ impl ICE {
 
         let index = counter.load(Ordering::SeqCst); // the current file number
         let file_name = file.display().to_string();
+
+        // print Checking ... + progress percentage for each file we are checking
+        print_checking_progress(index, total_number_of_files, &file_name);
+
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file),
             Executable::ClippyFix => run_clippy_fix(exec_path, file),
@@ -697,7 +701,7 @@ impl ICE {
         */
         } else if !silent {
             //@FIXME this only advances the checking once the files has already been checked!
-            print_checking_progress(index, total_number_of_files, &file_name);
+            // print_checking_progress(index, total_number_of_files, &file_name);
         }
 
         if exit_code_looks_like_crash || found_error.is_some() {
@@ -1046,6 +1050,9 @@ impl ICE {
 #[inline]
 /// displays "%perc Checking $file ..."
 fn print_checking_progress(index: usize, total_number_of_files: usize, file_name: &String) {
+    // todo: perhaps buffer the previous println and if we know  current index, number and file_name == prev don't print at all..? :thinking:
+    // because then we don't need to refresh stdout unneccessarily BUT all this would require to be threadsave
+
     let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
 
     print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);

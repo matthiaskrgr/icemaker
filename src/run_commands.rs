@@ -35,6 +35,8 @@ static SYSROOT_PATH: Lazy<String> = Lazy::new(|| {
             .display()
     )
 });
+
+#[allow(unused)]
 #[derive(Clone, Debug)]
 pub(crate) struct CommandOutput {
     output: std::process::Output,
@@ -229,7 +231,7 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
     )
 }
 
-pub(crate) fn run_clippy_fix(executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_clippy_fix(_executable: &str, file: &Path) -> CommandOutput {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     /*  let cargo_clippy = executable

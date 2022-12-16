@@ -84,6 +84,7 @@ pub(crate) struct Function {
     body: String,
 }
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub(crate) struct FunctionArg {
     name: String,

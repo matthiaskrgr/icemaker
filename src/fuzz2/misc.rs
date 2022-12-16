@@ -3,6 +3,8 @@ pub(crate) trait Code {
     fn to_code(&self) -> String;
 }
 
+#[allow(unused)]
+
 pub(crate) enum Vis {
     Pub,
     PubCrate,

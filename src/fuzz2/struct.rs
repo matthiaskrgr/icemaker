@@ -2,6 +2,8 @@ use crate::fuzz2::lifetime::*;
 use crate::fuzz2::misc::*;
 use crate::fuzz2::ty::*;
 
+#[allow(unused)]
+
 pub(crate) struct StructGenerator {
     // keep a list of generated functions so we can reference them in other functions..?
     structs: Vec<Struct>,
@@ -23,6 +25,7 @@ impl StructGenerator {
     }
 }
 
+#[allow(unused)]
 pub(crate) struct Struct {
     name: String,
     lifetimes: Vec<Lifetime>,
@@ -33,7 +36,7 @@ pub(crate) struct Struct {
 
 impl Struct {
     /// adds a lifetime to the struct, but not a specific Field
-    fn push_lifetime(&mut self, lifetime: Lifetime) {
+    fn _push_lifetime(&mut self, lifetime: Lifetime) {
         self.lifetimes.push(lifetime);
     }
 
@@ -69,6 +72,8 @@ impl Struct {
         }
     }
 }
+
+#[allow(unused)]
 
 pub(crate) struct StructField {
     name: String,

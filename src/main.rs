@@ -668,41 +668,36 @@ impl ICE {
         || (matches!(executable, Executable::Miri) && found_error.is_some()) || (matches!(executable, Executable::ClippyFix) && found_error.is_some())
         {
             let (found_error, ice_kind) = found_error.clone().unwrap();
-            print!("\r");
-            println!(
-                "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-                kind = if matches!(ice_kind, ICEKind::Ub(..)) {
-                    if miri_finding_is_potentially_interesting {
-                        " UB".green()
-                    } else {
-                        "UB ".normal()
-                    }
+        /*              println!(
+            "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
+            kind = if matches!(ice_kind, ICEKind::Ub(..)) {
+                if miri_finding_is_potentially_interesting {
+                    " UB".green()
                 } else {
-                    "ICE".red()
-                },
-                msg = {
-                    let s = found_error; /*
+                    "UB ".normal()
+                }
+            } else {
+                "ICE".red()
+            },
+            msg = {
+                let s = found_error; /*
 
-                                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                                         .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
-                    let s = s.replace("error: internal compiler error:", "ICE:");
-                    let mut s = s.replace("unexpected panic:", "ICE:");
-                    s.push_str(&ice_msg);
-                    s
-                },
-                feat = if uses_feature { "        " } else { "no feat!" },
-                flags = format!("{compiler_flags:?}")
-            );
-            print!("\r");
-            let _stdout = std::io::stdout().flush();
+                                     // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                                     .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
+                let s = s.replace("error: internal compiler error:", "ICE:");
+                let mut s = s.replace("unexpected panic:", "ICE:");
+                s.push_str(&ice_msg);
+                s
+            },
+            feat = if uses_feature { "        " } else { "no feat!" },
+            flags = format!("{compiler_flags:?}")
+        );
+        print!("\r");
+        let _stdout = std::io::stdout().flush();
+        */
         } else if !silent {
             //@FIXME this only advances the checking once the files has already been checked!
-
-            // let stdout = std::io::stdout().flush();
-
-            let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
-            print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
-            let _stdout = std::io::stdout().flush();
+            print_checking_progress(index, total_number_of_files, &file_name);
         }
 
         if exit_code_looks_like_crash || found_error.is_some() {
@@ -1046,6 +1041,14 @@ impl ICE {
         }
         ret
     }
+}
+
+#[inline]
+/// displays "%perc Checking $file ..."
+fn print_checking_progress(index: usize, total_number_of_files: usize, file_name: &String) {
+    let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
+    print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
+    let _stdout = std::io::stdout().flush();
 }
 
 /// find out if we crash on master, nightly, beta or stable

@@ -1061,6 +1061,29 @@ fn print_checking_progress(index: usize, total_number_of_files: usize, file_name
     let _stdout = std::io::stdout().flush();
 }
 
+fn print_bla(msg: ice::PrintMessage) {
+    // todo: perhaps buffer the previous println and if we know  current index, number and file_name == prev don't print at all..? :thinking:
+    // because then we don't need to refresh stdout unneccessarily BUT all this would require to be threadsave
+
+    match msg {
+        PrintMessage::Progress {
+            index,
+            total_number_of_files,
+            file_name,
+        } => {
+            let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
+
+            // do not print a newline so we can (\r-eturn carry) our next status update to the same line, requires flushing though
+            print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
+            // kinda ignore whether this fails or not
+            let _stdout = std::io::stdout().flush();
+        }
+        PrintMessage::IceFound { ice } => {
+            println!("{}", ice);
+        }
+    }
+}
+
 /// find out if we crash on master, nightly, beta or stable
 fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression {
     // simply check if we crash on nightly, beta, stable or master

@@ -82,6 +82,7 @@ impl std::fmt::Display for ICE {
 type ICEDisplay = String;
 
 impl ICE {
+    // print a ICE to stdout or something
     pub(crate) fn pretty_display(&self) -> ICEDisplay {
         let kind = match self.kind {
             ICEKind::Ice => "ICE".red(),
@@ -235,6 +236,17 @@ impl Executable {
             }
         }
     }
+}
+
+pub(crate) enum PrintMessage {
+    Progress {
+        index: usize,
+        total_number_of_files: usize,
+        file_name: String,
+    },
+    IceFound {
+        ice: ICEDisplay,
+    },
 }
 
 #[cfg(test)]

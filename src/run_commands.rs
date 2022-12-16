@@ -119,6 +119,9 @@ pub(crate) fn run_rustc(
     // be able to override --crate-type=lib/bin
     cmd.args(rustc_flags);
 
+    // HACK enable cranelift for local_debug_assertions build
+    //    cmd.arg("-Zcodegen-backend=cranelift");
+
     //dbg!(&cmd);
 
     let actual_args = cmd

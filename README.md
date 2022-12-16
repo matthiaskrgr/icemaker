@@ -22,7 +22,23 @@ for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep 
 ````
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
 
-Trophy case (350+):  
+Trophy case (360+):  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1327  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1326  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1325  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1324  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1323  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1322  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1321  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1320  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1319  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1317  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1316  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1315  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1313  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1312  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1311  
+https://github.com/bjorn3/rustc_codegen_cranelift/issues/1310  
 https://github.com/rust-lang/rust/issues/105742  
 https://github.com/rust-lang/rust/issues/105737  
 https://github.com/rust-lang/rust/issues/105709  

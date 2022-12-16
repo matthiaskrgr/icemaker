@@ -32,6 +32,7 @@ mod fuzz;
 mod fuzz2;
 mod ice;
 mod library;
+mod printing;
 mod run_commands;
 mod smolfuzz;
 
@@ -39,6 +40,7 @@ use crate::flags::*;
 use crate::fuzz::*;
 use crate::ice::*;
 use crate::library::*;
+use crate::printing::*;
 use crate::run_commands::*;
 use crate::smolfuzz::*;
 
@@ -605,7 +607,11 @@ impl ICE {
         let file_name = file.display().to_string();
 
         // print Checking ... + progress percentage for each file we are checking
-        print_checking_progress(index, total_number_of_files, &file_name);
+        print_to_stdout(PrintMessage::Progress {
+            index,
+            total_number_of_files,
+            file_name,
+        });
 
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file),
@@ -733,7 +739,9 @@ impl ICE {
             //  dbg!(&ice);
 
             // we know this is an ICE
-            eprintln!("{}", ice.pretty_display());
+            print_to_stdout(PrintMessage::IceFound {
+                ice: ice.to_printable(),
+            });
 
             return Some(ice);
         }
@@ -795,7 +803,9 @@ impl ICE {
                         executable: Executable::Rustc,
                         kind: ICEKind::Ice,
                     };
-                    eprintln!("{}", ice.pretty_display());
+                    print_to_stdout(PrintMessage::IceFound {
+                        ice: ice.to_printable(),
+                    });
 
                     return Some(ice);
                 }
@@ -950,7 +960,10 @@ impl ICE {
                     executable: executable.clone(),
                     kind: ICEKind::Hang,
                 };
-                eprintln!("{}", hang.pretty_display());
+                print_to_stdout(PrintMessage::IceFound {
+                    ice: hang.to_printable(),
+                });
+
                 return Some(hang);
             }
 
@@ -1041,46 +1054,11 @@ impl ICE {
         }
 
         if let Some(ice) = ret.clone() {
-            eprintln!("{}", ice.pretty_display())
+            print_to_stdout(PrintMessage::IceFound {
+                ice: ice.to_printable(),
+            });
         }
         ret
-    }
-}
-
-#[inline]
-/// displays "%perc Checking $file ..."
-fn print_checking_progress(index: usize, total_number_of_files: usize, file_name: &String) {
-    // todo: perhaps buffer the previous println and if we know  current index, number and file_name == prev don't print at all..? :thinking:
-    // because then we don't need to refresh stdout unneccessarily BUT all this would require to be threadsave
-
-    let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
-
-    // do not print a newline so we can (\r-eturn carry) our next status update to the same line, requires flushing though
-    print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
-    // kinda ignore whether this fails or not
-    let _stdout = std::io::stdout().flush();
-}
-
-fn print_bla(msg: ice::PrintMessage) {
-    // todo: perhaps buffer the previous println and if we know  current index, number and file_name == prev don't print at all..? :thinking:
-    // because then we don't need to refresh stdout unneccessarily BUT all this would require to be threadsave
-
-    match msg {
-        PrintMessage::Progress {
-            index,
-            total_number_of_files,
-            file_name,
-        } => {
-            let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
-
-            // do not print a newline so we can (\r-eturn carry) our next status update to the same line, requires flushing though
-            print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
-            // kinda ignore whether this fails or not
-            let _stdout = std::io::stdout().flush();
-        }
-        PrintMessage::IceFound { ice } => {
-            println!("{}", ice);
-        }
     }
 }
 

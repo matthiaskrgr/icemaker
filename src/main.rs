@@ -1055,6 +1055,7 @@ fn print_checking_progress(index: usize, total_number_of_files: usize, file_name
 
     let perc = ((index * 100) as f32 / total_number_of_files as f32) as u8;
 
+    // do not print a newline so we can (\r-eturn carry) our next status update to the same line, requires flushing though
     print!("\r[{index}/{total_number_of_files} {perc}%] Checking {file_name: <150}",);
     // kinda ignore whether this fails or not
     let _stdout = std::io::stdout().flush();

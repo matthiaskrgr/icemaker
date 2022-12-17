@@ -71,11 +71,20 @@ impl Printer {
             }
         }
 
-        // save new message
-        // try_write() will panic if it can't (instead of hang)
-        // TODO handle this
-        let mut w = self.prev.try_write().unwrap();
-        *w = new;
+        // if we can't acquire the lock right away, wait 10 ms and retry. Try up to 10 times
+        for wait_dur in 0..=10 {
+            match self.prev.try_write() {
+                Ok(mut w) => {
+                    *w = new;
+                    return;
+                }
+                // failed to acquire lock, wait 10 ms and retry
+                _ => {
+                    eprintln!("failed to acquire rwlock, waiting 10ms until retry");
+                    std::thread::sleep(std::time::Duration::from_millis(10 * wait_dur))
+                }
+            }
+        }
     }
 
     pub(crate) const fn new() -> Self {

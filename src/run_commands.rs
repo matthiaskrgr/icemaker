@@ -122,7 +122,7 @@ pub(crate) fn run_rustc(
     cmd.args(rustc_flags);
 
     // HACK enable cranelift for local_debug_assertions build
-    //    cmd.arg("-Zcodegen-backend=cranelift");
+        cmd.arg("-Zcodegen-backend=cranelift");
 
     //dbg!(&cmd);
 

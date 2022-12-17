@@ -1041,19 +1041,6 @@ impl ICE {
             };
             ret = Some(ret_hang);
         }
-        if let Some(ice) = ret.clone() {
-            println!(
-                "\n{:?} {:?} '{}' '{}' '{}'",
-                ice.executable,
-                ice.file,
-                ice.args
-                    .iter()
-                    .map(|arg| format!("{arg},"))
-                    .collect::<String>(),
-                ice.error_reason,
-                ice.ice_msg
-            );
-        }
 
         if let Some(ice) = ret.clone() {
             PRINTER.log(PrintMessage::IceFound {

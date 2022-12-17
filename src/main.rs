@@ -70,6 +70,8 @@ lazy_static! {
         Mutex::new(vec![vec![OsString::new()]]);
 }
 
+static PRINTER: Printer = printing::Printer::new();
+
 impl From<&Args> for Executable {
     #[allow(clippy::if_same_then_else)]
     fn from(args: &Args) -> Self {
@@ -607,7 +609,7 @@ impl ICE {
         let file_name = file.display().to_string();
 
         // print Checking ... + progress percentage for each file we are checking
-        print_to_stdout(PrintMessage::Progress {
+        PRINTER.log(PrintMessage::Progress {
             index,
             total_number_of_files,
             file_name,
@@ -739,7 +741,7 @@ impl ICE {
             //  dbg!(&ice);
 
             // we know this is an ICE
-            print_to_stdout(PrintMessage::IceFound {
+            PRINTER.log(PrintMessage::IceFound {
                 ice: ice.to_printable(),
             });
 
@@ -803,7 +805,7 @@ impl ICE {
                         executable: Executable::Rustc,
                         kind: ICEKind::Ice,
                     };
-                    print_to_stdout(PrintMessage::IceFound {
+                    PRINTER.log(PrintMessage::IceFound {
                         ice: ice.to_printable(),
                     });
 
@@ -960,7 +962,7 @@ impl ICE {
                     executable: executable.clone(),
                     kind: ICEKind::Hang,
                 };
-                print_to_stdout(PrintMessage::IceFound {
+                PRINTER.log(PrintMessage::IceFound {
                     ice: hang.to_printable(),
                 });
 
@@ -1054,7 +1056,7 @@ impl ICE {
         }
 
         if let Some(ice) = ret.clone() {
-            print_to_stdout(PrintMessage::IceFound {
+            PRINTER.log(PrintMessage::IceFound {
                 ice: ice.to_printable(),
             });
         }

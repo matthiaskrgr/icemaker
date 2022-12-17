@@ -609,11 +609,13 @@ impl ICE {
         let file_name = file.display().to_string();
 
         // print Checking ... + progress percentage for each file we are checking
-        PRINTER.log(PrintMessage::Progress {
-            index,
-            total_number_of_files,
-            file_name,
-        });
+        if !silent {
+            PRINTER.log(PrintMessage::Progress {
+                index,
+                total_number_of_files,
+                file_name,
+            });
+        }
 
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file),
@@ -679,34 +681,35 @@ impl ICE {
     // in miri, "cargo miri run" will return 101 if the run program (not miri!) just panics so ignore that
         || (matches!(executable, Executable::Miri) && found_error.is_some()) || (matches!(executable, Executable::ClippyFix) && found_error.is_some())
         {
-            let (found_error, ice_kind) = found_error.clone().unwrap();
-        /*              println!(
-            "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
-            kind = if matches!(ice_kind, ICEKind::Ub(..)) {
-                if miri_finding_is_potentially_interesting {
-                    " UB".green()
+            let _ = 0;
+            // let (found_error, ice_kind) = found_error.clone().unwrap();
+            /*              println!(
+                "{kind}: {executable:?} {file_name:<20.80} {msg:<30.200} {feat}     {flags:<.30}",
+                kind = if matches!(ice_kind, ICEKind::Ub(..)) {
+                    if miri_finding_is_potentially_interesting {
+                        " UB".green()
+                    } else {
+                        "UB ".normal()
+                    }
                 } else {
-                    "UB ".normal()
-                }
-            } else {
-                "ICE".red()
-            },
-            msg = {
-                let s = found_error; /*
+                    "ICE".red()
+                },
+                msg = {
+                    let s = found_error; /*
 
-                                     // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
-                                     .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
-                let s = s.replace("error: internal compiler error:", "ICE:");
-                let mut s = s.replace("unexpected panic:", "ICE:");
-                s.push_str(&ice_msg);
-                s
-            },
-            feat = if uses_feature { "        " } else { "no feat!" },
-            flags = format!("{compiler_flags:?}")
-        );
-        print!("\r");
-        let _stdout = std::io::stdout().flush();
-        */
+                                         // we might have None error found but still a suspicious exit status, account, dont panic on None == found_error then
+                                         .unwrap_or(format!("No error found but exit code: {}", exit_status)); */
+                    let s = s.replace("error: internal compiler error:", "ICE:");
+                    let mut s = s.replace("unexpected panic:", "ICE:");
+                    s.push_str(&ice_msg);
+                    s
+                },
+                feat = if uses_feature { "        " } else { "no feat!" },
+                flags = format!("{compiler_flags:?}")
+            );
+            print!("\r");
+            let _stdout = std::io::stdout().flush();
+            */
         } else if !silent {
             //@FIXME this only advances the checking once the files has already been checked!
             // print_checking_progress(index, total_number_of_files, &file_name);

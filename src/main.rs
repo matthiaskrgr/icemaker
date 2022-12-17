@@ -730,11 +730,15 @@ impl ICE {
 
                 needs_feature: uses_feature,
                 file: file.to_owned(),
-                args: vec![
-                    "-Z incremental-verify-ich=yes".into(),
-                    "-C incremental=<dir>".into(),
-                    "-Cdebuginfo=2".into(),
-                ],
+                args: [
+                    "-Zincremental-verify-ich=yes",
+                    "-Cincremental=<dir>",
+                    "-Cdebuginfo=2",
+                    "--edition=2021",
+                ]
+                .into_iter()
+                .map(|s| s.into())
+                .collect::<Vec<String>>(),
                 // executable: rustc_path.to_string(),
                 error_reason: found_error,
                 ice_msg,

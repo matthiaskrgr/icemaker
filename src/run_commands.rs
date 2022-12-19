@@ -36,6 +36,8 @@ static SYSROOT_PATH: Lazy<String> = Lazy::new(|| {
     )
 });
 
+pub(crate) const PROCESS_TIMEOUT_S: u8 = 30;
+
 #[allow(unused)]
 #[derive(Clone, Debug)]
 pub(crate) struct CommandOutput {
@@ -762,7 +764,7 @@ pub(crate) fn systemdrun_command(
             cmd.arg("RuntimeMaxSec=20");
         } else {
             // all other timeouts: 90 seconds
-            cmd.arg("RuntimeMaxSec=91");
+            cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_S}"));
         }
 
         cmd.arg(program);

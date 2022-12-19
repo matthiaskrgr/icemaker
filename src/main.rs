@@ -594,7 +594,7 @@ impl ICE {
         silent: bool,
     ) -> Option<Self> {
         let thread_start = Instant::now();
-        const SECONDS_LIMIT: u64 = 90;
+        const SECONDS_LIMIT: u64 = PROCESS_TIMEOUT_S as u64;
         const SECONDS_LIMIT_MIRI: u64 = 20;
 
         let incremental = if compiler_flags == ["INCR_COMP"] {

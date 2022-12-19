@@ -91,6 +91,8 @@ impl From<&Args> for Executable {
             Executable::Rustc
         } else if args.cranelift {
             Executable::RustcCGClif
+        } else if (args).cranelift_local {
+            Executable::CraneliftLocal
         } else {
             Executable::Rustc
         }
@@ -626,6 +628,11 @@ impl ICE {
             Executable::Rustfmt => run_rustfmt(exec_path, file),
             Executable::Miri => run_miri(exec_path, file, miri_flags),
             Executable::RustcCGClif => run_cranelift(exec_path, file, incremental, compiler_flags),
+            Executable::CraneliftLocal => {
+                let mut compiler_flags = compiler_flags.to_vec();
+                compiler_flags.push("-Zcodegen-backend=cranelift");
+                run_rustc(exec_path, file, incremental, &compiler_flags)
+            }
         }
         .unwrap();
 
@@ -841,7 +848,10 @@ impl ICE {
             //            dbg!(&flag_combinations);
 
             match executable {
-                Executable::Rustc | Executable::RustcCGClif | Executable::ClippyFix => {
+                Executable::Rustc
+                | Executable::RustcCGClif
+                | Executable::ClippyFix
+                | Executable::CraneliftLocal => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
 
@@ -1270,6 +1280,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                 | Executable::Clippy
                 | Executable::RustAnalyzer
                 | Executable::RustcCGClif
+                | Executable::CraneliftLocal
                 | Executable::Rustdoc
                 | Executable::Rustfmt => lines
                     // collect all lines which might be ICE messages

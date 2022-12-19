@@ -123,9 +123,6 @@ pub(crate) fn run_rustc(
     // be able to override --crate-type=lib/bin
     cmd.args(rustc_flags);
 
-    // HACK enable cranelift for local_debug_assertions build
-    //        cmd.arg("-Zcodegen-backend=cranelift");
-
     //dbg!(&cmd);
 
     let actual_args = cmd
@@ -136,7 +133,7 @@ pub(crate) fn run_rustc(
     // run the command
     let output = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
-    //dbg!(&output);
+    // dbg!(&output);
 
     CommandOutput::new(
         output,

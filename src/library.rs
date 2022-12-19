@@ -47,6 +47,9 @@ pub(crate) struct Args {
     pub(crate) cranelift: bool,
 
     #[clap(long)]
+    pub(crate) cranelift_local: bool,
+
+    #[clap(long)]
     pub(crate) expensive_flags: bool,
 
     // use path to local rustc build with debug assertions

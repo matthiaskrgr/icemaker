@@ -285,7 +285,9 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                     let exec_path = executable.path();
 
                     match executable {
-                        Executable::Rustc | Executable::RustcCGClif => {
+                        Executable::Rustc
+                        | Executable::RustcCGClif
+                        | Executable::CraneliftLocal => {
                             // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
                             RUSTC_FLAGS
                                 // note: this can be dangerous in case of max memory usage, if a file needs a lot

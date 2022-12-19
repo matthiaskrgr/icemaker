@@ -763,7 +763,7 @@ pub(crate) fn systemdrun_command(
             // miri timout: 20 seconds
             cmd.arg("RuntimeMaxSec=20");
         } else {
-            // all other timeouts: 90 seconds
+            // all other timeouts: 30 seconds
             cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_S}"));
         }
 

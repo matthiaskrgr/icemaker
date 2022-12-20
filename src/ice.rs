@@ -44,6 +44,7 @@ pub enum ICEKind {
     OOM,
     // clippy failed to apply fixes
     ClippyFix,
+    TypeError,
 }
 
 impl Default for ICEKind {
@@ -91,6 +92,7 @@ impl ICE {
             ICEKind::Hang => "HANG".blue(),
             ICEKind::OOM => "OOM".red(),
             ICEKind::ClippyFix => "RustFix".yellow(),
+            ICEKind::TypeError => "TypeError".yellow(),
         };
 
         let flags = self.args.join(" ");

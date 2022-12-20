@@ -1293,7 +1293,13 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                     })
                     // get the ICE line which is the longest
                     .max_by_key(|line| line.len())
-                    .map(|line| (line, ICEKind::Ice)),
+                    .map(|line| (line, ICEKind::Ice))
+                    .or(std::io::Cursor::new(executable_output)
+                        .lines()
+                        .filter_map(|line| line.ok())
+                        .filter(|line| line.contains("[type error]"))
+                        .max_by_key(|line| line.len())
+                        .map(|line| (line, ICEKind::TypeError))),
             }
         })
 }

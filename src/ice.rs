@@ -42,8 +42,8 @@ pub enum ICEKind {
     // program didn't terminate in time
     Hang(u64), // time in seconds
     OOM,
-    // clippy failed to apply fixes
-    ClippyFix,
+    // clippy / rustc lint siggestions failed to apply
+    RustFix,
     TypeError,
 }
 
@@ -91,7 +91,7 @@ impl ICE {
             ICEKind::Ub(UbKind::Uninteresting) => "UB".normal(),
             ICEKind::Hang(_) => "HANG".blue(),
             ICEKind::OOM => "OOM".red(),
-            ICEKind::ClippyFix => "RustFix".yellow(),
+            ICEKind::RustFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),
         };
 

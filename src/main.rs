@@ -1276,7 +1276,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        .map(|line| (line, ICEKind::ClippyFix))
+                        .map(|line| (line, ICEKind::RustFix))
                 }
                 Executable::Rustc
                 | Executable::Clippy

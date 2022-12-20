@@ -44,6 +44,7 @@ pub enum ICEKind {
     OOM,
     // clippy / rustc lint siggestions failed to apply
     RustFix,
+    // [type error] in output
     TypeError,
 }
 

@@ -1171,6 +1171,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
         "error: Undefined Behavior",
         // "the evaluated program leaked memory", // memleaks are save apparently
         "this indicates a bug in the program",
+        "the compiler unexpectedly panicked",
+        "thread 'rustc' panicked at",
     ]
     .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

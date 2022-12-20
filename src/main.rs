@@ -105,9 +105,21 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     // read the string INTO Vec<ICE>
     let errors_json = root_path.join("errors.json");
     let errors_before: Vec<ICE> = if errors_json.exists() {
-        serde_json::from_str(&std::fs::read_to_string(&errors_json).unwrap())
-            .expect("Failed to parse errors.json, is it a json file?")
+        let read = match std::fs::read_to_string(&errors_json) {
+            Ok(content) => content,
+            Err(_) => panic!("failed to read '{}'", errors_json.display()),
+        };
+        match serde_json::from_str(&read) {
+            Ok(previous_errors) => previous_errors,
+            Err(e) => {
+                // this can happen if we for example change the representation of Ice so that that the previous file is no longer compatible with the new format
+                eprintln!("Failed to parse errors.json, is it a json file?");
+                eprintln!("origina error: '{e:?}'");
+                Vec::new()
+            }
+        }
     } else {
+        // we don't have a file, start blank
         Vec::new()
     };
 

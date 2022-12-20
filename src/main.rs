@@ -979,7 +979,7 @@ impl ICE {
                     error_reason: String::from("HANG"),
                     ice_msg: "HANG".into(),
                     executable: executable.clone(),
-                    kind: ICEKind::Hang,
+                    kind: ICEKind::Hang(seconds_elapsed),
                 };
                 PRINTER.log(PrintMessage::IceFound {
                     ice: hang.to_printable(),
@@ -1056,7 +1056,7 @@ impl ICE {
                 error_reason: String::from("HANG"),
                 ice_msg,
                 executable: executable.clone(),
-                kind: ICEKind::Hang,
+                kind: ICEKind::Hang(seconds_elapsed),
             };
             ret = Some(ret_hang);
         }

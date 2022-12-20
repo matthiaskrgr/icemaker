@@ -40,7 +40,7 @@ pub enum ICEKind {
     // miri found undefined behaviour
     Ub(UbKind),
     // program didn't terminate in time
-    Hang,
+    Hang(u64), // time in seconds
     OOM,
     // clippy failed to apply fixes
     ClippyFix,
@@ -89,7 +89,7 @@ impl ICE {
             ICEKind::Ice => "ICE".red(),
             ICEKind::Ub(UbKind::Interesting) => "UB".green(),
             ICEKind::Ub(UbKind::Uninteresting) => "UB".normal(),
-            ICEKind::Hang => "HANG".blue(),
+            ICEKind::Hang(_) => "HANG".blue(),
             ICEKind::OOM => "OOM".red(),
             ICEKind::ClippyFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),

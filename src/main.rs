@@ -323,7 +323,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                         Executable::Miri => MIRIFLAGS
                             .par_iter()
                             .map(|miri_flag_combination| {
-                                MIRIRUSTFLAGS
+                                MIRI_RUSTFLAGS
                                     .par_iter()
                                     .panic_fuse()
                                     .map(|miri_rustflag| {

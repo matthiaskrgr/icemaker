@@ -3246,13 +3246,13 @@ pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
 
 pub(crate) static MIRIFLAGS: &[&[&str]] = &[
     // with mir opt level
-    /*  &[
+    &[
         "-Zmir-opt-level=5",
         "-Zmiri-check-number-validity",
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
-    ], */
+    ],
     // and without
     &[
         //"-Zmiri-check-number-validity", // default
@@ -3267,8 +3267,10 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
 ];
 
 // TODO: tests
-pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
+pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
     &[
+        "-Zunstable-options",
+        "-Zdrop-tracking",
         "--edition=2015",
         "-Zvalidate-mir",
         "-Zcrate-attr=feature(abi_thiscall)",
@@ -3286,7 +3288,7 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(prelude_import)",
         "-Zcrate-attr=feature(profiler_runtime)",
         "-Zcrate-attr=feature(rustc_attrs)",
-        "-Zcrate-attr=feature(staged_api)",
+        //        "-Zcrate-attr=feature(staged_api)",
         "-Zcrate-attr=feature(test_2018_feature)",
         "-Zcrate-attr=feature(test_unstable_lint)",
         "-Zcrate-attr=feature(unsafe_pin_internals)",
@@ -3456,6 +3458,8 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
     ],
     &[
+        "-Zunstable-options",
+        "-Zdrop-tracking",
         "--edition=2018",
         "-Zvalidate-mir",
         "-Zcrate-attr=feature(abi_thiscall)",
@@ -3473,7 +3477,7 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(prelude_import)",
         "-Zcrate-attr=feature(profiler_runtime)",
         "-Zcrate-attr=feature(rustc_attrs)",
-        "-Zcrate-attr=feature(staged_api)",
+        //        "-Zcrate-attr=feature(staged_api)",
         "-Zcrate-attr=feature(test_2018_feature)",
         "-Zcrate-attr=feature(test_unstable_lint)",
         "-Zcrate-attr=feature(unsafe_pin_internals)",
@@ -3643,6 +3647,8 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
     ],
     &[
+        "-Zunstable-options",
+        "-Zdrop-tracking",
         "--edition=2021",
         "-Zvalidate-mir",
         "-Zcrate-attr=feature(abi_thiscall)",
@@ -3660,7 +3666,7 @@ pub(crate) static MIRIRUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(prelude_import)",
         "-Zcrate-attr=feature(profiler_runtime)",
         "-Zcrate-attr=feature(rustc_attrs)",
-        "-Zcrate-attr=feature(staged_api)",
+        //        "-Zcrate-attr=feature(staged_api)",
         "-Zcrate-attr=feature(test_2018_feature)",
         "-Zcrate-attr=feature(test_unstable_lint)",
         "-Zcrate-attr=feature(unsafe_pin_internals)",
@@ -3887,7 +3893,10 @@ pub(crate) static RUSTC_ALLOW_BY_DEFAULT_LINTS: &[&str] = &[
 ];
 #[cfg(test)]
 mod tests {
-    use super::{DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS};
+    use super::{
+        DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS,
+        MIRI_RUSTFLAGS,
+    };
     use crate::ice::*;
     use std::fs::File;
     use std::io::Write;
@@ -3936,6 +3945,46 @@ mod tests {
         }
     }
 
+    #[test]
+    fn miri_rustc_flags_are_valid() {
+        // rustc testrunner might override LD_LIBRARY_PATH with a path for nightly toolchain,
+        // which then makes the master toolchain look there and crash
+        //
+        // cargo might set that for doc tests or proc macros or whatever
+        // another workaround is to always compile the crate with master toolchain instead of nightly
+        std::env::remove_var("LD_LIBRARY_PATH");
+        // make sure we don't have invalid rustc flags
+        for (i, batch_of_flags) in MIRI_RUSTFLAGS
+            .iter()
+            // skip incr comp here, needs to be special cased!
+            .filter(|flags| flags != &&["INCR_COMP"])
+            .enumerate()
+        {
+            // check that a flag does not contain spaces :/
+            batch_of_flags
+                .iter()
+                .for_each(|flag| assert!(!flag.contains(' '), "{}", flag));
+
+            let tempdir = TempDir::new(&i.to_string()).expect("failed to create tempdir!");
+            let tempdir_path = tempdir.path();
+            let rustfile_path = tempdir_path.join("file.rs");
+            let mut rustfile = File::create(&rustfile_path).unwrap();
+            writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+            assert!(rustfile_path.is_file());
+            assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
+            let mut cmd = std::process::Command::new(Executable::Rustc.path());
+            cmd.args(*batch_of_flags).arg("dummy.rs");
+
+            let output = cmd.output();
+            let status = output.as_ref().unwrap().status;
+            if !status.success() {
+                dbg!(&cmd);
+                dbg!(&output);
+                panic!("bad exit status!")
+            }
+            assert!(output.as_ref().unwrap().status.success());
+        }
+    }
     #[test]
     fn expensive_rustc_flags_are_valid() {
         // rustc testrunner might override LD_LIBRARY_PATH with a path for nightly toolchain,

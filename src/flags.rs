@@ -3266,7 +3266,6 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
     ],
 ];
 
-// TODO: tests
 pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zunstable-options",

@@ -640,7 +640,7 @@ impl ICE {
             Executable::Rustdoc => run_rustdoc(exec_path, file),
             Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
             Executable::Rustfmt => run_rustfmt(exec_path, file),
-            Executable::Miri => run_miri(exec_path, file, miri_flags),
+            Executable::Miri => run_miri(exec_path, file, miri_flags, compiler_flags),
             Executable::RustcCGClif => run_cranelift(exec_path, file, incremental, compiler_flags),
             Executable::CraneliftLocal => {
                 let mut compiler_flags = compiler_flags.to_vec();

@@ -3272,7 +3272,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking",
         "--edition=2015",
         "-Zvalidate-mir",
-        "-Zcrate-attr=feature(abi_thiscall)",
+        /*   "-Zcrate-attr=feature(abi_thiscall)",
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3454,14 +3454,14 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(unsized_tuple_coercion)",
         "-Zcrate-attr=feature(used_with_arg)",
         // "-Zcrate-attr=feature(wasm_abi)",
-        "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(yeet_expr)", */
     ],
     &[
         "-Zunstable-options",
         "-Zdrop-tracking",
         "--edition=2018",
         "-Zvalidate-mir",
-        "-Zcrate-attr=feature(abi_thiscall)",
+        /*   "-Zcrate-attr=feature(abi_thiscall)",
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3643,14 +3643,14 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(unsized_tuple_coercion)",
         "-Zcrate-attr=feature(used_with_arg)",
         //"-Zcrate-attr=feature(wasm_abi)",
-        "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(yeet_expr)",  */
     ],
     &[
         "-Zunstable-options",
         "-Zdrop-tracking",
         "--edition=2021",
         "-Zvalidate-mir",
-        "-Zcrate-attr=feature(abi_thiscall)",
+        /*  "-Zcrate-attr=feature(abi_thiscall)",
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3832,7 +3832,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(unsized_tuple_coercion)",
         "-Zcrate-attr=feature(used_with_arg)",
         //"-Zcrate-attr=feature(wasm_abi)",
-        "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(yeet_expr)",  */
     ],
 ];
 

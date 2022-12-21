@@ -547,7 +547,12 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> CommandOutput {
     )
 }
 
-pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> CommandOutput {
+pub(crate) fn run_miri(
+    executable: &str,
+    file: &Path,
+    miri_flags: &[&str],
+    rustc_flags: &[&str],
+) -> CommandOutput {
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
         .replace(['[', ']'], "_");
@@ -593,6 +598,10 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
         );
     }
 
+    let edition = rustc_flags
+        .iter()
+        .find(|flag| flag.starts_with("--edition="));
+
     let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
@@ -600,6 +609,7 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
         .arg("new")
         .arg(file_stem)
         .args(["--vcs", "none"])
+        .arg(edition.expect("miri got no --edition passed via its MIRI_RUSTFLAGS"))
         .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new")
@@ -644,13 +654,20 @@ pub(crate) fn run_miri(executable: &str, file: &Path, miri_flags: &[&str]) -> Co
         .arg("run")
         .current_dir(&crate_path)
         .env("MIRIFLAGS", miri_flags.join(" "))
-        .env("RUSTFLAGS", "-Zvalidate-mir")
+        .env(
+            "RUSTFLAGS",
+            rustc_flags
+                .iter()
+                .filter(|f| !f.contains("--edition"))
+                .map(|f| format!(" {f}"))
+                .collect::<String>(),
+        )
         .env("MIRI_CWD", &crate_path);
-
-    //  }
 
     let out = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
+
+    // dbg!(&out);
 
     //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
     //eprintln!("{}", stderr);

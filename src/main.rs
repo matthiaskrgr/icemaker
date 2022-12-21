@@ -163,7 +163,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
         println!("Running cargo miri setup");
         let _ = std::process::Command::new("cargo")
-            .arg("+master")
+            .arg( if args.local_debug_assertions { "+local-debug-assertions" } else { "+master" } )
             .arg("miri")
             .arg("setup")
             .status()

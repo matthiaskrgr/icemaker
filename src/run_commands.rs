@@ -584,12 +584,6 @@ pub(crate) fn run_miri(
     // running miri is a bit more complicated:
     // first we need a new tempdir
 
-    let toolchain: &str = if *LOCAL_DEBUG_ASSERTIONS {
-        "+local-debug-assertions"
-    } else {
-        "+master"
-    };
-
     let no_std = file_string.contains("#![no_std]");
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
     if no_std || platform_intrinsics || !has_main {
@@ -655,20 +649,24 @@ pub(crate) fn run_miri(
             .current_dir(crate_path)
             .env("MIRIFLAGS", miri_flags.join(" "));
     } else { */
-    cmd.arg(toolchain)
-        .arg("miri")
-        .arg("run")
-        .current_dir(&crate_path)
-        .env("MIRIFLAGS", miri_flags.join(" "))
-        .env(
-            "RUSTFLAGS",
-            rustc_flags
-                .iter()
-                .filter(|f| !f.contains("--edition"))
-                .map(|f| format!(" {f}"))
-                .collect::<String>(),
-        )
-        .env("MIRI_CWD", &crate_path);
+    cmd.arg(if *LOCAL_DEBUG_ASSERTIONS {
+        "+local-debug-assertions"
+    } else {
+        "+master"
+    })
+    .arg("miri")
+    .arg("run")
+    .current_dir(&crate_path)
+    .env("MIRIFLAGS", miri_flags.join(" "))
+    .env(
+        "RUSTFLAGS",
+        rustc_flags
+            .iter()
+            .filter(|f| !f.contains("--edition"))
+            .map(|f| format!(" {f}"))
+            .collect::<String>(),
+    )
+    .env("MIRI_CWD", &crate_path);
 
     let out = systemdrun_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));

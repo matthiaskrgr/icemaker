@@ -306,7 +306,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                         | Executable::CraneliftLocal => {
                             // with expensive flags, run on each of the editions separately
                             let editions = if args.expensive_flags {
-                                vec!["--edition=2015", "--edition=2018", "--editon=2021"]
+                                vec!["--edition=2015", "--edition=2018", "--edition=2021"]
                             } else {
                                 Vec::new()
                             };

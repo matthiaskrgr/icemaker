@@ -163,7 +163,11 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
     if executables.contains(&&Executable::Miri) || matches!(executable, Executable::Miri) {
         println!("Running cargo miri setup");
         let _ = std::process::Command::new("cargo")
-            .arg( if args.local_debug_assertions { "+local-debug-assertions" } else { "+master" } )
+            .arg(if args.local_debug_assertions {
+                "+local-debug-assertions"
+            } else {
+                "+master"
+            })
             .arg("miri")
             .arg("setup")
             .status()
@@ -300,11 +304,17 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                         Executable::Rustc
                         | Executable::RustcCGClif
                         | Executable::CraneliftLocal => {
+                            let editions = if args.expensive_flags {
+                                vec!["--edition=2015", "--edition=2018", "--editon=2021"]
+                            } else {
+                                Vec::new()
+                            };
                             // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
                             RUSTC_FLAGS
                                 // note: this can be dangerous in case of max memory usage, if a file needs a lot
                                 .par_iter()
                                 .panic_fuse()
+                                .map(|flag_combinations| flag_combinations.iter())
                                 .map(|flag_combination| {
                                     ICE::discover(
                                         file,
@@ -331,7 +341,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                             file,
                                             &exec_path,
                                             executable,
-                                            miri_rustflag,
+                                            *miri_rustflag,
                                             miri_flag_combination,
                                             false,
                                             &counter,
@@ -598,17 +608,20 @@ fn main() {
 impl ICE {
     /// find out if a file crashes rustc with the given flags
     #[allow(clippy::too_many_arguments)]
-    fn discover(
+    fn discover<'f, F: IntoIterator<Item = &'f &'f str>>(
         file: &Path,
         exec_path: &str,
         executable: &Executable,
-        compiler_flags: &[&str],
+        compiler_flags: F,
         miri_flags: &[&str],
         incremental: bool,
         counter: &AtomicUsize,
         total_number_of_files: usize,
         silent: bool,
     ) -> Option<Self> {
+        // convert IntoIterator<Item &&str> to &[&str]
+        let compiler_flags = &compiler_flags.into_iter().cloned().collect::<Vec<&str>>()[..];
+
         let thread_start = Instant::now();
         const SECONDS_LIMIT: u64 = PROCESS_TIMEOUT_S as u64;
         const SECONDS_LIMIT_MIRI: u64 = 20;
@@ -1344,7 +1357,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                         &path,
                         &exec_path,
                         &executable,
-                        compiler_flags,
+                        *compiler_flags,
                         &[],
                         false,
                         &counter,
@@ -1487,7 +1500,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                         &path,
                         &exec_path,
                         &executable,
-                        compiler_flags,
+                        *compiler_flags,
                         &[],
                         false,
                         &counter,
@@ -1499,7 +1512,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                     &path,
                     &exec_path,
                     &executable,
-                    &[""],
+                    [&""],
                     &[],
                     false,
                     &counter,

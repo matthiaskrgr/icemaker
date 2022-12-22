@@ -813,6 +813,7 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     cmd.arg(&file)
         .arg("-Zno-codegen")
         .arg("-Zforce-unstable-if-unmarked")
+        .arg("--edition=2021")
         .args(["--cap-lints", "warn"])
         .env("CARGO_TERM_COLOR", "never")
         .current_dir(tempdir_path)

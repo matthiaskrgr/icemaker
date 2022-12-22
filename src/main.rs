@@ -304,6 +304,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                         Executable::Rustc
                         | Executable::RustcCGClif
                         | Executable::CraneliftLocal => {
+                            // with expensive flags, run on each of the editions separately
                             let editions = if args.expensive_flags {
                                 vec!["--edition=2015", "--edition=2018", "--editon=2021"]
                             } else {
@@ -315,6 +316,12 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                 .par_iter()
                                 .panic_fuse()
                                 .map(|flag_combinations| flag_combinations.iter())
+                                // need shit to flat map a sequential iter into a par_iter
+                                .flat_map_iter(|flag_combinations| {
+                                    editions.iter().map(move |x| {
+                                        flag_combinations.clone().chain(std::iter::once(x))
+                                    })
+                                })
                                 .map(|flag_combination| {
                                     ICE::discover(
                                         file,

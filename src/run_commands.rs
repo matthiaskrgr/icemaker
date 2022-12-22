@@ -169,10 +169,10 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> CommandOut
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
             // also enable debuginfo for incremental, since we are codegenning anyway
-            .arg("-Cdebuginfo=2")
-            // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly
-            //.arg("-Csave-temps=yes")
-            .arg("--edition=2021");
+            .arg("-Cdebuginfo=2");
+        // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly
+        //.arg("-Csave-temps=yes")
+        //   .arg("--edition=2021");
         //   .arg("-Cpasses=lint");
 
         //dbg!(&command);

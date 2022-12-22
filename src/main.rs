@@ -775,7 +775,6 @@ impl ICE {
                     "-Zincremental-verify-ich=yes",
                     "-Cincremental=<dir>",
                     "-Cdebuginfo=2",
-                    "--edition=2021",
                 ]
                 .into_iter()
                 .map(|s| s.into())

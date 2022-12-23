@@ -308,7 +308,8 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                             let editions = if args.expensive_flags {
                                 vec!["--edition=2015", "--edition=2018", "--edition=2021"]
                             } else {
-                                Vec::new()
+                                // FIXME need to have somehting here to at least iter once :/
+                                vec!["-Ccodegen-units=1"]
                             };
                             // for each file, run every chunk of RUSTC_FLAGS and check it and see if it crashes
                             RUSTC_FLAGS
@@ -319,7 +320,15 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                 // need shit to flat map a sequential iter into a par_iter
                                 .flat_map_iter(|flag_combinations| {
                                     editions.iter().map(move |x| {
-                                        flag_combinations.clone().chain(std::iter::once(x))
+                                        if args.expensive_flags {
+                                            flag_combinations
+                                                .clone()
+                                                .chain(std::iter::once(x).take(1))
+                                        } else {
+                                            flag_combinations
+                                                .clone()
+                                                .chain(std::iter::once(&"").take(0))
+                                        }
                                     })
                                 })
                                 .map(|flag_combination| {

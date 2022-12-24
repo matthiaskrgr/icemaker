@@ -486,6 +486,7 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
         .env("CARGO_TERM_COLOR", "never")
         .arg(file)
         .arg("-Znormalize-docs")
+        .arg("--edition=2021")
         .arg("-Zunstable-options")
         .arg("--document-private-items")
         .arg("--document-hidden-items")

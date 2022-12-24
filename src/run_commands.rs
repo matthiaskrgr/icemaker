@@ -537,7 +537,7 @@ pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> CommandOutput {
     cmd.env("SYSROOT", &*SYSROOT_PATH)
         .arg(file)
         .arg("--check")
-        .args(["--edition", "2018"]);
+        .args(["--edition", "2021"]);
     let output = systemdrun_command(&mut cmd).unwrap();
     CommandOutput::new(
         output,

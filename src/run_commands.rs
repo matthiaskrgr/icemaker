@@ -804,28 +804,33 @@ pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool
     let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let mut cmd = Command::new(executable);
-    if !has_main {
-        cmd.arg("--crate-type=lib");
-    } else {
-        cmd.arg("--crate-type=bin");
-    }
-    cmd.arg(&file)
-        .arg("-Zno-codegen")
-        .arg("-Zforce-unstable-if-unmarked")
-        .arg("--edition=2021")
-        .args(["--cap-lints", "warn"])
-        .env("CARGO_TERM_COLOR", "never")
-        .current_dir(tempdir_path)
-        .env("CARGO_TERM_COLOR", "never")
-        .env("SYSROOT", &*SYSROOT_PATH);
+    ["2015", "2018", "2021"]
+        .iter()
+        .map(|year| format!("--edition={year}"))
+        .any(|edition_flag| {
+            let mut cmd = Command::new(executable);
+            if !has_main {
+                cmd.arg("--crate-type=lib");
+            } else {
+                cmd.arg("--crate-type=bin");
+            }
+            cmd.arg(&file)
+                .arg("-Zno-codegen")
+                .arg("-Zforce-unstable-if-unmarked")
+                .arg(edition_flag)
+                .args(["--cap-lints", "warn"])
+                .env("CARGO_TERM_COLOR", "never")
+                .current_dir(tempdir_path)
+                .env("CARGO_TERM_COLOR", "never")
+                .env("SYSROOT", &*SYSROOT_PATH);
 
-    matches!(
-        systemdrun_command(&mut cmd)
-            .ok()
-            .map(|x| x.status.success()),
-        Some(true)
-    )
+            matches!(
+                systemdrun_command(&mut cmd)
+                    .ok()
+                    .map(|x| x.status.success()),
+                Some(true)
+            )
+        })
 }
 
 pub(crate) fn incremental_stress_test(

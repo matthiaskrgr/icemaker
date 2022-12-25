@@ -558,7 +558,7 @@ fn main() {
                 }
             });
 
-        dbg!(&global_tempdir_path_closure);
+        //dbg!(&global_tempdir_path_closure);
 
         if std::fs::remove_dir_all(&global_tempdir_path_closure.clone()).is_err() {
             eprintln!(

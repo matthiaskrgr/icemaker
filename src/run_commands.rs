@@ -85,17 +85,18 @@ pub(crate) fn run_rustc(
     file: &Path,
     incremental: bool,
     rustc_flags: &[&str],
+    global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
     if incremental {
         // only run incremental compilation tests
-        return run_rustc_incremental(executable, file);
+        return run_rustc_incremental(executable, file, global_tempdir_path);
     }
     // if the file contains no "main", run with "--crate-type lib"
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path().display();
 
     // decide whether we want rustc to do codegen (slow!) or not
@@ -145,8 +146,12 @@ pub(crate) fn run_rustc(
     //tempdir.close().unwrap();
 }
 
-pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> CommandOutput {
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+pub(crate) fn run_rustc_incremental(
+    executable: &str,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
     let has_main = std::fs::read_to_string(file)
@@ -198,7 +203,11 @@ pub(crate) fn run_rustc_incremental(executable: &str, file: &Path) -> CommandOut
     )
 }
 
-pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_clippy(
+    executable: &str,
+    file: &Path,
+    _global_tempdir_path: &PathBuf,
+) -> CommandOutput {
     // runs clippy-driver, not cargo-clippy!
 
     let has_main = std::fs::read_to_string(file)
@@ -230,7 +239,11 @@ pub(crate) fn run_clippy(executable: &str, file: &Path) -> CommandOutput {
     )
 }
 
-pub(crate) fn run_clippy_fix(_executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_clippy_fix(
+    _executable: &str,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
     // we need the "cargo-clippy" executable for --fix
     // s/clippy-driver/cargo-clippy
     /*  let cargo_clippy = executable
@@ -249,11 +262,15 @@ pub(crate) fn run_clippy_fix(_executable: &str, file: &Path) -> CommandOutput {
 
     let has_main = file_string.contains("pub(crate) fn main(");
 
-    let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
     // @FIXME should this actually be clippy to catch clippy ICEs
-    if !file_compiles(&file, &crate::ice::Executable::Rustc.path()) {
+    if !file_compiles(
+        &file,
+        &crate::ice::Executable::Rustc.path(),
+        global_tempdir_path,
+    ) {
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -381,6 +398,7 @@ pub(crate) fn run_clippy_fix_with_args(
     executable: &str,
     file: &Path,
     args: &[&str],
+    global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
     //  dbg!(&args);
     // we need the "cargo-clippy" executable for --fix
@@ -401,7 +419,7 @@ pub(crate) fn run_clippy_fix_with_args(
     // since we already run clippy successfully on the file we SHOULD not encounter any errors here.
     // I assume that cargo clippy --fix throws errors somehow and that returns early here
 
-    let tempdir = TempDir::new("icemaker_clippyfix_tempdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
@@ -479,7 +497,11 @@ pub(crate) fn run_clippy_fix_with_args(
     )
 }
 
-pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_rustdoc(
+    executable: &str,
+    file: &Path,
+    _global_tempdir_path: &PathBuf,
+) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", &*SYSROOT_PATH)
@@ -508,7 +530,11 @@ pub(crate) fn run_rustdoc(executable: &str, file: &Path) -> CommandOutput {
     )
 }
 
-pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_rust_analyzer(
+    executable: &str,
+    file: &Path,
+    _global_tempdir_path: &PathBuf,
+) -> CommandOutput {
     let file_content = std::fs::read_to_string(file).expect("failed to read file ");
 
     let mut cmd = Command::new(executable)
@@ -533,7 +559,11 @@ pub(crate) fn run_rust_analyzer(executable: &str, file: &Path) -> CommandOutput 
     output
     */
 }
-pub(crate) fn run_rustfmt(executable: &str, file: &Path) -> CommandOutput {
+pub(crate) fn run_rustfmt(
+    executable: &str,
+    file: &Path,
+    _global_tempdir_path: &PathBuf,
+) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("SYSROOT", &*SYSROOT_PATH)
         .arg(file)
@@ -553,6 +583,7 @@ pub(crate) fn run_miri(
     file: &Path,
     miri_flags: &[&str],
     rustc_flags: &[&str],
+    global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
@@ -603,7 +634,7 @@ pub(crate) fn run_miri(
         .iter()
         .find(|flag| flag.starts_with("--edition="));
 
-    let tempdir = TempDir::new("icemaker_miri_tempdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
     let tempdir_path = tempdir.path();
     // create a new cargo project inside the tmpdir
     if !std::process::Command::new("cargo")
@@ -704,10 +735,11 @@ pub(crate) fn run_cranelift(
     file: &Path,
     incremental: bool,
     rustc_flags: &[&str],
+    global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
     if incremental {
         // only run incremental compilation tests
-        return run_rustc_incremental(executable, file);
+        return run_rustc_incremental(executable, file, global_tempdir_path);
     }
     // if the file contains no "main", run with "--crate-type lib"
     let has_main = std::fs::read_to_string(file)
@@ -796,13 +828,17 @@ pub(crate) fn systemdrun_command(
     }
 }
 
-pub(crate) fn file_compiles(file: &std::path::PathBuf, executable: &str) -> bool {
+pub(crate) fn file_compiles(
+    file: &std::path::PathBuf,
+    executable: &str,
+    global_tempdir_path: &PathBuf,
+) -> bool {
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
 
     let file = file.canonicalize().unwrap();
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
     ["2015", "2018", "2021"]
@@ -838,6 +874,7 @@ pub(crate) fn incremental_stress_test(
     file_a: &std::path::PathBuf,
     files: &Vec<std::path::PathBuf>,
     executable: &str,
+    global_tempdir_path: &PathBuf,
 ) -> Option<(Output, String, Vec<OsString>, PathBuf, PathBuf)> {
     use rand::seq::SliceRandom;
 
@@ -845,7 +882,7 @@ pub(crate) fn incremental_stress_test(
 
     let files = [&file_a, &file_b];
 
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
     let mut cmd = Command::new("DUMMY");
@@ -854,7 +891,7 @@ pub(crate) fn incremental_stress_test(
 
     // make sure both files compile
     for file in files {
-        if !file_compiles(file, executable) {
+        if !file_compiles(file, executable, global_tempdir_path) {
             return None;
         }
     }

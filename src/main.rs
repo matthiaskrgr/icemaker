@@ -100,7 +100,7 @@ impl From<&Args> for Executable {
 }
 
 /// run on a project, each project having its own errors.json
-fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
+fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
     let errors_json = root_path.join("errors.json");
@@ -177,12 +177,12 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
 
     if args.heat {
         let chain_order = args.chain_order;
-        let _ = run_space_heater(executable, chain_order);
+        let _ = run_space_heater(executable, chain_order, global_tempdir_path);
         return Vec::new();
     }
 
     if args.fuzz {
-        let _ = run_random_fuzz(executable);
+        let _ = run_random_fuzz(executable, global_tempdir_path);
         return Vec::new();
     } else if args.fuzz2 {
         crate::fuzz2::fuzz2::fuzz2main();
@@ -255,7 +255,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
         let files = files
             .par_iter()
             .filter(|file| !EXCEPTION_LIST.contains(file))
-            .filter(|file| file_compiles(file, &rustc_exec_path))
+            .filter(|file| file_compiles(file, &rustc_exec_path, global_tempdir_path))
             .cloned()
             .collect::<Vec<_>>();
         eprintln!("checking {} files...", files.len());
@@ -267,7 +267,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
             .filter(|file| !EXCEPTION_LIST.contains(file))
             .filter_map(|file_a| {
                 let (output, _cmd_str, _actual_args, file_a, file_b) =
-                    incremental_stress_test(file_a, &files, &rustc_exec_path)?;
+                    incremental_stress_test(file_a, &files, &rustc_exec_path, global_tempdir_path)?;
                 let is_ice = find_ICE_string(&Executable::Rustc, output.clone());
                 if is_ice.is_some() {
                     eprintln!("\nINCRCOMP ICE: {},{}", file_a.display(), file_b.display());
@@ -342,6 +342,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                         &counter,
                                         files.len(),
                                         args.silent,
+                                        global_tempdir_path,
                                     )
                                 })
                                 .collect::<Vec<Option<ICE>>>()
@@ -363,6 +364,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                             &counter,
                                             files.len(),
                                             args.silent,
+                                            global_tempdir_path,
                                         )
                                     })
                                     .find_any(|ice| ice.is_some())
@@ -382,6 +384,7 @@ fn check_dir(root_path: &PathBuf, args: &Args) -> Vec<PathBuf> {
                                 &counter,
                                 files.len(),
                                 args.silent,
+                                global_tempdir_path,
                             )]
                         }
                     }
@@ -526,6 +529,11 @@ fn main() {
 
     let args = Args::parse();
 
+    let global_tempdir =
+        TempDir::new("icemaker_global_tempdir").expect("failed to create global icemaker tempdir");
+    let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
+    let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
+
     // rayon thread pool so we can configure number of threads easily
     rayon::ThreadPoolBuilder::new()
         .num_threads(args.threads)
@@ -550,6 +558,14 @@ fn main() {
                 }
             });
 
+        dbg!(&global_tempdir_path_closure);
+
+        if std::fs::remove_dir_all(&global_tempdir_path_closure.clone()).is_err() {
+            eprintln!(
+                "WARNING: failed to remove '{}'",
+                global_tempdir_path_closure.display()
+            );
+        }
         std::process::exit(42);
     })
     .expect("Error setting Ctrl-C handler");
@@ -584,7 +600,7 @@ fn main() {
     // all checked files
     let files = projects
         .iter()
-        .map(|dir| check_dir(dir, &args))
+        .map(|dir| check_dir(dir, &args, &global_tempdir_path))
         .flat_map(|v| v.into_iter())
         .collect::<Vec<PathBuf>>();
 
@@ -634,6 +650,7 @@ impl ICE {
         counter: &AtomicUsize,
         total_number_of_files: usize,
         silent: bool,
+        global_tempdir_path: &PathBuf,
     ) -> Option<Self> {
         // convert IntoIterator<Item &&str> to &[&str]
         let compiler_flags = &compiler_flags.into_iter().cloned().collect::<Vec<&str>>()[..];
@@ -663,18 +680,42 @@ impl ICE {
         }
 
         let (cmd_output, _cmd, actual_args) = match executable {
-            Executable::Clippy => run_clippy(exec_path, file),
-            Executable::ClippyFix => run_clippy_fix(exec_path, file),
-            Executable::Rustc => run_rustc(exec_path, file, incremental, compiler_flags),
-            Executable::Rustdoc => run_rustdoc(exec_path, file),
-            Executable::RustAnalyzer => run_rust_analyzer(exec_path, file),
-            Executable::Rustfmt => run_rustfmt(exec_path, file),
-            Executable::Miri => run_miri(exec_path, file, miri_flags, compiler_flags),
-            Executable::RustcCGClif => run_cranelift(exec_path, file, incremental, compiler_flags),
+            Executable::Clippy => run_clippy(exec_path, file, global_tempdir_path),
+            Executable::ClippyFix => run_clippy_fix(exec_path, file, global_tempdir_path),
+            Executable::Rustc => run_rustc(
+                exec_path,
+                file,
+                incremental,
+                compiler_flags,
+                global_tempdir_path,
+            ),
+            Executable::Rustdoc => run_rustdoc(exec_path, file, global_tempdir_path),
+            Executable::RustAnalyzer => run_rust_analyzer(exec_path, file, global_tempdir_path),
+            Executable::Rustfmt => run_rustfmt(exec_path, file, global_tempdir_path),
+            Executable::Miri => run_miri(
+                exec_path,
+                file,
+                miri_flags,
+                compiler_flags,
+                global_tempdir_path,
+            ),
+            Executable::RustcCGClif => run_cranelift(
+                exec_path,
+                file,
+                incremental,
+                compiler_flags,
+                global_tempdir_path,
+            ),
             Executable::CraneliftLocal => {
                 let mut compiler_flags = compiler_flags.to_vec();
                 compiler_flags.push("-Zcodegen-backend=cranelift");
-                run_rustc(exec_path, file, incremental, &compiler_flags)
+                run_rustc(
+                    exec_path,
+                    file,
+                    incremental,
+                    &compiler_flags,
+                    global_tempdir_path,
+                )
             }
         }
         .unwrap();
@@ -895,7 +936,8 @@ impl ICE {
                 | Executable::ClippyFix
                 | Executable::CraneliftLocal => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
-                    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                    let tempdir =
+                        TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
 
                     // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
 
@@ -905,6 +947,7 @@ impl ICE {
                             &executable.path(),
                             file,
                             &last.iter().map(|x| **x).collect::<Vec<_>>(),
+                            global_tempdir_path,
                         )
                         .unwrap();
                         output
@@ -940,11 +983,14 @@ impl ICE {
                                     &executable.path(),
                                     file,
                                     &flag_combination.iter().map(|x| **x).collect::<Vec<_>>(),
+                                    global_tempdir_path,
                                 )
                                 .unwrap();
                                 output
                             } else {
-                                let tempdir5 = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+                                let tempdir5 =
+                                    TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir")
+                                        .unwrap();
                                 let tempdir_path = tempdir5.path();
                                 let output_file = format!("-o{}/file1", tempdir_path.display());
                                 let dump_mir_dir =
@@ -1028,7 +1074,8 @@ impl ICE {
                 return Some(hang);
             }
 
-            let regressing_channel = find_out_crashing_channel(&bad_flags, file);
+            let regressing_channel =
+                find_out_crashing_channel(&bad_flags, file, global_tempdir_path);
             // add these for a more accurate representation of what we ran originally
             bad_flags.push(&"-ooutputfile");
             bad_flags.push(&"-Zdump-mir-dir=dir");
@@ -1111,7 +1158,11 @@ impl ICE {
 }
 
 /// find out if we crash on master, nightly, beta or stable
-fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression {
+fn find_out_crashing_channel(
+    bad_flags: &Vec<&&str>,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> Regression {
     // simply check if we crash on nightly, beta, stable or master
     let toolchain_home: PathBuf = {
         let mut p = home::rustup_home().unwrap();
@@ -1124,7 +1175,7 @@ fn find_out_crashing_channel(bad_flags: &Vec<&&str>, file: &Path) -> Regression 
         .filter(|flag| !flag.starts_with("-Z"))
         .collect::<Vec<_>>();
 
-    let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
     let output_file = format!("-o{}/file1", tempdir_path.display());
     let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
@@ -1347,7 +1398,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
         })
 }
 
-pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
+pub(crate) fn run_random_fuzz(executable: Executable, global_tempdir_path: &PathBuf) -> Vec<ICE> {
     const LIMIT: usize = 4000;
     let exec_path = executable.path();
     let counter = std::sync::atomic::AtomicUsize::new(0);
@@ -1379,6 +1430,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                         &counter,
                         LIMIT * RUSTC_FLAGS.len(),
                         false,
+                        global_tempdir_path,
                     )
                 }),
                 _ => ICE::discover(
@@ -1391,6 +1443,7 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
                     &counter,
                     LIMIT * RUSTC_FLAGS.len(),
                     false,
+                    global_tempdir_path,
                 ),
             };
 
@@ -1423,7 +1476,11 @@ pub(crate) fn run_random_fuzz(executable: Executable) -> Vec<ICE> {
     dbg!(&ICEs);
     ICEs
 }
-pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Vec<ICE> {
+pub(crate) fn run_space_heater(
+    executable: Executable,
+    chain_order: usize,
+    global_tempdir_path: &PathBuf,
+) -> Vec<ICE> {
     println!("Using executable: {}", executable.path());
 
     let chain_order: usize = std::num::NonZeroUsize::new(chain_order)
@@ -1522,6 +1579,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                         &counter,
                         LIMIT * RUSTC_FLAGS.len(),
                         false,
+                        global_tempdir_path,
                     )
                 }),
                 _ => ICE::discover(
@@ -1534,6 +1592,7 @@ pub(crate) fn run_space_heater(executable: Executable, chain_order: usize) -> Ve
                     &counter,
                     LIMIT * RUSTC_FLAGS.len(),
                     false,
+                    global_tempdir_path,
                 ),
             };
 

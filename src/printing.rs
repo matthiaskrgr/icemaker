@@ -58,7 +58,7 @@ impl Printer {
                 println!("{ice}");
             }
             (PrintMessage::Progress { .. }, PrintMessage::IceFound { ref ice }) => {
-                println!("{ice}");
+                println!("\r{ice}");
             }
             (
                 PrintMessage::IceFound { .. },

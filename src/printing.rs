@@ -17,6 +17,7 @@ pub(crate) enum PrintMessage {
 
 pub(crate) struct Printer {
     prev: RwLock<PrintMessage>,
+    logged_messages: RwLock<Vec<ICEDisplay>>,
 }
 
 impl Printer {
@@ -47,10 +48,16 @@ impl Printer {
                 // kinda ignore whether this fails or not
             }
             (PrintMessage::IceFound { .. }, PrintMessage::IceFound { ref ice }) => {
-                println!("{ice}");
+                // do not log duplicate messages
+                if !self.logged_messages.read().unwrap().contains(ice) {
+                    println!("{ice}");
+                }
             }
             (PrintMessage::Progress { .. }, PrintMessage::IceFound { ref ice }) => {
-                println!("\r{ice}");
+                // do not log duplicate messages
+                if !self.logged_messages.read().unwrap().contains(ice) {
+                    println!("{ice}");
+                }
             }
             (
                 PrintMessage::IceFound { .. },
@@ -71,18 +78,31 @@ impl Printer {
             }
         }
 
+        if let PrintMessage::IceFound { ref ice } = new {
+            for wait_dur in 0..=10 {
+                if let Ok(mut w) = self.logged_messages.try_write() {
+                    w.push(ice.clone());
+                    break;
+                } else {
+                    let wait = wait_dur * 10;
+                    eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
+                    std::thread::sleep(std::time::Duration::from_millis(wait));
+                }
+            }
+        }
+
         // if we can't acquire the lock right away, wait 10 ms and retry. Try up to 10 times
         for wait_dur in 0..=10 {
             match self.prev.try_write() {
                 Ok(mut w) => {
                     *w = new;
-                    return;
+                    break;
                 }
                 // failed to acquire lock, wait 10 ms and retry
                 _ => {
                     let wait = wait_dur * 10;
                     eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
-                    std::thread::sleep(std::time::Duration::from_millis(wait))
+                    std::thread::sleep(std::time::Duration::from_millis(wait));
                 }
             }
         }
@@ -95,6 +115,7 @@ impl Printer {
                 total_number_of_files: 0,
                 file_name: String::new(),
             }),
+            logged_messages: RwLock::new(Vec::new()),
         }
     }
 }

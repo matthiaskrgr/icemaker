@@ -29,6 +29,13 @@ impl Printer {
             return;
         }
 
+        if let PrintMessage::IceFound { ref ice } = new {
+            if self.logged_messages.read().unwrap().contains(ice) {
+                // do not log duplicate ICEs
+                return;
+            }
+        }
+
         match (prev, &new) {
             // displays "%perc Checking $file ..."
             (
@@ -48,16 +55,10 @@ impl Printer {
                 // kinda ignore whether this fails or not
             }
             (PrintMessage::IceFound { .. }, PrintMessage::IceFound { ref ice }) => {
-                // do not log duplicate messages
-                if !self.logged_messages.read().unwrap().contains(ice) {
-                    println!("{ice}");
-                }
+                println!("{ice}");
             }
             (PrintMessage::Progress { .. }, PrintMessage::IceFound { ref ice }) => {
-                // do not log duplicate messages
-                if !self.logged_messages.read().unwrap().contains(ice) {
-                    println!("{ice}");
-                }
+                println!("{ice}");
             }
             (
                 PrintMessage::IceFound { .. },

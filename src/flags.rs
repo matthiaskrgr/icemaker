@@ -3094,6 +3094,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "src/test/ui/dropck/dropck_no_diverge_on_nonregular_3.rs",
     "library/portable-simd/crates/core_simd/src/lib.rs", // 12+ minutes
     "src/test/ui-fulldeps/myriad-closures.rs",
+    "src/tools/miri/tests/pass/float.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
@@ -3154,6 +3155,7 @@ pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[
     "src/test/compile-fail/borrowck/borrowck-mut-borrow-linear-errors.rs",
     "src/test/compile-fail/E0165.rs",
     "src/test/ui/error-codes/E0165.rs",
+    "src/tools/miri/tests/pass/float.rs",
 ];
 
 pub(crate) static MIRIFLAGS: &[&[&str]] = &[

@@ -37,6 +37,7 @@ static SYSROOT_PATH: Lazy<String> = Lazy::new(|| {
 });
 
 pub(crate) const PROCESS_TIMEOUT_S: u8 = 30;
+pub(crate) const PROCESS_TIMEOUT_MIRI_S: u8 = 20;
 
 #[allow(unused)]
 #[derive(Clone, Debug)]
@@ -817,7 +818,7 @@ pub(crate) fn systemdrun_command(
             .arg("-p");
         if full_miri {
             // miri timout: 20 seconds
-            cmd.arg("RuntimeMaxSec=20");
+            cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_MIRI_S}"));
         } else {
             // all other timeouts: 30 seconds
             cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_S}"));

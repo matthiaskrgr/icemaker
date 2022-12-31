@@ -1296,7 +1296,23 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
     // let output = cmd.output().unwrap();
     // let _exit_status = output.status;
 
-    //stdout
+    //check for systemd-run output first by looking at the systemd-run output (so only available in none-ci build)
+    if !cfg!(feature = "ci") {
+        let termination_reason = &std::io::Cursor::new(&output.stdout)
+            .lines()
+            .chain(std::io::Cursor::new(&output.stderr).lines())
+            .filter_map(|line| line.ok())
+            .find(|l| l.contains("systemd-run"));
+        if let Some(term_res) = termination_reason {
+            if term_res.contains("terminated") {
+                // runtime limit
+                return Some((term_res.to_owned(), ICEKind::Hang(123)));
+            } else if term_res.contains("killed") {
+                // memory limit
+                return Some((term_res.to_owned(), ICEKind::OOM));
+            }
+        }
+    }
 
     [&output.stdout, &output.stderr]
         .into_iter()

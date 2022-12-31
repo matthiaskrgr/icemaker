@@ -124,8 +124,6 @@ pub(crate) fn run_rustc(
     // be able to override --crate-type=lib/bin
     cmd.args(rustc_flags);
 
-    cmd.current_dir(format!("{tempdir_path}"));
-
     //dbg!(&cmd);
 
     let actual_args = cmd
@@ -156,8 +154,6 @@ pub(crate) fn run_rustc_incremental(
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
-
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
@@ -177,7 +173,6 @@ pub(crate) fn run_rustc_incremental(
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
-            .arg(&dump_mir_dir)
             // also enable debuginfo for incremental, since we are codegenning anyway
             .arg("-Cdebuginfo=2");
         // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly

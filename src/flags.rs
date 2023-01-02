@@ -3095,6 +3095,7 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "library/portable-simd/crates/core_simd/src/lib.rs", // 12+ minutes
     "src/test/ui-fulldeps/myriad-closures.rs",
     "src/tools/miri/tests/pass/float.rs",
+    "library/stdarch/crates/core_arch/src/arm_shared/neon/generated.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

@@ -116,7 +116,7 @@ pub(crate) fn run_rustc(
     let mut cmd = Command::new(executable);
     cmd.arg(file)
         // always keep these:
-        .arg(&dump_mir_dir);
+        .arg(dump_mir_dir);
     cmd.args(output_file);
 
     if !has_main {
@@ -761,8 +761,8 @@ pub(crate) fn run_cranelift(
     cmd.arg(file)
         .args(rustc_flags)
         // always keep these:
-        .arg(&output_file)
-        .arg(&dump_mir_dir);
+        .arg(output_file)
+        .arg(dump_mir_dir);
     if !has_main {
         cmd.arg("--crate-type=lib");
     }

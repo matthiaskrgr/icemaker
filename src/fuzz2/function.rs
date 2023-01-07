@@ -40,20 +40,16 @@ impl FunctionGenerator {
         const MAX_FN_ARGS: u32 = 100;
 
         let args_number = (0..MAX_FN_ARGS)
-            .into_iter()
             .choose(&mut rand::thread_rng())
             .unwrap();
         let args = (0..args_number)
-            .into_iter()
             .map(|_argnr| format!("{}", tygen.random_ty()));
 
         let num_keywords = (0..=std::mem::variant_count::<FnQualifier>())
-            .into_iter()
             .choose(&mut rand::thread_rng())
             .unwrap_or_default();
 
         let keywords = (0..num_keywords)
-            .into_iter()
             .filter_map(|_| possible_fn_keywords.iter().choose(&mut rand::thread_rng()))
             .cloned()
             .collect::<Vec<FnQualifier>>();

@@ -682,7 +682,7 @@ fn main() {
 
         //dbg!(&global_tempdir_path_closure);
 
-        if std::fs::remove_dir_all(&global_tempdir_path_closure.clone()).is_err() {
+        if std::fs::remove_dir_all(global_tempdir_path_closure.clone()).is_err() {
             eprintln!(
                 "WARNING: failed to remove '{}'",
                 global_tempdir_path_closure.display()
@@ -1350,7 +1350,7 @@ fn find_out_crashing_channel(
                 .arg(file)
                 .args(bad_flags)
                 .arg(&output_file)
-                .arg(&dump_mir_dir),
+                .arg(dump_mir_dir),
         )
         .unwrap(),
     )
@@ -1683,7 +1683,6 @@ pub(crate) fn run_space_heater(
             // this will be had because we have to insert into the same hashset from multiple threads at the same time :/
             let mut already_found_ices = std::fs::read_dir(PathBuf::from("."))
                 .expect("failed to read dir")
-                .into_iter()
                 .map(|f| f.unwrap().path())
                 .filter(|path| {
                     let filename = path.file_name();

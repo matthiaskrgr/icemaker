@@ -3842,7 +3842,7 @@ mod tests {
             let tempdir_path = tempdir.path();
             let rustfile_path = tempdir_path.join("file.rs");
             let mut rustfile = File::create(&rustfile_path).unwrap();
-            writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+            writeln!(rustfile, "{DUMMY_FILE_CONTENT}").unwrap();
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
@@ -3883,7 +3883,7 @@ mod tests {
             let tempdir_path = tempdir.path();
             let rustfile_path = tempdir_path.join("file.rs");
             let mut rustfile = File::create(&rustfile_path).unwrap();
-            writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+            writeln!(rustfile, "{DUMMY_FILE_CONTENT}").unwrap();
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
@@ -3923,7 +3923,7 @@ mod tests {
             let tempdir_path = tempdir.path();
             let rustfile_path = tempdir_path.join("file.rs");
             let mut rustfile = File::create(&rustfile_path).unwrap();
-            writeln!(rustfile, "{}", DUMMY_FILE_CONTENT).unwrap();
+            writeln!(rustfile, "{DUMMY_FILE_CONTENT}").unwrap();
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
@@ -3953,12 +3953,12 @@ mod tests {
     #[test]
     fn test_miriflags_are_valid() {
         for (i, batch_of_flags) in MIRIFLAGS.iter().enumerate() {
-            let tempdir = TempDir::new(&format!("icemaker_miri_tempdir_{}", i)).unwrap();
+            let tempdir = TempDir::new(&format!("icemaker_miri_tempdir_{i}")).unwrap();
             let tempdir_path = tempdir.path();
             // create a new cargo project inside the tmpdir
 
             // dummy crate name
-            let crate_name = &format!("_{}", i);
+            let crate_name = &format!("_{i}");
 
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("new")
@@ -4006,9 +4006,7 @@ mod tests {
 
             assert!(
                 output.status.success(),
-                "miri flags bad: '{:?}'\n\noutput. {:?}",
-                batch_of_flags,
-                output
+                "miri flags bad: '{batch_of_flags:?}'\n\noutput. {output:?}"
             );
         }
     }

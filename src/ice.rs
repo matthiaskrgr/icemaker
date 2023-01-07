@@ -130,7 +130,7 @@ impl std::fmt::Display for Regression {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub enum Executable {
     Rustc,
     Clippy,

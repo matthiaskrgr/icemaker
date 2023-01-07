@@ -100,7 +100,12 @@ impl From<&Args> for Executable {
 }
 
 /// run on a project, each project having its own errors.json
-fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) -> Vec<PathBuf> {
+fn check_dir(
+    root_path: &PathBuf,
+    args: &Args,
+    global_tempdir_path: &PathBuf,
+    timer: &Timer,
+) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
     let errors_json = root_path.join("errors.json");
@@ -248,6 +253,8 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
     // count progress
     let counter = std::sync::atomic::AtomicUsize::new(0);
 
+    // type Timer<'a> = (&'a Executable, AtomicUsize);
+
     let rustc_exec_path = Executable::Rustc.path();
 
     if args.incremental_test {
@@ -298,6 +305,8 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                             && !MIRI_EXCEPTION_LIST.contains(file))
                 })
                 .map(|executable| {
+                    let executable_start_time = Instant::now();
+
                     let exec_path = executable.path();
 
                     match executable {
@@ -332,7 +341,7 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                                     })
                                 })
                                 .map(|flag_combination| {
-                                    ICE::discover(
+                                    let ice = ICE::discover(
                                         file,
                                         &exec_path,
                                         executable,
@@ -343,7 +352,12 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                                         files.len(),
                                         args.silent,
                                         global_tempdir_path,
-                                    )
+                                    );
+                                    let seconds_elapsed =
+                                        executable_start_time.elapsed().as_millis() as usize;
+                                    timer.update_from_executable(executable, seconds_elapsed);
+
+                                    ice
                                 })
                                 .collect::<Vec<Option<ICE>>>()
                         }
@@ -354,7 +368,7 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                                     .par_iter()
                                     .panic_fuse()
                                     .map(|miri_rustflag| {
-                                        ICE::discover(
+                                        let ice = ICE::discover(
                                             file,
                                             &exec_path,
                                             executable,
@@ -365,7 +379,12 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                                             files.len(),
                                             args.silent,
                                             global_tempdir_path,
-                                        )
+                                        );
+                                        let seconds_elapsed =
+                                            executable_start_time.elapsed().as_millis() as usize;
+                                        timer.update_from_executable(executable, seconds_elapsed);
+
+                                        ice
                                     })
                                     .find_any(|ice| ice.is_some())
                             })
@@ -373,7 +392,7 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                             .collect::<Vec<Option<ICE>>>(),
                         _ => {
                             // if we run clippy/rustfmt/rla .. we dont need to check multiple combinations of RUSTFLAGS
-                            vec![ICE::discover(
+                            let ice = vec![ICE::discover(
                                 file,
                                 &exec_path,
                                 executable,
@@ -385,7 +404,11 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
                                 files.len(),
                                 args.silent,
                                 global_tempdir_path,
-                            )]
+                            )];
+                            let seconds_elapsed =
+                                executable_start_time.elapsed().as_millis() as usize;
+                            timer.update_from_executable(executable, seconds_elapsed);
+                            ice
                         }
                     }
                 })
@@ -523,6 +546,105 @@ fn check_dir(root_path: &PathBuf, args: &Args, global_tempdir_path: &PathBuf) ->
     files
 }
 
+#[derive(Debug, Default)]
+struct Timer {
+    rustc_time: AtomicUsize,
+    clippy_time: AtomicUsize,
+    rustdoc_time: AtomicUsize,
+    rla_time: AtomicUsize,
+    rustfmt_time: AtomicUsize,
+    miri_time: AtomicUsize,
+    cgclif_time: AtomicUsize,
+    craneliftlocal_time: AtomicUsize,
+    clippyfix_time: AtomicUsize,
+}
+
+impl Timer {
+    fn update_from_executable(&self, exe: &Executable, elapsed_duration: usize) {
+        match exe {
+            Executable::Rustc => {
+                let _ = self
+                    .rustc_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::Clippy => {
+                let _ = self
+                    .clippy_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::Rustdoc => {
+                let _ = self
+                    .rustdoc_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::RustAnalyzer => {
+                let _ = self.rla_time.fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::Rustfmt => {
+                let _ = self
+                    .rustfmt_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::Miri => {
+                let _ = self.miri_time.fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::RustcCGClif => {
+                let _ = self
+                    .cgclif_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::CraneliftLocal => {
+                let _ = self
+                    .craneliftlocal_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::ClippyFix => {
+                let _ = self
+                    .clippyfix_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+        }
+    }
+
+    fn new() -> Self {
+        Timer::default()
+    }
+
+    fn as_seconds(self) -> Self {
+        use std::time::Duration;
+        Timer {
+            rustc_time: AtomicUsize::new(
+                Duration::from_millis(self.rustc_time.into_inner() as u64).as_secs() as usize,
+            ),
+            clippy_time: AtomicUsize::new(
+                Duration::from_millis(self.clippy_time.into_inner() as u64).as_secs() as usize,
+            ),
+            rustdoc_time: AtomicUsize::new(
+                Duration::from_millis(self.rustdoc_time.into_inner() as u64).as_secs() as usize,
+            ),
+            rla_time: AtomicUsize::new(
+                Duration::from_millis(self.rla_time.into_inner() as u64).as_secs() as usize,
+            ),
+            rustfmt_time: AtomicUsize::new(
+                Duration::from_millis(self.rustfmt_time.into_inner() as u64).as_secs() as usize,
+            ),
+            miri_time: AtomicUsize::new(
+                Duration::from_millis(self.miri_time.into_inner() as u64).as_secs() as usize,
+            ),
+            cgclif_time: AtomicUsize::new(
+                Duration::from_millis(self.cgclif_time.into_inner() as u64).as_secs() as usize,
+            ),
+            craneliftlocal_time: AtomicUsize::new(
+                Duration::from_millis(self.craneliftlocal_time.into_inner() as u64).as_secs()
+                    as usize,
+            ),
+            clippyfix_time: AtomicUsize::new(
+                Duration::from_millis(self.clippyfix_time.into_inner() as u64).as_secs() as usize,
+            ),
+        }
+    }
+}
+
 fn main() {
     // how long did we take?
     let global_start_time = Instant::now();
@@ -597,10 +719,12 @@ fn main() {
         std::process::exit(1);
     }
 
+    let timer: Timer = Timer::new();
+
     // all checked files
     let files = projects
         .iter()
-        .map(|dir| check_dir(dir, &args, &global_tempdir_path))
+        .map(|dir| check_dir(dir, &args, &global_tempdir_path, &timer))
         .flat_map(|v| v.into_iter())
         .collect::<Vec<PathBuf>>();
 
@@ -618,6 +742,8 @@ fn main() {
         seconds_elapsed as f64 / 60_f64,
         files_per_second
     );
+
+    eprintln!("Timings in seconds:\n{:?}", timer.as_seconds());
 
     eprintln!("\n\nALL CRASHES\n\n");
     ALL_ICES_WITH_FLAGS

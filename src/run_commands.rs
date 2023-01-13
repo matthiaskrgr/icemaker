@@ -466,7 +466,8 @@ pub(crate) fn run_rustfix(
     .current_dir(crate_path)
     .arg("fix")
     .arg("--allow-no-vcs")
-    .arg("--broken-code");
+    .arg("--broken-code")
+    .args(["--", "-Aunused"]);
     // cargo fix doesnt need this
     // .args(["--", "--cap-lints", "warn"]);
 

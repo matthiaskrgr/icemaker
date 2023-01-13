@@ -143,6 +143,7 @@ pub enum Executable {
     // icemaker --local-debug-assertions --cranelift-local  --expensive-flags
     CraneliftLocal,
     ClippyFix,
+    RustFix,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
@@ -189,6 +190,21 @@ impl Executable {
                     p.push("master");
                     p.push("bin");
                     p.push("clippy-driver");
+                    p.display().to_string()
+                }
+            }
+
+            Executable::RustFix => {
+                if *LOCAL_DEBUG_ASSERTIONS {
+                    String::from(
+                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc",
+                    )
+                } else {
+                    let mut p = home::rustup_home().unwrap();
+                    p.push("toolchains");
+                    p.push("master");
+                    p.push("bin");
+                    p.push("rustc");
                     p.display().to_string()
                 }
             }

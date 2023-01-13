@@ -79,6 +79,8 @@ impl From<&Args> for Executable {
             Executable::Clippy
         } else if args.clippy_fix {
             Executable::ClippyFix
+        } else if args.rust_fix {
+            Executable::RustFix
         } else if args.rustdoc {
             Executable::Rustdoc
         } else if args.analyzer {
@@ -557,6 +559,7 @@ struct Timer {
     cgclif_time: AtomicUsize,
     craneliftlocal_time: AtomicUsize,
     clippyfix_time: AtomicUsize,
+    rustfix_time: AtomicUsize,
 }
 
 impl Timer {
@@ -603,6 +606,11 @@ impl Timer {
                     .clippyfix_time
                     .fetch_add(elapsed_duration, Ordering::SeqCst);
             }
+            Executable::RustFix => {
+                let _ = self
+                    .rustfix_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
         }
     }
 
@@ -640,6 +648,9 @@ impl Timer {
             ),
             clippyfix_time: AtomicUsize::new(
                 Duration::from_millis(self.clippyfix_time.into_inner() as u64).as_secs() as usize,
+            ),
+            rustfix_time: AtomicUsize::new(
+                Duration::from_millis(self.rustfix_time.into_inner() as u64).as_secs() as usize,
             ),
         }
     }
@@ -808,6 +819,7 @@ impl ICE {
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file, global_tempdir_path),
             Executable::ClippyFix => run_clippy_fix(exec_path, file, global_tempdir_path),
+            Executable::RustFix => run_rustfix(exec_path, file, global_tempdir_path),
             Executable::Rustc => run_rustc(
                 exec_path,
                 file,
@@ -1060,6 +1072,7 @@ impl ICE {
                 Executable::Rustc
                 | Executable::RustcCGClif
                 | Executable::ClippyFix
+                | Executable::RustFix
                 | Executable::CraneliftLocal => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir =
@@ -1476,7 +1489,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                     }
                 }
 
-                Executable::ClippyFix => {
+                Executable::ClippyFix | Executable::RustFix => {
                     // unfortunately, lines().filter.. isn't clone so we have to hack around :(
 
                     let normal_ice = std::io::Cursor::new(executable_output)

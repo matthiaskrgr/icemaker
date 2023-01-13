@@ -400,6 +400,91 @@ pub(crate) fn run_clippy_fix(
     )
 }
 
+pub(crate) fn run_rustfix(
+    _executable: &str,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace(['[', ']'], "_");
+
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_rustffix_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+    // create a new cargo project inside the tmpdir
+    if !std::process::Command::new("cargo")
+        .env("SYSROOT", &*SYSROOT_PATH)
+        .env("CARGO_TERM_COLOR", "never")
+        .arg("new")
+        .args(["--vcs", "none"])
+        .arg(file_stem)
+        .current_dir(tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        eprintln!("ERROR: cargo new failed for: {file_stem}");
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::RustFix,
+        );
+    }
+
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push(file_stem);
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_string).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push(file_stem);
+
+    let mut cmd = Command::new("cargo");
+
+    cmd.arg(if *LOCAL_DEBUG_ASSERTIONS {
+        "+local-debug-assertions"
+    } else {
+        "+master"
+    })
+    .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    .env("SYSROOT", &*SYSROOT_PATH)
+    .env("CARGO_TERM_COLOR", "never")
+    .current_dir(crate_path)
+    .arg("fix")
+    .arg("--allow-no-vcs")
+    .arg("--broken-code");
+    // cargo fix doesnt need this
+    // .args(["--", "--cap-lints", "warn"]);
+
+    //dbg!(&cmd);
+
+    let output = systemdrun_command(&mut cmd).unwrap();
+
+    //dbg!(&output);
+    //  }
+
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::RustFix,
+    )
+}
+
 pub(crate) fn run_clippy_fix_with_args(
     executable: &str,
     file: &Path,

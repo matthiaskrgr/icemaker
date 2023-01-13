@@ -10,6 +10,9 @@ pub(crate) struct Args {
     #[clap(long = "cf", long = "clippy-fix")]
     pub(crate) clippy_fix: bool,
 
+    #[clap(long = "rf", long = "rust-fix")]
+    pub(crate) rust_fix: bool,
+
     #[clap(short = 'd', long)]
     pub(crate) rustdoc: bool,
 

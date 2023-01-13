@@ -460,14 +460,13 @@ pub(crate) fn run_rustfix(
     } else {
         "+master"
     })
-    .env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+    .env("RUSTFLAGS", "-Z force-unstable-if-unmarked -Aunused")
     .env("SYSROOT", &*SYSROOT_PATH)
     .env("CARGO_TERM_COLOR", "never")
     .current_dir(crate_path)
     .arg("fix")
     .arg("--allow-no-vcs")
-    .arg("--broken-code")
-    .args(["--", "-Aunused"]);
+    .arg("--broken-code");
     // cargo fix doesnt need this
     // .args(["--", "--cap-lints", "warn"]);
 
@@ -475,7 +474,7 @@ pub(crate) fn run_rustfix(
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    //dbg!(&output);
+    //hdbg!(&output);
     //  }
 
     CommandOutput::new(

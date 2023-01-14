@@ -446,7 +446,7 @@ pub(crate) fn run_rustfix(
     };
 
     // write the content of the file we want to check into tmpcrate/src/main.rs
-    std::fs::write(source_path, file_string).expect("failed to write to file");
+    std::fs::write(source_path, &file_string).expect("failed to write to file");
 
     // we should have everything prepared for the miri invocation now: execute "cargo miri run"
 
@@ -463,7 +463,7 @@ pub(crate) fn run_rustfix(
     .env("RUSTFLAGS", "-Z force-unstable-if-unmarked -Aunused")
     .env("SYSROOT", &*SYSROOT_PATH)
     .env("CARGO_TERM_COLOR", "never")
-    .current_dir(crate_path)
+    .current_dir(&crate_path)
     .arg("fix")
     .arg("--allow-no-vcs")
     .arg("--broken-code");
@@ -474,8 +474,21 @@ pub(crate) fn run_rustfix(
 
     let output = systemdrun_command(&mut cmd).unwrap();
 
-    //hdbg!(&output);
-    //  }
+    let fixed_file = &crate_path.join("src").join("main.rs");
+    let file_after_fixing = std::fs::read_to_string(fixed_file).unwrap_or_default();
+    if file_string == file_after_fixing {
+        // we didn't actually apply any changes, ignore
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::RustFix,
+        );
+    }
+
+    //dbg!(&output);
 
     CommandOutput::new(
         output,

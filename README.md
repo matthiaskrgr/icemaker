@@ -11,6 +11,7 @@ Features:
 * check if a file compiles stably with incremental compilation
 * build and run a file under miri
 * run clippy or rustc on a file and find out if (and which) lint does not apply successfully (causes compiler errors)
+* find rustc diagnostics that change the file but do not managed to actually fix the broken code
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
@@ -22,7 +23,7 @@ for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep 
 ````
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
 
-Trophy case (380+):  
+Trophy case (390+):  
 https://github.com/rust-lang/rust/issues/106926  
 https://github.com/rust-lang/rust/issues/106882  
 https://github.com/rust-lang/rust/issues/106881  

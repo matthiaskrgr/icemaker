@@ -39,11 +39,8 @@ impl FunctionGenerator {
 
         const MAX_FN_ARGS: u32 = 100;
 
-        let args_number = (0..MAX_FN_ARGS)
-            .choose(&mut rand::thread_rng())
-            .unwrap();
-        let args = (0..args_number)
-            .map(|_argnr| format!("{}", tygen.random_ty()));
+        let args_number = (0..MAX_FN_ARGS).choose(&mut rand::thread_rng()).unwrap();
+        let args = (0..args_number).map(|_argnr| format!("{}", tygen.random_ty()));
 
         let num_keywords = (0..=std::mem::variant_count::<FnQualifier>())
             .choose(&mut rand::thread_rng())

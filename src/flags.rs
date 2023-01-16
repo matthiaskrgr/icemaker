@@ -82,6 +82,12 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         // "-Zmeta-stats",
         "-Zstack-protector=all",
         "-Zstrict-init-checks=yes",
+        "-Zcrate-attr=feature(generator_clone)",
+        "-Zcrate-attr=feature(impl_trait_in_fn_trait_return)",
+        "-Zcrate-attr=feature(const_cmp)",
+        "-Zcrate-attr=feature(generic_const_exprs)",
+        "-Zcrate-attr=feature(const_closures)",
+        "-Zcrate-attr=feature(const_trait_impl)",
     ],
     // incremental compilation, keep this!
     &["INCR_COMP"],
@@ -3037,6 +3043,12 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
+        "-Zcrate-attr=feature(generator_clone)",
+        "-Zcrate-attr=feature(impl_trait_in_fn_trait_return)",
+        "-Zcrate-attr=feature(const_cmp)",
+        "-Zcrate-attr=feature(generic_const_exprs)",
+        "-Zcrate-attr=feature(const_closures)",
+        "-Zcrate-attr=feature(const_trait_impl)",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

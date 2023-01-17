@@ -9,8 +9,8 @@ use once_cell::sync::Lazy;
 use clap::Parser;
 use tempdir::TempDir;
 
-use crate::flags;
 use crate::library::Args;
+use crate::{find_ICE_string, flags};
 
 lazy_static! {
     static ref HOME_DIR: PathBuf = home::home_dir().unwrap();
@@ -405,7 +405,7 @@ pub(crate) fn run_rustfix(
     file: &Path,
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
-    // run cargo fix --broken-code and check if rustc provides any suggestions that do not fix the actual problem
+    // run cargo fix --broken-code and check if rustc provides any suggestions that do not fix the actual problemy
 
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
@@ -488,8 +488,12 @@ pub(crate) fn run_rustfix(
             Vec::new(),
             crate::Executable::RustFix,
         );
-    } else {
-        //  modified the file!
+    }
+
+    //dbg!(&output);
+
+    //  modified the file! BUT if we fixed all errors, we are not intersted in this...
+    if find_ICE_string(&crate::Executable::RustFix, output.clone()).is_some() {
         let diff = diff::lines(&file_string, &file_after_fixing)
             .iter()
             .map(|diff| match diff {
@@ -503,8 +507,6 @@ pub(crate) fn run_rustfix(
         //  let stderr = String::from_utf8(output.clone().stderr).unwrap();
         eprintln!("\n\n{file_str}\n{diff}\n" /*{stderr}*/);
     }
-
-    //dbg!(&output);
 
     CommandOutput::new(
         output,

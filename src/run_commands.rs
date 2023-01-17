@@ -405,6 +405,8 @@ pub(crate) fn run_rustfix(
     file: &Path,
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
+    // run cargo fix --broken-code and check if rustc provides any suggestions that do not fix the actual problem
+
     let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
         .replace('.', "_")
         .replace(['[', ']'], "_");
@@ -486,6 +488,20 @@ pub(crate) fn run_rustfix(
             Vec::new(),
             crate::Executable::RustFix,
         );
+    } else {
+        //  modified the file!
+        let diff = diff::lines(&file_string, &file_after_fixing)
+            .iter()
+            .map(|diff| match diff {
+                diff::Result::Left(l) => format!("-{l}\n"),
+                diff::Result::Both(l, _) => format!(" {l}\n"),
+                diff::Result::Right(r) => format!("+{r}\n"),
+            })
+            .collect::<String>();
+
+        let file_str = file.display();
+        //  let stderr = String::from_utf8(output.clone().stderr).unwrap();
+        eprintln!("\n\n{file_str}\n{diff}\n" /*{stderr}*/);
     }
 
     //dbg!(&output);

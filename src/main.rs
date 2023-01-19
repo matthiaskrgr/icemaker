@@ -1532,23 +1532,28 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                 | Executable::RustcCGClif
                 | Executable::CraneliftLocal
                 | Executable::Rustdoc
-                | Executable::Rustfmt => lines
-                    // collect all lines which might be ICE messages
-                    .filter(|line| {
-                        keywords_generic_ice
-                            .iter()
-                            .any(|regex| regex.is_match(line))
-                    })
-                    // get the ICE line which is the longest
-                    .max_by_key(|line| line.len())
-                    .map(|line| (line, ICEKind::Ice))
-                    .or(std::io::Cursor::new(executable_output)
-                        .lines()
-                        .filter_map(|line| line.ok())
-                        .filter(|line| line.contains("[type error]"))
+                | Executable::Rustfmt => {
+                    let ice = lines
+                        // collect all lines which might be ICE messages
+                        .filter(|line| {
+                            keywords_generic_ice
+                                .iter()
+                                .any(|regex| regex.is_match(line))
+                        })
+                        // get the ICE line which is the longest
                         .max_by_key(|line| line.len())
-                        .map(|line| (line, ICEKind::TypeError))),
-                //  .map(|line| (line, ICEKind::Ice)),
+                        .map(|line| (line, ICEKind::Ice));
+                    if ice.is_some() {
+                        ice
+                    } else {
+                        std::io::Cursor::new(executable_output)
+                            .lines()
+                            .filter_map(|line| line.ok())
+                            .filter(|line| line.contains("[type error]"))
+                            .max_by_key(|line| line.len())
+                            .map(|line| (line, ICEKind::TypeError))
+                    }
+                }
             }
         })
 }

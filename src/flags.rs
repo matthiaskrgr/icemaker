@@ -3113,6 +3113,13 @@ pub(crate) static EXCEPTIONS: &[&str] = &[
     "library/stdarch/crates/core_arch/src/aarch64/neon/mod.rs",
     "src/tools/cargo/tests/testsuite/main.rs",
     "src/tools/clippy/clippy_lints/src/lib.rs",
+    "library/stdarch/crates/stdarch-gen/src/main.rs",
+    "src/tools/rust-analyzer/crates/proc-macro-srv/src/abis/abi_1_58/proc_macro/mod.rs",
+    "src/tools/rust-analyzer/crates/proc-macro-srv/src/abis/abi_1_63/proc_macro/mod.rs",
+    "tests/ui/issues/issue-22638.rs",
+    "tests/ui/issues/issue-72933-match-stack-overflow.rs",
+    "tests/ui/recursion/issue-86784.rs",
+    "tests/ui/associated-types/issue-67684.rs",
 ];
 
 pub(crate) static MIRI_EXCEPTIONS: &[&str] = &[

@@ -1006,10 +1006,6 @@ impl ICE {
                 let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
 
                 // shitty destructing
-                let found_error0 = match found_error0 {
-                    Some((x, _y)) => Some(x),
-                    _ => None,
-                };
 
                 let seconds_elapsed = thread_start.elapsed().as_secs();
                 if seconds_elapsed > (SECONDS_LIMIT_MIRI) {
@@ -1029,16 +1025,16 @@ impl ICE {
                     );
                 }
 
-                if found_error0.is_some() {
+                if let Some((err_reason, icekind)) = found_error0 {
                     let ice = ICE {
                         regresses_on: Regression::Master,
                         needs_feature: uses_feature,
                         file: file.to_owned(),
                         args: Vec::new(),
-                        error_reason: found_error0.unwrap_or_default(),
+                        error_reason: err_reason,
                         ice_msg,
                         executable: Executable::Rustc,
-                        kind: ICEKind::Ice,
+                        kind: icekind,
                     };
                     PRINTER.log(PrintMessage::IceFound {
                         ice: ice.to_printable(),

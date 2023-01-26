@@ -146,6 +146,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen
     &["INCR_COMP"],
+    // &["-Ztrait-solver=next", "-Zvalidate-mir"],
 ];
 
 static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[

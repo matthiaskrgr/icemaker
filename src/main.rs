@@ -1437,14 +1437,14 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
             .lines()
             .chain(std::io::Cursor::new(&output.stderr).lines())
             .filter_map(|line| line.ok())
-            .find(|l| l.contains("systemd-run"));
+            .find(|l| l.contains("prlimit"));
         if let Some(term_res) = termination_reason {
-            if term_res.contains("terminated") {
+            if term_res.contains("killed") {
                 // runtime limit
-                return Some((term_res.to_owned(), ICEKind::Hang(123)));
-            } else if term_res.contains("killed") {
-                // memory limit
                 return Some((term_res.to_owned(), ICEKind::OOM));
+            } else {
+                /* assume timeout */
+                return Some((term_res.to_owned(), ICEKind::Hang(123)));
             }
         }
     }

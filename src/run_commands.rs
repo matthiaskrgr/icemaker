@@ -926,19 +926,17 @@ pub(crate) fn systemdrun_command(
             .chain(std::iter::once(program))
             .any(|s| s == std::ffi::OsStr::new("miri"));
 
-        let mut cmd = Command::new("systemd-run");
-        cmd.arg("--user")
-            .arg("--scope")
-            .arg("-p")
-            .arg("MemoryMax=3G")
-            .arg("-p");
-        if full_miri {
+        let mut cmd = Command::new("prlimit");
+        cmd.arg("--noheadings");
+        let runtime_limit = if full_miri {
             // miri timout: 20 seconds
-            cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_MIRI_S}"));
+            PROCESS_TIMEOUT_MIRI_S
         } else {
             // all other timeouts: 30 seconds
-            cmd.arg(format!("RuntimeMaxSec={PROCESS_TIMEOUT_S}"));
-        }
+            PROCESS_TIMEOUT_S
+        };
+        cmd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)); // 3 GB
+        cmd.arg(format!("--cpu={runtime_limit}"));
 
         cmd.arg(program);
         cmd.args(args);

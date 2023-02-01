@@ -80,7 +80,7 @@ impl Printer {
         }
 
         if let PrintMessage::IceFound { ref ice } = new {
-            for wait_dur in 10..=100 {
+            for wait_dur in 10..=500 {
                 if let Ok(mut w) = self.logged_messages.try_write() {
                     w.push(ice.clone());
                     break;
@@ -93,7 +93,7 @@ impl Printer {
         }
 
         // if we can't acquire the lock right away, wait 10 ms and retry. Try up to 10 times
-        for wait_dur in 10..=100 {
+        for wait_dur in 10..=500 {
             match self.prev.try_write() {
                 Ok(mut w) => {
                     *w = new;

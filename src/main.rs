@@ -1542,12 +1542,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                     if ice.is_some() {
                         ice
                     } else {
-                        std::io::Cursor::new(executable_output)
-                            .lines()
-                            .filter_map(|line| line.ok())
-                            .filter(|line| line.contains("[type error]"))
-                            .max_by_key(|line| line.len())
-                            .map(|line| (line, ICEKind::TypeError))
+                        None
                     }
                 }
             }

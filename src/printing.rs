@@ -86,7 +86,7 @@ impl Printer {
                     break;
                 } else {
                     let wait = wait_dur * 10;
-                    eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
+                    // eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
                     std::thread::sleep(std::time::Duration::from_millis(wait));
                 }
             }
@@ -102,7 +102,7 @@ impl Printer {
                 // failed to acquire lock, wait 10 ms and retry
                 _ => {
                     let wait = wait_dur * 10;
-                    eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
+                    // eprintln!("failed to acquire rwlock, waiting {wait}ms until retry");
                     std::thread::sleep(std::time::Duration::from_millis(wait));
                 }
             }

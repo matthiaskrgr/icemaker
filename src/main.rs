@@ -153,7 +153,7 @@ fn check_dir(
                 &Executable::Rustfmt,
                 &Executable::ClippyFix,
                 &Executable::Miri,
-                &Executable::RustcCGClif,
+                &Executable::CraneliftLocal,
             ]
         } else {
             vec![

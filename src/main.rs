@@ -146,6 +146,15 @@ fn check_dir(
                 &Executable::Clippy,
                 &Executable::Rustfmt,
             ]
+        } else if args.local_debug_assertions {
+            vec![
+                &Executable::Rustc,
+                &Executable::Rustdoc,
+                &Executable::Rustfmt,
+                &Executable::ClippyFix,
+                &Executable::Miri,
+                &Executable::RustcCGClif,
+            ]
         } else {
             vec![
                 &Executable::Rustc,

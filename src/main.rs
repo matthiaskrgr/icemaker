@@ -313,7 +313,8 @@ fn check_dir(
                 .filter(|executable| {
                     !EXCEPTION_LIST.contains(file)
                         || (matches!(executable, Executable::Miri)
-                            && !MIRI_EXCEPTION_LIST.contains(file))
+                            || (matches!(executable, Executable::CraneliftLocal))
+                                && !MIRI_EXCEPTION_LIST.contains(file))
                 })
                 .map(|executable| {
                     let executable_start_time = Instant::now();

@@ -155,6 +155,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
 static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     // all allow-by-default lints, split into two because otherwise the get_flag_combinations would eat all ram
     // I might fix this at some point by making it work lists of &str instead of se();
+    &["-Zinstrument-xray"],
     &[
         // lints #1
         "-Zunstable-options",

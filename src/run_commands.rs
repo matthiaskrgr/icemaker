@@ -135,7 +135,7 @@ pub(crate) fn run_rustc(
         .collect::<Vec<OsString>>();
 
     // run the command
-    let output = systemdrun_command(&mut cmd)
+    let output = prlimit_run_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
     // dbg!(&output);
 
@@ -188,7 +188,7 @@ pub(crate) fn run_rustc_incremental(
 
         //dbg!(&command);
 
-        output = Some(systemdrun_command(&mut command));
+        output = Some(prlimit_run_command(&mut command));
         actual_args = command
             .get_args()
             .map(|s| s.to_owned())
@@ -235,7 +235,7 @@ pub(crate) fn run_clippy(
         .args(["--cap-lints", "warn"])
         .args(["-o", "/dev/null"]);
 
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     CommandOutput::new(
         output,
@@ -347,7 +347,7 @@ pub(crate) fn run_clippy_fix(
     .args(["--cap-lints", "warn"]);
     //dbg!(&cmd);
 
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on
     let lint_output = String::from_utf8(output.clone().stderr).unwrap();
@@ -474,7 +474,7 @@ pub(crate) fn run_rustfix(
 
     //dbg!(&cmd);
 
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     let fixed_file = &crate_path.join("src").join("main.rs");
     let file_after_fixing = std::fs::read_to_string(fixed_file).unwrap_or_default();
@@ -606,7 +606,7 @@ pub(crate) fn run_clippy_fix_with_args(
 
     //dbg!(&cmd);
 
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     //  dbg!(&output);
     //  }
@@ -642,7 +642,7 @@ pub(crate) fn run_rustdoc(
         .arg("-Wrustdoc::private-doc-tests")
         .arg("--show-type-layout")
         .args(["-o", "/dev/null"]);
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     CommandOutput::new(
         output,
@@ -691,7 +691,7 @@ pub(crate) fn run_rustfmt(
         .arg(file)
         .arg("--check")
         .args(["--edition", "2021"]);
-    let output = systemdrun_command(&mut cmd).unwrap();
+    let output = prlimit_run_command(&mut cmd).unwrap();
     CommandOutput::new(
         output,
         get_cmd_string(&cmd),
@@ -822,7 +822,7 @@ pub(crate) fn run_miri(
     )
     .env("MIRI_CWD", &crate_path);
 
-    let out = systemdrun_command(&mut cmd)
+    let out = prlimit_run_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
 
     // dbg!(&out);
@@ -890,7 +890,7 @@ pub(crate) fn run_cranelift(
         .collect::<Vec<OsString>>();
 
     // run the command
-    let output = systemdrun_command(&mut cmd)
+    let output = prlimit_run_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
     CommandOutput::new(
         output,
@@ -902,7 +902,7 @@ pub(crate) fn run_cranelift(
     //tempdir.close().unwrap();
 }
 
-pub(crate) fn systemdrun_command(
+pub(crate) fn prlimit_run_command(
     new_command: &mut std::process::Command,
 ) -> std::result::Result<Output, std::io::Error> {
     if cfg!(feature = "ci") {
@@ -982,7 +982,7 @@ pub(crate) fn file_compiles(
                 .env("SYSROOT", &*SYSROOT_PATH);
 
             matches!(
-                systemdrun_command(&mut cmd)
+                prlimit_run_command(&mut cmd)
                     .ok()
                     .map(|x| x.status.success()),
                 Some(true)
@@ -1041,7 +1041,7 @@ pub(crate) fn incremental_stress_test(
         //dbg!(&command);
 
         // the output from the second invocation is the interesting one!
-        output = Some(systemdrun_command(&mut command));
+        output = Some(prlimit_run_command(&mut command));
         actual_args = command
             .get_args()
             .map(|s| s.to_owned())

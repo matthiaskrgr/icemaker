@@ -1012,7 +1012,7 @@ impl ICE {
                 let mut pure_rustc_cmd = Command::new(Executable::Rustc.path());
                 pure_rustc_cmd.arg(file);
 
-                let pure_rustc_output = systemdrun_command(&mut pure_rustc_cmd).unwrap();
+                let pure_rustc_output = prlimit_run_command(&mut pure_rustc_cmd).unwrap();
                 let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
 
                 // shitty destructing
@@ -1102,7 +1102,7 @@ impl ICE {
                         //let dump_mir_dir = format!("-Zdump-mir-dir={}", tempdir_path.display());
                         let mut cmd = Command::new(exec_path);
                         cmd.args(&last);
-                        systemdrun_command(&mut cmd).unwrap()
+                        prlimit_run_command(&mut cmd).unwrap()
                     };
 
                     // dbg!(&output);
@@ -1146,7 +1146,7 @@ impl ICE {
                                     .args(flag_combination.iter())
                                     .arg(output_file)
                                     .arg(dump_mir_dir);
-                                let output = systemdrun_command(&mut cmd).unwrap();
+                                let output = prlimit_run_command(&mut cmd).unwrap();
                                 tempdir5.close().unwrap();
                                 output
                             };
@@ -1197,7 +1197,7 @@ impl ICE {
                         .collect::<Vec<String>>(),
                 );
 
-                // the process was killed by systemd because it exceeded time limit
+                // the process was killed by prlimit because it exceeded time limit
                 let hang = ICE {
                     regresses_on: Regression::Master,
                     needs_feature: uses_feature,
@@ -1275,7 +1275,7 @@ impl ICE {
                     .collect::<Vec<String>>(),
             );
 
-            // the process was killed by systemd because it exceeded time limit
+            // the process was killed by prlimit because it exceeded time limit
             let ret_hang = ICE {
                 regresses_on: Regression::Master,
                 needs_feature: uses_feature,
@@ -1340,7 +1340,7 @@ fn find_out_crashing_channel(
 
     let stable_ice: bool = find_ICE_string(
         &Executable::Rustc,
-        systemdrun_command(
+        prlimit_run_command(
             Command::new(stable_path)
                 .arg(file)
                 .args(&bad_but_no_nightly_flags)
@@ -1352,7 +1352,7 @@ fn find_out_crashing_channel(
 
     let beta_ice: bool = find_ICE_string(
         &Executable::Rustc,
-        systemdrun_command(
+        prlimit_run_command(
             Command::new(beta_path)
                 .arg(file)
                 .args(&bad_but_no_nightly_flags)
@@ -1364,7 +1364,7 @@ fn find_out_crashing_channel(
 
     let nightly_ice: bool = find_ICE_string(
         &Executable::Rustc,
-        systemdrun_command(
+        prlimit_run_command(
             Command::new(nightly_path)
                 .arg(file)
                 .args(bad_flags)
@@ -1441,7 +1441,8 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
     // let output = cmd.output().unwrap();
     // let _exit_status = output.status;
 
-    //check for systemd-run output first by looking at the systemd-run output (so only available in none-ci build)
+    //check for prlimit output first by looking at the primit output (so only available in none-ci build)
+    //(this worked better with systemd-run.. :/ )
     if !cfg!(feature = "ci") {
         let termination_reason = &std::io::Cursor::new(&output.stdout)
             .lines()

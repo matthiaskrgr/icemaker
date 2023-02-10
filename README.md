@@ -14,7 +14,7 @@ Features:
 * find rustc diagnostics that change the file but do not managed to actually fix the broken code
 
 Requirements: 
- * by default, we build with the "ci" feature disabled and require "systemd-run" to limit memory and runtime duration of a process
+ * by default, we build with the "ci" feature disabled and require "prlimit" to limit memory and runtime of a process
 
 History:  
 This project started years ago as a simple bash oneliner like  

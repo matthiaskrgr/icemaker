@@ -9,7 +9,7 @@ Features:
 * check different combinations of RUSTFLAGS
 * try to find minimal set of RUSTFLAGS that reproduces the internal compiler error
 * check if a file compiles stably with incremental compilation
-* build and run a file under miri
+* build and run a file or tests under miri
 * run clippy or rustc on a file and find out if (and which) lint does not apply successfully (causes compiler errors)
 * find rustc diagnostics that change the file but do not managed to actually fix the broken code
 

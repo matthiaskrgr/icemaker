@@ -32,7 +32,7 @@ https://github.com/bjorn3/rustc_codegen_cranelift/issues/1354
 https://github.com/rust-lang/rust/issues/107705  
 https://github.com/rust-lang/rust/issues/107428  
 https://github.com/rust-lang/rust/issues/107423  
-https://github.com/rust-lang/rust/issues/107414 
+https://github.com/rust-lang/rust/issues/107414  
 https://github.com/rust-lang/rust/issues/107346  
 https://github.com/rust-lang/rust/issues/107147  
 https://github.com/rust-lang/rust/issues/107093  
@@ -439,7 +439,7 @@ https://github.com/rust-lang/rust/issues/67550
 
 #### License:
 
-Copyright 2020-2022 Matthias Krüger
+Copyright 2020-2023 Matthias Krüger
 
 ````
 Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or

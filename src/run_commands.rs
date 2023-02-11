@@ -738,9 +738,11 @@ pub(crate) fn run_miri(
     // running miri is a bit more complicated:
     // first we need a new tempdir
 
+    let has_test = file_string.contains("#[test]");
+
     let no_std = file_string.contains("#![no_std]");
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
-    if no_std || platform_intrinsics || !has_main {
+    if no_std || platform_intrinsics || (!has_main && !has_test) {
         // miri is know to not really handles this well
         return CommandOutput::new(
             std::process::Command::new("true")
@@ -809,7 +811,7 @@ pub(crate) fn run_miri(
         "+master"
     })
     .arg("miri")
-    .arg("run")
+    .arg(if has_test && !has_main { "test" } else { "run" })
     .current_dir(&crate_path)
     .env("MIRIFLAGS", miri_flags.join(" "))
     .env(
@@ -825,7 +827,7 @@ pub(crate) fn run_miri(
     let out = prlimit_run_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
 
-    // dbg!(&out);
+    //dbg!(&out);
 
     //let stderr = String::from_utf8(out.stderr.clone()).unwrap();
     //eprintln!("{}", stderr);

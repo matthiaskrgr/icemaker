@@ -212,7 +212,7 @@ pub(crate) fn run_rustc_incremental(
 pub(crate) fn run_clippy(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &PathBuf,
+    _global_tempdir_path: &Path,
 ) -> CommandOutput {
     // runs clippy-driver, not cargo-clippy!
 
@@ -622,7 +622,7 @@ pub(crate) fn run_clippy_fix_with_args(
 pub(crate) fn run_rustdoc(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &PathBuf,
+    _global_tempdir_path: &Path,
 ) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
@@ -655,7 +655,7 @@ pub(crate) fn run_rustdoc(
 pub(crate) fn run_rust_analyzer(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &PathBuf,
+    _global_tempdir_path: &Path,
 ) -> CommandOutput {
     let file_content = std::fs::read_to_string(file).expect("failed to read file ");
 
@@ -684,7 +684,7 @@ pub(crate) fn run_rust_analyzer(
 pub(crate) fn run_rustfmt(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &PathBuf,
+    _global_tempdir_path: &Path,
 ) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("SYSROOT", &*SYSROOT_PATH)

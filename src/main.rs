@@ -628,7 +628,7 @@ impl Timer {
         Timer::default()
     }
 
-    fn as_seconds(self) -> Self {
+    fn into_seconds(self) -> Self {
         use std::time::Duration;
         Timer {
             rustc_time: AtomicUsize::new(
@@ -764,7 +764,7 @@ fn main() {
         files_per_second
     );
 
-    eprintln!("Timings in seconds:\n{:?}", timer.as_seconds());
+    eprintln!("Timings in seconds:\n{:?}", timer.into_seconds());
 
     eprintln!("\n\nALL CRASHES\n\n");
     ALL_ICES_WITH_FLAGS

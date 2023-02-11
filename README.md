@@ -12,6 +12,7 @@ Features:
 * build and run a file or tests under miri
 * run clippy or rustc on a file and find out if (and which) lint does not apply successfully (causes compiler errors)
 * find rustc diagnostics that change the file but do not managed to actually fix the broken code
+* use "prlimit" to protect against etenally hanging processes or OOMs during infinite loops
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "prlimit" to limit memory and runtime of a process

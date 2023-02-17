@@ -25,6 +25,11 @@ for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep 
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
 
 Trophy case (400+):  
+https://github.com/rust-lang/rust/issues/108184  
+https://github.com/rust-lang/rust/issues/108182  
+https://github.com/rust-lang/rust/issues/108181  
+https://github.com/rust-lang/rust/issues/108180  
+https://github.com/rust-lang/rust/issues/108179  
 https://github.com/rust-lang/rust/issues/108165  
 https://github.com/rust-lang/rust/issues/108158  
 https://github.com/rust-lang/rust/issues/107998  

@@ -53,7 +53,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wvariant-size-differences",
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
-        //    "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
         "-Zmaximal-hir-to-mir-coverage",
     ],
     // basic stuff, edition 2015
@@ -79,7 +79,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zverbose",
         "-Zextra-const-ub-checks",
         "--edition=2015",
-        //    "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
@@ -108,7 +108,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zverbose",
         "-Zextra-const-ub-checks",
         "--edition=2018",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
@@ -137,7 +137,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zverbose",
         "-Zextra-const-ub-checks",
         "--edition=2021",
-        //     "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zcrate-attr=feature(generator_clone)",
@@ -146,6 +146,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(generic_const_exprs)",
         "-Zcrate-attr=feature(const_closures)",
         "-Zcrate-attr=feature(const_trait_impl)",
+        "-Zcrate-attr=feature(non_lifetime_binders)",
         "-Zstrict-init-checks=yes",
         "-Zrandomize-layout",
     ],
@@ -204,7 +205,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Wpointer-structural-match",
         "-Wrust-2021-incompatible-closure-captures",
         "-Zprint-type-sizes",
-        //    "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &["-Zmir-opt-level=0", "-ocodegen"],
     &["-Copt-level=3", "-Zmir-opt-level=0", "-ocodegen"],
@@ -239,7 +240,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(generic_const_exprs)",
         "-Zcrate-attr=feature(const_closures)",
         "-Zcrate-attr=feature(const_trait_impl)",
-        //  "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     // incremental compilation, keep this!
     &["INCR_COMP"],
@@ -271,7 +272,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(compiler_builtins)",
         "-Zcrate-attr=feature(generic_assert)",
         "-Zcrate-attr=feature(intrinsics)",
-        //    "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -289,7 +290,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         // error "-Zcrate-attr=feature(staged_api)",
         "-Zcrate-attr=feature(unsafe_pin_internals)",
         "-Zcrate-attr=feature(with_negative_coherence)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -309,7 +310,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(linkage)",
         "-Zcrate-attr=feature(needs_panic_runtime)",
         "-Zcrate-attr=feature(panic_runtime)",
-        // "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -329,7 +330,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(arm_target_feature)",
         "-Zcrate-attr=feature(avx512_target_feature)",
         "-Zcrate-attr=feature(bpf_target_feature)",
-        //    "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -349,7 +350,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(riscv_target_feature)",
         "-Zcrate-attr=feature(rtm_target_feature)",
         "-Zcrate-attr=feature(sse4a_target_feature)",
-        //"-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -369,7 +370,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(abi_ptx)",
         "-Zcrate-attr=feature(abi_x86_interrupt)",
         "-Zcrate-attr=feature(adt_const_params)",
-        //     "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -389,7 +390,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(associated_const_equality)",
         "-Zcrate-attr=feature(associated_type_bounds)",
         "-Zcrate-attr=feature(associated_type_defaults)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -409,7 +410,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(cfg_target_has_atomic)",
         "-Zcrate-attr=feature(cfg_target_has_atomic_equal_alignment)",
         "-Zcrate-attr=feature(cfg_target_thread_local)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -429,7 +430,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_fn_floating_point_arithmetic)",
         "-Zcrate-attr=feature(const_for)",
         "-Zcrate-attr=feature(const_mut_refs)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -449,7 +450,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(decl_macro)",
         "-Zcrate-attr=feature(default_alloc_error_handler)",
         "-Zcrate-attr=feature(default_type_parameter_fallback)",
-        //      "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -471,7 +472,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(extern_types)",
         "-Zcrate-attr=feature(ffi_const)",
         "-Zcrate-attr=feature(ffi_pure)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -494,7 +495,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(imported_main)",
         "-Zcrate-attr=feature(inherent_associated_types)",
         "-Zcrate-attr=feature(inline_const)",
-        //     "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -513,7 +514,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(link_cfg)",
         "-Zcrate-attr=feature(lint_reasons)",
         "-Zcrate-attr=feature(macro_metavar_expr)",
-        // "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -532,7 +533,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(native_link_modifiers_verbatim)",
         "-Zcrate-attr=feature(negative_impls)",
         "-Zcrate-attr=feature(never_type)",
-        //     "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -552,7 +553,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(platform_intrinsics)",
         "-Zcrate-attr=feature(plugin)",
         "-Zcrate-attr=feature(precise_pointer_size_matching)",
-        //  "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -570,7 +571,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(repr_simd)",
         "-Zcrate-attr=feature(rust_cold_cc)",
         "-Zcrate-attr=feature(simd_ffi)",
-        //   "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -592,7 +593,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(trivial_bounds)",
         "-Zcrate-attr=feature(try_blocks)",
         "-Zcrate-attr=feature(type_alias_impl_trait)",
-        //  "-Ztranslate-lang=en_US",
+        "-Ztranslate-lang=en_US",
     ],
     &[
         "-Zunstable-options",
@@ -610,7 +611,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(used_with_arg)",
         "-Zcrate-attr=feature(wasm_abi)",
         "-Zcrate-attr=feature(yeet_expr)",
-        //   "-Ztranslate-lang=en_US",
+        "-Zcrate-attr=feature(non_lifetime_binders)",
+        "-Ztranslate-lang=en_US",
     ],
     // Zunprettty etc cant be combined unfortunately
     &["-Cinstrument-coverage", "-ocodegen"],

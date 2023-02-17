@@ -82,6 +82,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //    "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
+        "-Zstrict-init-checks=yes",
+        "-Zrandomize-layout",
     ],
     // basic stuff, edition 2018
     &[
@@ -109,6 +111,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //   "-Ztranslate-lang=en_US",
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
+        "-Zstrict-init-checks=yes",
+        "-Zrandomize-layout",
     ],
     // basic stuff, edition 2021
     &[
@@ -142,6 +146,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(generic_const_exprs)",
         "-Zcrate-attr=feature(const_closures)",
         "-Zcrate-attr=feature(const_trait_impl)",
+        "-Zstrict-init-checks=yes",
+        "-Zrandomize-layout",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

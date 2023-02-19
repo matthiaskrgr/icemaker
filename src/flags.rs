@@ -294,6 +294,9 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
 
     //   cat compiler/rustc_feature/src/active.rs | grep "(active, \|(incomplete" |  awk '{ print $2 }' | sed s/,//
 
+    // search std etc:
+    // git grep  -o "#\[unstable(feature.*$"  | grep  -o "#\[unstable(feature.*$"  | sort -n | uniq | grep -o "feature = .*, "  | cut -d' ' -f3 | sed s/\"//g | sed s/,//g
+
     /*
     for i in `cat compiler/rustc_feature/src/active.rs | grep "(active, \|(incomplete" |  awk '{ print $2 }' | sed s/,//` ; do ;
     echo "\"-Zcrate-attr=feature(${i})\","; done

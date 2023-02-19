@@ -262,7 +262,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "--emit=mir",
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
-        "-Zcrate-attr=feature(abi_thiscall)",
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3244,7 +3243,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2015",
         "-Zvalidate-mir",
-        /*   "-Zcrate-attr=feature(abi_thiscall)",
+        /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3434,7 +3433,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2018",
         "-Zvalidate-mir",
-        /*   "-Zcrate-attr=feature(abi_thiscall)",
+        /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",
@@ -3624,7 +3623,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2021",
         "-Zvalidate-mir",
-        /*  "-Zcrate-attr=feature(abi_thiscall)",
+        /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(allocator_internals)",

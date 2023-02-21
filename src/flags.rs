@@ -3085,6 +3085,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Copt-level=3",
         "-Clto",
     ], */
+
+    /*
     &[
         "-Zcrate-attr=feature(absolute_path)",
         "-Zcrate-attr=feature(addr_parse_ascii)",
@@ -3845,6 +3847,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zextra-const-ub-checks",
         "--edition=2021",
     ],
+     */
 ];
 
 pub(crate) static RUSTC_FLAGS: Lazy<&[&[&str]]> = Lazy::new(|| {

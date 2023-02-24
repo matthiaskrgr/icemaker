@@ -144,6 +144,7 @@ pub enum Executable {
     CraneliftLocal,
     ClippyFix,
     RustFix,
+    Kani,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
@@ -259,6 +260,7 @@ impl Executable {
             Executable::CraneliftLocal => {
                 String::from("/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc")
             }
+            Executable::Kani => "kani".into(),
         }
     }
 }

@@ -95,6 +95,8 @@ impl From<&Args> for Executable {
             Executable::RustcCGClif
         } else if (args).cranelift_local {
             Executable::CraneliftLocal
+        } else if (args).kani {
+            Executable::Kani
         } else {
             Executable::Rustc
         }
@@ -570,6 +572,7 @@ struct Timer {
     craneliftlocal_time: AtomicUsize,
     clippyfix_time: AtomicUsize,
     rustfix_time: AtomicUsize,
+    kani_time: AtomicUsize,
 }
 
 impl Timer {
@@ -621,6 +624,9 @@ impl Timer {
                     .rustfix_time
                     .fetch_add(elapsed_duration, Ordering::SeqCst);
             }
+            Executable::Kani => {
+                let _ = self.kani_time.fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
         }
     }
 
@@ -661,6 +667,9 @@ impl Timer {
             ),
             rustfix_time: AtomicUsize::new(
                 Duration::from_millis(self.rustfix_time.into_inner() as u64).as_secs() as usize,
+            ),
+            kani_time: AtomicUsize::new(
+                Duration::from_millis(self.kani_time.into_inner() as u64).as_secs() as usize,
             ),
         }
     }
@@ -865,6 +874,13 @@ impl ICE {
                     global_tempdir_path,
                 )
             }
+            Executable::Kani => run_kani(
+                exec_path,
+                file,
+                miri_flags, // hack
+                compiler_flags,
+                global_tempdir_path,
+            ),
         }
         .unwrap();
 
@@ -1177,7 +1193,8 @@ impl ICE {
                 | Executable::Rustdoc
                 | Executable::RustAnalyzer
                 | Executable::Rustfmt
-                | Executable::Miri => {}
+                | Executable::Miri
+                | Executable::Kani => {}
             }
 
             let seconds_elapsed = thread_start.elapsed().as_secs();
@@ -1535,6 +1552,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                 }
                 Executable::Rustc
                 | Executable::Clippy
+                | Executable::Kani //@FIXME
                 | Executable::RustAnalyzer
                 | Executable::RustcCGClif
                 | Executable::CraneliftLocal

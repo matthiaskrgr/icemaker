@@ -55,6 +55,9 @@ pub(crate) struct Args {
     #[clap(long)]
     pub(crate) expensive_flags: bool,
 
+    #[clap(long)]
+    pub(crate) kani: bool,
+
     // use path to local rustc build with debug assertions
     #[clap(long)]
     pub(crate) local_debug_assertions: bool,

@@ -854,6 +854,121 @@ pub(crate) fn run_miri(
     )
 }
 
+pub(crate) fn run_kani(
+    executable: &str,
+    file: &Path,
+    kani_flags: &[&str],
+    rustc_flags: &[&str],
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace(['[', ']'], "_");
+
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+
+    let has_main = file_string.contains("fn main() {\n");
+
+    let has_test = file_string.contains("#[test]");
+
+    let no_std = file_string.contains("#![no_std]");
+    let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
+    if no_std || platform_intrinsics {
+        // miri is know to not really handles this well
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::Miri,
+        );
+    }
+
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+    // create a new cargo project inside the tmpdir
+    if !std::process::Command::new("cargo")
+        .arg("new")
+        .arg(file_stem)
+        .args(["--vcs", "none"])
+        .current_dir(tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        eprintln!("ERROR: cargo new failed for: {file_stem}",);
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::Miri,
+        );
+    }
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push(file_stem);
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    let file_instrumented = file_string
+        .lines()
+        .map(|line| {
+            if line.contains("fn ") {
+                format!("#[kani::proof]\n{}", line)
+            } else {
+                line.into()
+            }
+        })
+        .collect::<String>();
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_instrumented).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push(file_stem);
+
+    let mut cmd = std::process::Command::new("cargo");
+    /* if !has_main && has_test {
+        cmd.arg("miri")
+            .arg("test")
+            .current_dir(crate_path)
+            .env("MIRIFLAGS", miri_flags.join(" "));
+    } else { */
+    cmd.arg("kani")
+        .current_dir(&crate_path)
+        /* .env(
+            "RUSTFLAGS",
+            rustc_flags
+                .iter()
+                .filter(|f| !f.contains("--edition"))
+                .map(|f| format!(" {f}"))
+                .collect::<String>(),
+        ) */
+        .env("RUSTC_WRAPPER", "");
+
+    let out = prlimit_run_command(&mut cmd)
+        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
+
+    //dbg!(&out);
+    eprintln!("{}", String::from_utf8(out.clone().stderr).unwrap());
+    eprintln!("{}", String::from_utf8(out.clone().stdout).unwrap());
+
+    CommandOutput::new(
+        out,
+        get_cmd_string(&cmd),
+        Vec::new(),
+        crate::Executable::Miri,
+    )
+}
+
 pub(crate) fn run_cranelift(
     executable: &str,
     file: &Path,

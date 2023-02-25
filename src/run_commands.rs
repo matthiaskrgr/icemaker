@@ -885,87 +885,109 @@ pub(crate) fn run_kani(
         );
     }
 
-    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
-    let tempdir_path = tempdir.path();
-    // create a new cargo project inside the tmpdir
-    if !std::process::Command::new("cargo")
-        .arg("new")
-        .arg(file_stem)
-        .args(["--vcs", "none"])
-        .current_dir(tempdir_path)
-        .output()
-        .expect("failed to exec cargo new")
-        .status
-        .success()
-    {
-        eprintln!("ERROR: cargo new failed for: {file_stem}",);
-        return CommandOutput::new(
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-            crate::Executable::Miri,
+    let mut out = None;
+    let mut cmd_ = None;
+    let mut v = Vec::new();
+    for RUSTCFLAGS in &["", "-Zmir-opt-level=3"] {
+        let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
+        let tempdir_path = tempdir.path();
+        // create a new cargo project inside the tmpdir
+        if !std::process::Command::new("cargo")
+            .arg("new")
+            .arg(file_stem)
+            .args(["--vcs", "none"])
+            .current_dir(tempdir_path)
+            .output()
+            .expect("failed to exec cargo new")
+            .status
+            .success()
+        {
+            eprintln!("ERROR: cargo new failed for: {file_stem}",);
+            return CommandOutput::new(
+                std::process::Command::new("true")
+                    .output()
+                    .expect("failed to run 'true'"),
+                String::new(),
+                Vec::new(),
+                crate::Executable::Miri,
+            );
+        }
+        let source_path = {
+            let mut sp = tempdir_path.to_owned();
+            sp.push(file_stem);
+            sp.push("src/");
+            sp.push("main.rs");
+            sp
+        };
+
+        let file_instrumented = file_string
+            .lines()
+            .map(|line| {
+                if line.contains("fn ") {
+                    format!("#[kani::proof]\n{}", line)
+                } else {
+                    line.into()
+                }
+            })
+            .collect::<String>();
+
+        // write the content of the file we want to check into tmpcrate/src/main.rs
+        std::fs::write(source_path, file_instrumented).expect("failed to write to file");
+
+        // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+        let mut crate_path = tempdir_path.to_owned();
+        crate_path.push(file_stem);
+
+        let mut cmd = std::process::Command::new("cargo");
+        /* if !has_main && has_test {
+            cmd.arg("miri")
+                .arg("test")
+                .current_dir(crate_path)
+                .env("MIRIFLAGS", miri_flags.join(" "));
+        } else { */
+        cmd.arg("kani")
+            .current_dir(&crate_path)
+            .env("RUSTFLAGS", RUSTCFLAGS)
+            .env("RUSTC_WRAPPER", "")
+            .output();
+
+        out = Some(
+            prlimit_run_command(&mut cmd)
+                .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}")),
         );
+        cmd_ = Some(cmd);
+        v.push(out.clone());
     }
-    let source_path = {
-        let mut sp = tempdir_path.to_owned();
-        sp.push(file_stem);
-        sp.push("src/");
-        sp.push("main.rs");
-        sp
-    };
 
-    let file_instrumented = file_string
-        .lines()
-        .map(|line| {
-            if line.contains("fn ") {
-                format!("#[kani::proof]\n{}", line)
-            } else {
-                line.into()
-            }
-        })
-        .collect::<String>();
-
-    // write the content of the file we want to check into tmpcrate/src/main.rs
-    std::fs::write(source_path, file_instrumented).expect("failed to write to file");
-
-    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
-
-    let mut crate_path = tempdir_path.to_owned();
-    crate_path.push(file_stem);
-
-    let mut cmd = std::process::Command::new("cargo");
-    /* if !has_main && has_test {
-        cmd.arg("miri")
-            .arg("test")
-            .current_dir(crate_path)
-            .env("MIRIFLAGS", miri_flags.join(" "));
-    } else { */
-    cmd.arg("kani")
-        .current_dir(&crate_path)
-        /* .env(
-            "RUSTFLAGS",
-            rustc_flags
-                .iter()
-                .filter(|f| !f.contains("--edition"))
-                .map(|f| format!(" {f}"))
-                .collect::<String>(),
-        ) */
-        .env("RUSTC_WRAPPER", "");
-
-    let out = prlimit_run_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
+    let out = out.unwrap();
+    let cmd = cmd_.unwrap();
 
     //dbg!(&out);
     eprintln!("{}", String::from_utf8(out.clone().stderr).unwrap());
     eprintln!("{}", String::from_utf8(out.clone().stdout).unwrap());
 
+    let res = v
+        .iter()
+        .flatten()
+        .map(|output| {
+            let mut std = String::from_utf8(output.clone().stdout).unwrap();
+            let stderr = String::from_utf8(output.clone().stderr).unwrap();
+            std.push_str(&stderr);
+            std.lines()
+                .filter(|line| line.contains("Status: FAILURE"))
+                .count()
+        })
+        .collect::<Vec<usize>>();
+    if res[0] < res[1] {
+        eprintln!("MIR OPT CAUSES PANICS: {} to {}", res[0], res[1]);
+    }
+
     CommandOutput::new(
         out,
         get_cmd_string(&cmd),
         Vec::new(),
-        crate::Executable::Miri,
+        crate::Executable::Kani,
     )
 }
 

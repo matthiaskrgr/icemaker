@@ -889,7 +889,10 @@ pub(crate) fn run_kani(
     let mut out = None;
     let mut cmd_ = None;
     let mut v = Vec::new();
-    for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zmir-opt-level=3"] {
+    for RUSTCFLAGS in &[
+        "-Zmir-opt-level=0 --edition=2021",
+        "-Zmir-opt-level=3 --edition=2021",
+    ] {
         let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
         let tempdir_path = tempdir.path();
         // create a new cargo project inside the tmpdir
@@ -926,7 +929,11 @@ pub(crate) fn run_kani(
             .map(|line| {
                 // note: the kani::proof attr does NOT work on functions that have args :(
                 // try to only add it to argless fns
-                if line.contains("fn ") && Regex::new(r"[[:word:]]\(\)").unwrap().is_match(line) {
+                if line.contains("fn ")
+                    && Regex::new(r"[[:word:]]\(\)").unwrap().is_match(line)
+                    // dont treat generics
+                    && !(line.contains("<") || line.contains(">"))
+                {
                     format!("#[kani::proof]\n{}", line)
                 } else {
                     line.into()

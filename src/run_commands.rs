@@ -5,6 +5,7 @@ use std::process::{Command, Output, Stdio};
 
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
+use regex::Regex;
 
 use clap::Parser;
 use tempdir::TempDir;
@@ -923,7 +924,9 @@ pub(crate) fn run_kani(
         let file_instrumented = file_string
             .lines()
             .map(|line| {
-                if line.contains("fn ") {
+                // note: the kani::proof attr does NOT work on functions that have args :(
+                // try to only add it to argless fns
+                if line.contains("fn ") && Regex::new(r"[[:word:]]\(\)").unwrap().is_match(line) {
                     format!("#[kani::proof]\n{}", line)
                 } else {
                     line.into()

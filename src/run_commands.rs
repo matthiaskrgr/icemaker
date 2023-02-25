@@ -889,10 +889,21 @@ pub(crate) fn run_kani(
     let mut out = None;
     let mut cmd_ = None;
     let mut v = Vec::new();
-    for RUSTCFLAGS in &[
-        "-Zmir-opt-level=0 --edition=2021",
-        "-Zmir-opt-level=3 --edition=2021",
-    ] {
+    for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zmir-opt-level=3"] {
+        let mut RUSTCFLAGS = vec![RUSTCFLAGS.to_string()];
+        RUSTCFLAGS.extend(
+            rustc_flags
+                .iter()
+                .cloned()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>(),
+        );
+        if !has_main {
+            RUSTCFLAGS.push("--crate-type lib".into());
+        }
+
+        let RUSTCFLAGS = RUSTCFLAGS.join(" ");
+
         let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
         let tempdir_path = tempdir.path();
         // create a new cargo project inside the tmpdir
@@ -972,7 +983,7 @@ pub(crate) fn run_kani(
     let out = out.unwrap();
     let cmd = cmd_.unwrap();
 
-    // dbg!(&out);
+    //  dbg!(&out);
     // eprintln!("{}", String::from_utf8(out.clone().stderr).unwrap());
     // eprintln!("{}", String::from_utf8(out.clone().stdout).unwrap());
 

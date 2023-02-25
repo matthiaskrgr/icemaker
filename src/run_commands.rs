@@ -888,7 +888,7 @@ pub(crate) fn run_kani(
     let mut out = None;
     let mut cmd_ = None;
     let mut v = Vec::new();
-    for RUSTCFLAGS in &["", "-Zmir-opt-level=3"] {
+    for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zmir-opt-level=3"] {
         let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
         let tempdir_path = tempdir.path();
         // create a new cargo project inside the tmpdir
@@ -949,8 +949,7 @@ pub(crate) fn run_kani(
         cmd.arg("kani")
             .current_dir(&crate_path)
             .env("RUSTFLAGS", RUSTCFLAGS)
-            .env("RUSTC_WRAPPER", "")
-            .output();
+            .env("RUSTC_WRAPPER", "");
 
         out = Some(
             prlimit_run_command(&mut cmd)
@@ -963,9 +962,9 @@ pub(crate) fn run_kani(
     let out = out.unwrap();
     let cmd = cmd_.unwrap();
 
-    //dbg!(&out);
-    eprintln!("{}", String::from_utf8(out.clone().stderr).unwrap());
-    eprintln!("{}", String::from_utf8(out.clone().stdout).unwrap());
+    // dbg!(&out);
+    // eprintln!("{}", String::from_utf8(out.clone().stderr).unwrap());
+    // eprintln!("{}", String::from_utf8(out.clone().stdout).unwrap());
 
     let res = v
         .iter()
@@ -980,7 +979,12 @@ pub(crate) fn run_kani(
         })
         .collect::<Vec<usize>>();
     if res[0] < res[1] {
-        eprintln!("MIR OPT CAUSES PANICS: {} to {}", res[0], res[1]);
+        eprintln!(
+            "\n\n{} MIR OPT CAUSES PANICS: {} to {}\n\n",
+            file.display(),
+            res[0],
+            res[1]
+        );
     }
 
     CommandOutput::new(

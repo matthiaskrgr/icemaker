@@ -946,6 +946,29 @@ pub(crate) fn run_kani(
                     && !(line.contains("<") || line.contains(">"))
                 {
                     format!("#[kani::proof]\n{}", line)
+                    // no ret type
+                } else if let Some(shortest_match) =
+                    Regex::new(r"fn [[:word:]]\(.*\) \{").unwrap().find(line)
+                {
+                    let shortest_match = shortest_match.as_str();
+                    let shortest_match = Regex::new(r"\(.*\)")
+                        .unwrap()
+                        .find(shortest_match)
+                        .unwrap()
+                        .as_str();
+                    // skip first and last char
+                    let args = &shortest_match[1..shortest_match.len() - 1];
+                    let args = args.split(',');
+                    dbg!(args);
+                    todo!()
+                    // with ret type
+                } else if let Some(shortest_match) =
+                    Regex::new(r"fn [[:word:]]\(.+\) ->").unwrap().find(line)
+                {
+                    let shortest_match = shortest_match.as_str().to_string();
+                    dbg!(shortest_match);
+
+                    todo!()
                 } else {
                     line.into()
                 }

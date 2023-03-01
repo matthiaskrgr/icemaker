@@ -935,7 +935,7 @@ pub(crate) fn run_kani(
             sp
         };
 
-        let IGNORED_TYPES = &["Vec", "&[", "String"];
+        let IGNORED_TYPES = &["Vec", "&[", "String", "Path", "str", "*const"];
 
         let file_instrumented = file_string
             .lines()

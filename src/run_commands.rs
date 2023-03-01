@@ -935,6 +935,8 @@ pub(crate) fn run_kani(
             sp
         };
 
+        let IGNORED_TYPES = &["Vec", "&[", "String"];
+
         let file_instrumented = file_string
             .lines()
             .map(|line| {
@@ -965,7 +967,13 @@ pub(crate) fn run_kani(
                     let args = args.split(',').collect::<Vec<_>>();
                     let new_args = args
                         .iter()
-                        .map(|binding_plus_ty| format!("let {binding_plus_ty} = kani::any();\n"))
+                        .map(|binding_plus_ty| {
+                            if IGNORED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
+                                format!("let {binding_plus_ty} = Default::default(); ")
+                            } else {
+                                format!("let {binding_plus_ty} = kani::any(); \n")
+                            }
+                        })
                         .collect::<String>();
                     new_line.insert_str(
                         new_line.rfind('{').unwrap() + 1, /* insert after the '{' */
@@ -993,7 +1001,13 @@ pub(crate) fn run_kani(
 
                     let new_args = args
                         .iter()
-                        .map(|binding_plus_ty| format!("let {binding_plus_ty} = kani::any();\n"))
+                        .map(|binding_plus_ty| {
+                            if IGNORED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
+                                format!("let {binding_plus_ty} = Default::default(); ")
+                            } else {
+                                format!("let {binding_plus_ty} = kani::any(); \n")
+                            }
+                        })
                         .collect::<String>();
                     new_line.insert_str(
                         new_line.rfind('{').unwrap() + 1, /* insert after the '{' */
@@ -1052,6 +1066,10 @@ pub(crate) fn run_kani(
             let mut std = String::from_utf8(output.clone().stdout).unwrap();
             let stderr = String::from_utf8(output.clone().stderr).unwrap();
             std.push_str(&stderr);
+            let std2 = std.clone();
+            std2.lines()
+                .filter(|l| l.contains("`kani::Arbitrary` is not implemented"))
+                .for_each(|l| eprintln!("{l}"));
             std.lines()
                 .filter(|line| line.contains("Status: FAILURE"))
                 .count()

@@ -943,38 +943,73 @@ pub(crate) fn run_kani(
                 if line.contains("fn ")
                     && Regex::new(r"[[:word:]]\(\)").unwrap().is_match(line)
                     // dont treat generics
-                    && !(line.contains("<") || line.contains(">"))
+                    && !(line.contains('<') || line.contains('>'))
                 {
                     format!("#[kani::proof]\n{}", line)
                     // no ret type
-                } else if let Some(shortest_match) =
-                    Regex::new(r"fn [[:word:]]\(.*\) \{").unwrap().find(line)
+                } else if let Some(shortest_match_initial) =
+                    Regex::new(r"fn [[:word:]]\(.+\) ->").unwrap().find(line)
                 {
-                    let shortest_match = shortest_match.as_str();
-                    let shortest_match = Regex::new(r"\(.*\)")
+                    let shortest_match = shortest_match_initial.as_str();
+                    //   dbg!(&shortest_match);
+                    let shortest_match_args = Regex::new(r"\(.*\)")
                         .unwrap()
                         .find(shortest_match)
                         .unwrap()
                         .as_str();
+                    //    dbg!(shortest_match_args);
+                    // remove the args from the line, since we are going to add instrument them
+                    let mut new_line = line.replace(shortest_match_args, "()");
                     // skip first and last char
-                    let args = &shortest_match[1..shortest_match.len() - 1];
-                    let args = args.split(',');
-                    dbg!(args);
-                    todo!()
-                    // with ret type
-                } else if let Some(shortest_match) =
-                    Regex::new(r"fn [[:word:]]\(.+\) ->").unwrap().find(line)
-                {
-                    let shortest_match = shortest_match.as_str().to_string();
-                    dbg!(shortest_match);
+                    let args = &shortest_match_args[1..shortest_match_args.len() - 1];
+                    let args = args.split(',').collect::<Vec<_>>();
+                    let new_args = args
+                        .iter()
+                        .map(|binding_plus_ty| format!("let {binding_plus_ty} = kani::any();\n"))
+                        .collect::<String>();
+                    new_line.insert_str(
+                        new_line.rfind('{').unwrap() + 1, /* insert after the '{' */
+                        &new_args,
+                    );
 
-                    todo!()
+                    format!("#[kani::proof] {new_line}")
+                } else if let Some(shortest_match_initial) =
+                    Regex::new(r"fn [[:word:]]\(.*\) \{").unwrap().find(line)
+                {
+                    let shortest_match = shortest_match_initial.as_str();
+                    // dbg!(&shortest_match);
+                    let shortest_match_args = Regex::new(r"\(.*\)")
+                        .unwrap()
+                        .find(shortest_match)
+                        .unwrap()
+                        .as_str();
+                    // dbg!(shortest_match_args);
+                    // remove the args from the line, since we are going to add instrument them
+                    let mut new_line = line.replace(shortest_match_args, "()");
+
+                    // skip first and last char
+                    let args = &shortest_match_args[1..shortest_match_args.len() - 1];
+                    let args = args.split(',').collect::<Vec<_>>();
+
+                    let new_args = args
+                        .iter()
+                        .map(|binding_plus_ty| format!("let {binding_plus_ty} = kani::any();\n"))
+                        .collect::<String>();
+                    new_line.insert_str(
+                        new_line.rfind('{').unwrap() + 1, /* insert after the '{' */
+                        &new_args,
+                    );
+
+                    format!("#[kani::proof] {new_line}")
+                    // with ret type
                 } else {
                     line.into()
                 }
             })
             .collect::<String>();
 
+        // eprint!("{}", file_instrumented);
+        // panic!();
         // write the content of the file we want to check into tmpcrate/src/main.rs
         std::fs::write(source_path, file_instrumented).expect("failed to write to file");
 

@@ -939,6 +939,8 @@ pub(crate) fn run_kani(
 
         let file_instrumented = file_string
             .lines()
+            // ignore comments
+            .filter(|line| !line.starts_with("//"))
             .map(|line| {
                 // note: the kani::proof attr does NOT work on functions that have args :(
                 // try to only add it to argless fns
@@ -969,7 +971,7 @@ pub(crate) fn run_kani(
                         .iter()
                         .map(|binding_plus_ty| {
                             if IGNORED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
-                                format!("let {binding_plus_ty} = Default::default(); ")
+                                format!("let {binding_plus_ty} = Default::default();\n")
                             } else {
                                 format!("let {binding_plus_ty} = kani::any(); \n")
                             }
@@ -1020,9 +1022,11 @@ pub(crate) fn run_kani(
                     line.into()
                 }
             })
+            // Lines iterator by default removes linebreaks, so readd them
+            .map(|line| format!("{line}\n"))
             .collect::<String>();
 
-        // eprint!("{}", file_instrumented);
+        // eprintln!("\n\n{file_instrumented}\n\n");
         // panic!();
         // write the content of the file we want to check into tmpcrate/src/main.rs
         std::fs::write(source_path, file_instrumented).expect("failed to write to file");

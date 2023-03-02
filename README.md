@@ -26,6 +26,13 @@ but later I decided to RIIR and add support for rustc, rustdoc, nicer output, fi
 
 Trophy case (430+):  
 
+https://github.com/model-checking/kani/issues/2261  
+https://github.com/model-checking/kani/issues/2260  
+https://github.com/model-checking/kani/issues/2259  
+https://github.com/model-checking/kani/issues/2258  
+https://github.com/model-checking/kani/issues/2256  
+https://github.com/model-checking/kani/issues/2255  
+https://github.com/model-checking/kani/issues/2254  
 https://github.com/model-checking/kani/issues/2253  
 https://github.com/model-checking/kani/issues/2252  
 https://github.com/rust-lang/rust/issues/108529  

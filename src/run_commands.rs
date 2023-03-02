@@ -935,7 +935,8 @@ pub(crate) fn run_kani(
             sp
         };
 
-        let ALLOWED_TYPES = &[
+        //  https://github.com/model-checking/kani/blob/main/library/kani/src/arbitrary.rs
+        const ALLOWED_TYPES: &[&str; 21] = &[
             "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize",
             "f32", "f64", "()", "bool", "char", "[", "Option", "Result", "Phantom",
         ];

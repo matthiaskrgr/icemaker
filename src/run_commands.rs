@@ -889,7 +889,7 @@ pub(crate) fn run_kani(
     let mut out = None;
     let mut cmd_ = None;
     let mut v = Vec::new();
-    for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zunsound-mir-opts"] {
+    for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zmir-opt-level=3"] {
         let mut RUSTCFLAGS = vec![RUSTCFLAGS.to_string()];
         RUSTCFLAGS.extend(
             rustc_flags

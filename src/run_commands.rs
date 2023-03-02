@@ -1026,7 +1026,7 @@ pub(crate) fn run_kani(
             .map(|line| format!("{line}\n"))
             .collect::<String>();
 
-        // eprintln!("\n\n{file_instrumented}\n\n");
+        //      eprintln!("\n\n{file_instrumented}\n\n");
         // panic!();
         // write the content of the file we want to check into tmpcrate/src/main.rs
         std::fs::write(source_path, file_instrumented).expect("failed to write to file");
@@ -1070,10 +1070,13 @@ pub(crate) fn run_kani(
             let mut std = String::from_utf8(output.clone().stdout).unwrap();
             let stderr = String::from_utf8(output.clone().stderr).unwrap();
             std.push_str(&stderr);
-            let std2 = std.clone();
-            std2.lines()
+
+            std.lines()
                 .filter(|l| l.contains("`kani::Arbitrary` is not implemented"))
                 .for_each(|l| eprintln!("{l}"));
+            std.lines()
+                .filter(|l| l.contains("https://github.com/model-checking/kani/issues/"))
+                .for_each(|l| eprintln!("{} {l}", file.display()));
             std.lines()
                 .filter(|line| line.contains("Status: FAILURE"))
                 .count()

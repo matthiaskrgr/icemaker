@@ -24,8 +24,9 @@ for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep 
 ````
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
 
-Trophy case (430+):  
+Trophy case (450+):  
 
+https://github.com/model-checking/kani/issues/2262  
 https://github.com/model-checking/kani/issues/2261  
 https://github.com/model-checking/kani/issues/2260  
 https://github.com/model-checking/kani/issues/2259  

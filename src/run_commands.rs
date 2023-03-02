@@ -935,7 +935,10 @@ pub(crate) fn run_kani(
             sp
         };
 
-        let IGNORED_TYPES = &["Vec", "&[", "String", "Path", "str", "*const"];
+        let ALLOWED_TYPES = &[
+            "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize",
+            "f32", "f64", "()", "bool", "char", "[", "Option", "Result", "Phantom",
+        ];
 
         let file_instrumented = file_string
             .lines()
@@ -970,10 +973,10 @@ pub(crate) fn run_kani(
                     let new_args = args
                         .iter()
                         .map(|binding_plus_ty| {
-                            if IGNORED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
-                                format!("let {binding_plus_ty} = Default::default();\n")
-                            } else {
+                            if ALLOWED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
                                 format!("let {binding_plus_ty} = kani::any(); \n")
+                            } else {
+                                format!("let {binding_plus_ty} = Default::default();\n")
                             }
                         })
                         .collect::<String>();
@@ -1004,10 +1007,10 @@ pub(crate) fn run_kani(
                     let new_args = args
                         .iter()
                         .map(|binding_plus_ty| {
-                            if IGNORED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
-                                format!("let {binding_plus_ty} = Default::default(); ")
-                            } else {
+                            if ALLOWED_TYPES.iter().any(|ty| binding_plus_ty.contains(ty)) {
                                 format!("let {binding_plus_ty} = kani::any(); \n")
+                            } else {
+                                format!("let {binding_plus_ty} = Default::default(); ")
                             }
                         })
                         .collect::<String>();
@@ -1026,7 +1029,7 @@ pub(crate) fn run_kani(
             .map(|line| format!("{line}\n"))
             .collect::<String>();
 
-        //      eprintln!("\n\n{file_instrumented}\n\n");
+        //eprintln!("\n\n{file_instrumented}\n\n");
         // panic!();
         // write the content of the file we want to check into tmpcrate/src/main.rs
         std::fs::write(source_path, file_instrumented).expect("failed to write to file");

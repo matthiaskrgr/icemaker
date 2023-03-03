@@ -937,12 +937,14 @@ pub(crate) fn run_kani(
 
         //fmt!
         let mut rustfmt = std::process::Command::new("rustfmt")
-            .args(["--config", "max_width=2000000"])
+            .args(["--config", "max_width=2000000", "--edition", "2021"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
+            .stderr(Stdio::null())
             .spawn()
             .unwrap();
         let fmt_stdin = rustfmt.stdin.as_mut().unwrap();
+
         fmt_stdin.write_all(file_string.as_bytes()).unwrap();
         // drop(fmt_stdin);
         let fmt_output = rustfmt.wait_with_output().unwrap();

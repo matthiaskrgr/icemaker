@@ -866,7 +866,7 @@ pub(crate) fn run_kani(
         .replace('.', "_")
         .replace(['[', ']'], "_");
 
-    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+    let file_string = &std::fs::read_to_string(file).unwrap_or_default();
 
     let has_main = file_string.contains("fn main() {\n");
 
@@ -935,13 +935,32 @@ pub(crate) fn run_kani(
             sp
         };
 
+        //fmt!
+        let mut rustfmt = std::process::Command::new("rustfmt")
+            .args(["--config", "max_width=2000000"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let fmt_stdin = rustfmt.stdin.as_mut().unwrap();
+        fmt_stdin.write_all(file_string.as_bytes()).unwrap();
+        // drop(fmt_stdin);
+        let fmt_output = rustfmt.wait_with_output().unwrap();
+
+        // if we fail formatting, fall back to unformatted output
+        let maybe_formatted = if !fmt_output.status.success() {
+            String::from_utf8(fmt_output.stdout).unwrap()
+        } else {
+            file_string.clone()
+        };
+
         //  https://github.com/model-checking/kani/blob/main/library/kani/src/arbitrary.rs
         const ALLOWED_TYPES: &[&str; 21] = &[
             "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize",
             "f32", "f64", "()", "bool", "char", "[", "Option", "Result", "Phantom",
         ];
 
-        let file_instrumented = file_string
+        let file_instrumented = maybe_formatted
             .lines()
             // ignore comments
             .filter(|line| !line.starts_with("//"))
@@ -1030,7 +1049,7 @@ pub(crate) fn run_kani(
             .map(|line| format!("{line}\n"))
             .collect::<String>();
 
-        //eprintln!("\n\n{file_instrumented}\n\n");
+        // eprintln!("\n\n{file_instrumented}\n\n");
         // panic!();
         // write the content of the file we want to check into tmpcrate/src/main.rs
         std::fs::write(source_path, file_instrumented).expect("failed to write to file");

@@ -84,7 +84,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         "-Zrandomize-layout",
-        "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2018
     &[
@@ -114,7 +114,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         "-Zrandomize-layout",
-        "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2021
     &[
@@ -151,7 +151,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(non_lifetime_binders)",
         "-Zstrict-init-checks=yes",
         "-Zrandomize-layout",
-        "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

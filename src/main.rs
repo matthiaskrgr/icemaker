@@ -326,7 +326,7 @@ fn check_dir(
                     match executable {
                         Executable::Rustc
                         | Executable::RustcCGClif
-                        | Executable::CraneliftLocal => {
+                        /* | Executable::CraneliftLocal */ => {
                             // with expensive flags, run on each of the editions separately
                             let editions = if args.expensive_flags {
                                 vec!["--edition=2015", "--edition=2018", "--edition=2021"]

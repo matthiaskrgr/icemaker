@@ -102,8 +102,8 @@ impl ICE {
             "{kind}: {:?} {} '{flags}' '{}', '{}'",
             self.executable,
             self.file.display(),
-            self.ice_msg,
-            self.error_reason
+            self.ice_msg.normal(),
+            self.error_reason.normal()
         )
     }
 }

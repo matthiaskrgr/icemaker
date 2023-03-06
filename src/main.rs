@@ -1838,21 +1838,30 @@ fn codegen_git() {
     fd0fd35ca74b281eb4753bc44d2f36583fefbca0
     */
 
-    objects.par_iter().for_each(|obj| {
-        let first = obj.chars().next().unwrap();
-        let second = obj.chars().nth(1).unwrap();
-        let stdout = std::process::Command::new("git")
-            .arg("cat-file")
-            .arg("-p")
-            .arg(obj)
-            .output()
-            .expect("git cat-file -p <obj> failed")
-            .stdout;
-        let text = String::from_utf8(stdout).unwrap();
-        let dir = format!("{first}{second}");
-        std::fs::create_dir_all(&dir).expect("failed to create directories");
-        std::fs::write(format!("{}/{}.rs", &dir, obj), text).expect("failed to write file");
-    })
+    objects
+        .par_iter()
+        .map(|obj| {
+            let first = obj.chars().next().unwrap();
+            let second = obj.chars().nth(1).unwrap();
+            let stdout = std::process::Command::new("git")
+                .arg("cat-file")
+                .arg("-p")
+                .arg(obj)
+                .output()
+                .expect("git cat-file -p <obj> failed")
+                .stdout;
+            let text = String::from_utf8(stdout).unwrap();
+            let dir = format!("{first}{second}");
+            let file_path = format!("{}/{}.rs", &dir, obj);
+            (text, file_path, dir)
+        })
+        .filter(|(_text, file_path, _dir)|
+        //skip files that already exist
+         !PathBuf::from(file_path).exists())
+        .for_each(|(text, file_path, dir)| {
+            std::fs::create_dir_all(dir).expect("failed to create directories");
+            std::fs::write(file_path, text).expect("failed to write file");
+        })
 }
 
 fn _codegen_git_and_check() {

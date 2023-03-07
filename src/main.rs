@@ -1842,7 +1842,7 @@ fn codegen_git() {
         .par_iter()
         .map(|obj| {
             let first = obj.chars().next().unwrap();
-            // let second = obj.chars().nth(1).unwrap();
+            let second = obj.chars().nth(1).unwrap();
             let stdout = std::process::Command::new("git")
                 .arg("cat-file")
                 .arg("-p")
@@ -1851,7 +1851,7 @@ fn codegen_git() {
                 .expect("git cat-file -p <obj> failed")
                 .stdout;
             let text = String::from_utf8(stdout).unwrap();
-            let dir = format!("{first}");
+            let dir = format!("{first}{second}");
             let file_path = format!("{}/{}.rs", &dir, obj);
             (text, file_path, dir)
         })

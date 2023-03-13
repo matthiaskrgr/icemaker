@@ -202,7 +202,7 @@ fn check_dir(
         return Vec::new();
     }
 
-    if args.heat {
+    if args.codegen_splice {
         codegen_tree_splicer();
         return Vec::new();
     }

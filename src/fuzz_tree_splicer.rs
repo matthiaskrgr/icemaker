@@ -15,6 +15,11 @@ const SPLICER_CFG: Config = Config {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let file_content = std::fs::read_to_string(path)
         .expect(&format!("splicer failed to read file {}", path.display()));
+    // skip if its too long to avoid stack overflows somewhere
+    if file_content.lines().count() > 1000 {
+        return Vec::new();
+    }
+
     let mut parser = Parser::new();
     // rust!
     parser.set_language(tree_sitter_rust::language()).unwrap();

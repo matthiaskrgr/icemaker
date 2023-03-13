@@ -39,7 +39,6 @@ mod smolfuzz;
 
 use crate::flags::*;
 use crate::fuzz::*;
-use crate::fuzz_tree_splicer::*;
 use crate::ice::*;
 use crate::library::*;
 use crate::printing::*;
@@ -1933,16 +1932,25 @@ fn codegen_tree_splicer() {
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();
 
+    // dir to put the files in
+    std::fs::create_dir("icemaker").expect("could not create icemaker dir");
+
     files
         .par_iter()
-        .map(|path| fuzz_tree_splicer::splice_file(path))
+        .map(|path| {
+            //  eprintln!("{}", path.display());
+            fuzz_tree_splicer::splice_file(path)
+        })
         .flatten()
         .for_each(|file_content| {
             let mut hasher = Sha256::new();
             hasher.update(&file_content);
-            let h = hasher.finalize()[..].to_vec();
-            let hash = String::from_utf8(h).unwrap();
+            let h = hasher.finalize();
+            let hash = format!("{:X}", h);
 
-            std::fs::write(format!("{hash}.rs"), file_content).expect("failed to write to file");
+            let mut file = std::fs::File::create(format!("icemaker/{hash}.rs"))
+                .expect("could not create file");
+            file.write_all(file_content.as_bytes())
+                .expect("failed to write to file");
         });
 }

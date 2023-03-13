@@ -858,7 +858,7 @@ pub(crate) fn run_miri(
 pub(crate) fn run_kani(
     executable: &str,
     file: &Path,
-    kani_flags: &[&str],
+    _kani_flags: &[&str],
     rustc_flags: &[&str],
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
@@ -870,7 +870,7 @@ pub(crate) fn run_kani(
 
     let has_main = file_string.contains("fn main() {\n");
 
-    let has_test = file_string.contains("#[test]");
+    // let has_test = file_string.contains("#[test]");
 
     let no_std = file_string.contains("#![no_std]");
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
@@ -889,6 +889,7 @@ pub(crate) fn run_kani(
     let mut out = None;
     let mut cmd_ = None;
     let mut v = Vec::new();
+    #[allow(non_snake_case)]
     for RUSTCFLAGS in &["-Zmir-opt-level=0", "-Zmir-opt-level=5"] {
         let mut RUSTCFLAGS = vec![RUSTCFLAGS.to_string()];
         RUSTCFLAGS.extend(

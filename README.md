@@ -26,6 +26,9 @@ but later I decided to RIIR and add support for rustc, rustdoc, nicer output, fi
 
 Trophy case (460+):  
 
+https://github.com/rust-lang/rust/issues/109072  
+https://github.com/rust-lang/rust/issues/109071  
+https://github.com/rust-lang/rust-clippy/issues/10495  
 https://github.com/rust-lang/rust/issues/109023  
 https://github.com/rust-lang/rust/issues/108957  
 https://github.com/rust-lang/rust/issues/108781  

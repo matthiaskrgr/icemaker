@@ -30,6 +30,7 @@ mod flags;
 //
 mod fuzz;
 mod fuzz2;
+mod fuzz_tree_splicer;
 mod ice;
 mod library;
 mod printing;
@@ -38,6 +39,7 @@ mod smolfuzz;
 
 use crate::flags::*;
 use crate::fuzz::*;
+use crate::fuzz_tree_splicer::*;
 use crate::ice::*;
 use crate::library::*;
 use crate::printing::*;
@@ -58,6 +60,7 @@ use colored::Colorize;
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
+use sha2::{Digest, Sha256};
 use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
@@ -196,6 +199,11 @@ fn check_dir(
     if args.heat {
         let chain_order = args.chain_order;
         let _ = run_space_heater(executable, chain_order, global_tempdir_path);
+        return Vec::new();
+    }
+
+    if args.heat {
+        codegen_tree_splicer();
         return Vec::new();
     }
 
@@ -1912,4 +1920,29 @@ fn _codegen_git_and_check() {
         std::fs::create_dir_all(format!("{first}/{second}")).expect("failed to create directories");
         std::fs::write(format!("{first}/{second}/{obj}.rs"), text).expect("failed to write file");
     })
+}
+
+// https://github.com/langston-barrett/tree-splicer
+fn codegen_tree_splicer() {
+    let root_path = std::env::current_dir().expect("no cwd!");
+
+    let files = WalkDir::new(root_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
+        .map(|f| f.path().to_owned())
+        .collect::<Vec<PathBuf>>();
+
+    files
+        .par_iter()
+        .map(|path| fuzz_tree_splicer::splice_file(path))
+        .flatten()
+        .for_each(|file_content| {
+            let mut hasher = Sha256::new();
+            hasher.update(&file_content);
+            let h = hasher.finalize()[..].to_vec();
+            let hash = String::from_utf8(h).unwrap();
+
+            std::fs::write(format!("{hash}.rs"), file_content).expect("failed to write to file");
+        });
 }

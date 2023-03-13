@@ -4,7 +4,7 @@ A small program to automatically find crashes in the rust compiler, clippy, rust
 Runs executable on a vast number of rust files (such as rustcs testsuit or glacier) and filters all the crashes.
 
 Features:
-* run rustc, clippy, rustdoc, rustfmt, miri or cg_clif on a file and check if there is a crash
+* run rustc, clippy, rustdoc, rustfmt, miri, cg_clif or kani on a file and check if there is a crash
 * parallel execution
 * check different combinations of RUSTFLAGS
 * try to find minimal set of RUSTFLAGS that reproduces the internal compiler error
@@ -23,6 +23,14 @@ This project started years ago as a simple bash oneliner like
 for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep panicked ; done 
 ````
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
+
+Shout-outs and related projects  
+https://github.com/jruderman/fuzz-rustc for getting me 80mb of fuzzing code  
+https://github.com/dwrensha/fuzz-rustc which I could use to generate move output  
+https://github.com/Nilstrieb/cargo-minimize testcase reduction  
+https://github.com/langston-barrett/treereduce testcase reducion  
+https://github.com/langston-barrett/tree-splicer code mutator which icemaker can use to generate more code  
+
 
 Trophy case (460+):  
 

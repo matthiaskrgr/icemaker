@@ -26,7 +26,7 @@ but later I decided to RIIR and add support for rustc, rustdoc, nicer output, fi
 
 Shout-outs and related projects  
 https://github.com/jruderman/fuzz-rustc for getting me 80mb of fuzzing code  
-https://github.com/dwrensha/fuzz-rustc which I could use to generate move output  
+https://github.com/dwrensha/fuzz-rustc which I could use to generate more output  
 https://github.com/Nilstrieb/cargo-minimize testcase reduction  
 https://github.com/langston-barrett/treereduce testcase reducion  
 https://github.com/langston-barrett/tree-splicer code mutator which icemaker can use to generate more code  

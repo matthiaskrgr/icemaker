@@ -6,12 +6,13 @@ use tree_sitter_rust;
 use tree_splicer::splice::{splice, Config};
 
 const SPLICER_CFG: Config = Config {
-    inter_splices: 20,
+    inter_splices: 30,
     seed: 0,
-    tests: 9,
+    tests: 30,
 };
 
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
+// pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let file_content = std::fs::read_to_string(path)
         .expect(&format!("splicer failed to read file {}", path.display()));

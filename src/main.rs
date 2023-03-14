@@ -45,6 +45,7 @@ use crate::printing::*;
 use crate::run_commands::*;
 use crate::smolfuzz::*;
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
 use std::io::BufRead;
@@ -1923,6 +1924,13 @@ fn _codegen_git_and_check() {
 
 // https://github.com/langston-barrett/tree-splicer
 fn codegen_tree_splicer() {
+    // notes: it seems to be optimal to fuzz with data from a single file only (no extenral files)
+    // avoid undeclared symbols etc
+
+    /*   use tree_sitter::{Language, Parser, Tree};
+    use tree_sitter_rust;
+    use tree_splicer::splice::{splice, Config}; */
+
     let root_path = std::env::current_dir().expect("no cwd!");
 
     let files = WalkDir::new(root_path)
@@ -1930,15 +1938,44 @@ fn codegen_tree_splicer() {
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
+        .filter(|p| {
+            std::fs::read_to_string(p)
+                .unwrap_or_default()
+                .lines()
+                .count()
+                < 1000
+        })
         .collect::<Vec<PathBuf>>();
 
     // dir to put the files in
     std::fs::create_dir("icemaker").expect("could not create icemaker dir");
 
+    /*    let mut parser = Parser::new();
+       // rust!
+       parser.set_language(tree_sitter_rust::language()).unwrap();
+
+       let hmap = files
+           .iter()
+           .map(|p| (p, std::fs::read_to_string(&p).unwrap_or_default()))
+           .map(|(p, file_content)| {
+               parser
+                   .parse(&file_content, None)
+                   .map(|t| (p, file_content, t))
+           })
+           .flatten()
+           .map(|(path, file_content, tree)| {
+               (
+                   path.display().to_string(),
+                   (file_content.into_bytes(), tree),
+               )
+           })
+           .collect::<HashMap<String, (Vec<u8>, Tree)>>();
+    */
     files
         .par_iter()
         .map(|path| {
             //  eprintln!("{}", path.display());
+            // fuzz_tree_splicer::splice_file(&hmap)
             fuzz_tree_splicer::splice_file(path)
         })
         .flatten()

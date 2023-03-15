@@ -6,9 +6,9 @@ use tree_sitter_rust;
 use tree_splicer::splice::{splice, Config};
 
 const SPLICER_CFG: Config = Config {
-    inter_splices: 30,
-    seed: 0,
-    tests: 30,
+    inter_splices: 20, // 30
+    seed: 1,
+    tests: 10, // 10
 };
 
 // read a file from a path and splice-fuzz it returning a set of String that we built from it

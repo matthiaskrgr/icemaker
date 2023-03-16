@@ -513,6 +513,8 @@ fn check_dir(
         }
     });
 
+    // errors.iter().for_each(|ice| ice.to_disk());
+
     // in the end, save all the errors to a file
     let errors_new = serde_json::to_string_pretty(&errors).unwrap();
     std::fs::write(&errors_json, &errors_new)
@@ -541,7 +543,9 @@ fn check_dir(
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
 
+    /*
     let root_path_string = root_path.display().to_string();
+
 
     // crashing commands
     ALL_ICES_WITH_FLAGS
@@ -563,6 +567,7 @@ fn check_dir(
             // @HERE avoid spam
             // println!("{}", line);
         });
+        */
 
     files
 }

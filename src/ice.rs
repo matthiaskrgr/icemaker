@@ -108,6 +108,15 @@ impl ICE {
     }
 }
 
+/*
+fn _run_treereduce(ice: &ICE) {
+    let file = ice.file;
+    let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
+    let flags = self.args.clone().join(" ");
+    let executable_bin = &self.executable.path();
+    let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
+} */
+
 impl ICE {
     pub(crate) fn to_disk(&self) {
         let original_path = self.file.clone();
@@ -119,8 +128,10 @@ impl ICE {
         let executable_bin = &self.executable.path();
         let mut cmd = std::process::Command::new(&executable_bin);
         cmd.args(&self.args);
+        cmd.arg(&self.file);
+
         let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
-        let output_stderr = String::from_utf8(prl_output.stdout).unwrap();
+        //  let output_stderr = String::from_utf8(prl_output.stdout).unwrap();
         let output_stdout = String::from_utf8(prl_output.stderr).unwrap();
 
         let version_output: String = if let Ok(output) = std::process::Command::new(&executable_bin)
@@ -140,30 +151,31 @@ impl ICE {
 
         let text = format!(
             "
-        File: {original_path_display}
-        ````rust
-        {original_code}
-        ````
-        Version information
-        ````
-        {version_output}
-        ````
-        
-        Command:
-        `{executable_bin} {flags}`
+File: {original_path_display}
+````rust
+{original_code}
+````
+Version information
+````
+{version_output}
+````
 
-        Stdout:
-        ````
-        {output_stdout}
-        ````
+Command:
+`{executable_bin} {flags}`
 
-        Stderr
-        ````
-        {output_stderr}
-        ````
-        blah
-        "
+Program output:
+````
+{output_stdout}
+````
+"
         );
+
+        let file_on_disk = original_path_display
+            .to_string()
+            .replace('/', "_")
+            .replace("\\", "_");
+
+        eprintln!("{text}");
     }
 }
 

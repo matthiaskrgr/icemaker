@@ -154,15 +154,14 @@ impl ICE {
 
         Stdout:
         ````
-
+        {output_stdout}
         ````
 
         Stderr
         ````
-
+        {output_stderr}
         ````
-        
-        
+        blah
         "
         );
     }

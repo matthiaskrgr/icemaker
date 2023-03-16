@@ -115,7 +115,7 @@ impl ICE {
         let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
         let flags = self.args.clone().join(" ");
 
-        let executable = &self.executable.clone();
+        //let executable = &self.executable.clone();
         let executable_bin = &self.executable.path();
         let mut cmd = std::process::Command::new(&executable_bin);
         cmd.args(&self.args);

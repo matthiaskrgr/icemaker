@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use tree_sitter::{Language, Parser, Tree};
-use tree_sitter_rust;
+use tree_sitter::Parser;
 use tree_splicer::splice::{splice, Config};
 
 const SPLICER_CFG: Config = Config {

@@ -45,7 +45,6 @@ use crate::printing::*;
 use crate::run_commands::*;
 use crate::smolfuzz::*;
 
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
 use std::io::BufRead;

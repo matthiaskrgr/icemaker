@@ -55,6 +55,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wrust-2021-incompatible-closure-captures",
         "-Ztranslate-lang=en_US",
         "-Zmaximal-hir-to-mir-coverage",
+        "--edition=2021",
     ],
     // basic stuff, edition 2015
     &[

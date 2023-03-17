@@ -46,6 +46,8 @@ pub enum ICEKind {
     RustFix,
     // [type error] in output
     TypeError,
+    // rustdoc is very fragile when it comes to parsing code with errors
+    RustdocFrailness,
 }
 
 impl Default for ICEKind {
@@ -89,11 +91,12 @@ impl ICE {
         let kind = match self.kind {
             ICEKind::Ice => "ICE".red(),
             ICEKind::Ub(UbKind::Interesting) => "UB".green(),
-            ICEKind::Ub(UbKind::Uninteresting) => "UB".normal(),
+            ICEKind::Ub(UbKind::Uninteresting) => "ub".normal(),
             ICEKind::Hang(_) => "HANG".blue(),
             ICEKind::OOM => "OOM".red(),
             ICEKind::RustFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),
+            ICEKind::RustdocFrailness => "ice".normal(),
         };
 
         let flags = self.args.join(" ");

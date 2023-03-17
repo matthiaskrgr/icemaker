@@ -924,7 +924,23 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let found_error = find_ICE_string(executable, cmd_output);
+        let mut found_error = find_ICE_string(executable, cmd_output);
+
+        // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
+        match (&found_error, executable) {
+            (Some((errstring, ICEKind::Ice)), Executable::Rustdoc) => {
+                if !file_compiles(
+                    &file.to_path_buf(),
+                    &Executable::Rustc.path(),
+                    global_tempdir_path,
+                ) {
+                    found_error = Some((errstring.clone(), ICEKind::RustdocFrailness));
+                }
+            }
+            _ => {}
+        }
+
+        let found_error = found_error;
 
         // check if the file enables any compiler features
         let uses_feature: bool = uses_feature(file);

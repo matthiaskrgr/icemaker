@@ -83,7 +83,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
-        "-Zrandomize-layout",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2018
@@ -113,7 +112,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
-        "-Zrandomize-layout",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2021
@@ -150,7 +148,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_trait_impl)",
         "-Zcrate-attr=feature(non_lifetime_binders)",
         "-Zstrict-init-checks=yes",
-        "-Zrandomize-layout",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // incremental compilation, keep this!

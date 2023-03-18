@@ -494,7 +494,7 @@ pub(crate) fn run_rustfix(
     //dbg!(&output);
 
     //  modified the file! BUT if we fixed all errors, we are not intersted in this...
-    if find_ICE_string(&crate::Executable::RustFix, output.clone()).is_some() {
+    if find_ICE_string(file, &crate::Executable::RustFix, output.clone()).is_some() {
         let diff = diff::lines(&file_string, &file_after_fixing)
             .iter()
             .map(|diff| match diff {

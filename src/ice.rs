@@ -54,7 +54,7 @@ impl Default for ICEKind {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub enum Interestingness {
     #[default]
     Interesting,

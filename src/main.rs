@@ -295,7 +295,7 @@ fn check_dir(
             .filter_map(|file_a| {
                 let (output, _cmd_str, _actual_args, file_a, file_b) =
                     incremental_stress_test(file_a, &files, &rustc_exec_path, global_tempdir_path)?;
-                let is_ice = find_ICE_string(&Executable::Rustc, output.clone());
+                let is_ice = find_ICE_string(&file_a, &Executable::Rustc, output.clone());
                 if is_ice.is_some() {
                     eprintln!("\nINCRCOMP ICE: {},{}", file_a.display(), file_b.display());
                     Some((file_a, file_b, output))
@@ -924,7 +924,7 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let mut found_error = find_ICE_string(executable, cmd_output);
+        let mut found_error = find_ICE_string(file, executable, cmd_output);
 
         // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
         match (&found_error, executable) {
@@ -1057,7 +1057,7 @@ impl ICE {
                 pure_rustc_cmd.arg(file);
 
                 let pure_rustc_output = prlimit_run_command(&mut pure_rustc_cmd).unwrap();
-                let found_error0 = find_ICE_string(&Executable::Rustc, pure_rustc_output);
+                let found_error0 = find_ICE_string(file, &Executable::Rustc, pure_rustc_output);
 
                 // shitty destructing
 
@@ -1150,7 +1150,7 @@ impl ICE {
                     };
 
                     // dbg!(&output);
-                    let found_error2 = find_ICE_string(executable, output);
+                    let found_error2 = find_ICE_string(file, executable, output);
 
                     // remove the tempdir
                     tempdir.close().unwrap();
@@ -1195,7 +1195,7 @@ impl ICE {
                                 output
                             };
 
-                            let found_error3 = find_ICE_string(executable, output);
+                            let found_error3 = find_ICE_string(&file, executable, output);
                             // remove the tempdir
                             //  tempdir.close().unwrap();
                             if found_error3.is_some() {
@@ -1384,6 +1384,7 @@ fn find_out_crashing_channel(
     stable_path.push("rustc");
 
     let stable_ice: bool = find_ICE_string(
+        &file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(stable_path)
@@ -1396,6 +1397,7 @@ fn find_out_crashing_channel(
     .is_some();
 
     let beta_ice: bool = find_ICE_string(
+        &file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(beta_path)
@@ -1408,6 +1410,7 @@ fn find_out_crashing_channel(
     .is_some();
 
     let nightly_ice: bool = find_ICE_string(
+        &file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(nightly_path)
@@ -1435,7 +1438,30 @@ fn find_out_crashing_channel(
 
 /// take the executable we used and the executables/runs output and determine whether the should raise an ICE or not (by looking at the exit status / stderr for example)
 #[allow(non_snake_case)]
-fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, ICEKind)> {
+fn find_ICE_string(
+    input_file: &Path,
+    executable: &Executable,
+    output: Output,
+) -> Option<(String, ICEKind)> {
+    const KEYWORDS: &[&str] = &[
+        "panicked at",
+        "RUST_BACKTRACE=",
+        "(core dumped)",
+        "mir!(",
+        "#![no_core]",
+    ];
+
+    let interestingness = {
+        let file_text: &str = &std::fs::read_to_string(input_file).unwrap_or_default();
+
+        if KEYWORDS.iter().any(|kw| file_text.contains(kw)) {
+            // if we have any of the keywords in the file there likely will be crashes
+            Interestingness::Boring
+        } else {
+            Interestingness::Interesting
+        }
+    };
+
     let keywords_miri_ub = [
         "error: Undefined Behavior",
         // "the evaluated program leaked memory", // memleaks are save apparently
@@ -1486,7 +1512,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
     // let output = cmd.output().unwrap();
     // let _exit_status = output.status;
 
-    //check for prlimit output first by looking at the primit output (so only available in none-ci build)
+    //check for prlimit output first by looking at the prlimit output (so only available in none-ci build)
     //(this worked better with systemd-run.. :/ )
     if !cfg!(feature = "ci") {
         let termination_reason = &std::io::Cursor::new(&output.stdout)
@@ -1537,7 +1563,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
-                            .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)))
+                            .map(|line| (line, ICEKind::Ice(interestingness)))
                     }
                 }
 
@@ -1552,7 +1578,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)));
+                        .map(|line| (line, ICEKind::Ice(interestingness)));
                     // if we have encounter a "normal" ICE while running clippy --fix, this obv. takes precedece over failure to
                     // apply clippy suggestions
                     if normal_ice.is_some() {
@@ -1595,7 +1621,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                         })
                         // get the ICE line which is the longest
                         .max_by_key(|line| line.len())
-                        .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)));
+                        .map(|line| (line, ICEKind::Ice(interestingness)));
                     if ice.is_some() {
                         ice
                     } else {

@@ -1449,6 +1449,9 @@ fn find_ICE_string(
         "(core dumped)",
         "mir!(",
         "#![no_core]",
+        "#[rustc_symbol_name]",
+        "break rust",
+        "feature(lang_items)",
     ];
 
     let interestingness = {

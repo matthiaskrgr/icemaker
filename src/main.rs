@@ -928,13 +928,13 @@ impl ICE {
 
         // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
         match (&found_error, executable) {
-            (Some((errstring, ICEKind::Ice)), Executable::Rustdoc) => {
+            (Some((errstring, ICEKind::Ice(_))), Executable::Rustdoc) => {
                 if !file_compiles(
                     &file.to_path_buf(),
                     &Executable::Rustc.path(),
                     global_tempdir_path,
                 ) {
-                    found_error = Some((errstring.clone(), ICEKind::RustdocFrailness));
+                    found_error = Some((errstring.clone(), ICEKind::Ice(Interestingness::Boring)));
                 }
             }
             _ => {}
@@ -1537,7 +1537,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
-                            .map(|line| (line, ICEKind::Ice))
+                            .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)))
                     }
                 }
 
@@ -1552,7 +1552,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        .map(|line| (line, ICEKind::Ice));
+                        .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)));
                     // if we have encounter a "normal" ICE while running clippy --fix, this obv. takes precedece over failure to
                     // apply clippy suggestions
                     if normal_ice.is_some() {
@@ -1595,7 +1595,7 @@ fn find_ICE_string(executable: &Executable, output: Output) -> Option<(String, I
                         })
                         // get the ICE line which is the longest
                         .max_by_key(|line| line.len())
-                        .map(|line| (line, ICEKind::Ice));
+                        .map(|line| (line, ICEKind::Ice(Interestingness::Interesting)));
                     if ice.is_some() {
                         ice
                     } else {

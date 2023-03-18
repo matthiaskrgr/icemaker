@@ -35,8 +35,8 @@ pub struct ICE {
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum ICEKind {
-    // something crahed
-    Ice,
+    // something crashed
+    Ice(Interestingness),
     // miri found undefined behaviour
     Ub(UbKind),
     // program didn't terminate in time
@@ -46,18 +46,24 @@ pub enum ICEKind {
     RustFix,
     // [type error] in output
     TypeError,
-    // rustdoc is very fragile when it comes to parsing code with errors
-    RustdocFrailness,
 }
 
 impl Default for ICEKind {
     fn default() -> Self {
-        Self::Ice
+        Self::Ice(Interestingness::Interesting)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub enum Interestingness {
+    #[default]
+    Interesting,
+    Boring,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum UbKind {
+    #[default]
     Interesting,
     Uninteresting,
 }
@@ -89,14 +95,14 @@ impl ICE {
     // print a ICE to stdout or something
     pub(crate) fn to_printable(&self) -> ICEDisplay {
         let kind = match self.kind {
-            ICEKind::Ice => "ICE".red(),
+            ICEKind::Ice(Interestingness::Interesting) => "ICE".red(),
+            ICEKind::Ice(Interestingness::Boring) => "ice".normal(),
             ICEKind::Ub(UbKind::Interesting) => "UB".green(),
             ICEKind::Ub(UbKind::Uninteresting) => "ub".normal(),
             ICEKind::Hang(_) => "HANG".blue(),
             ICEKind::OOM => "OOM".red(),
             ICEKind::RustFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),
-            ICEKind::RustdocFrailness => "ice".normal(),
         };
 
         let flags = self.args.join(" ");

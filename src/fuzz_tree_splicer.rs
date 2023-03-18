@@ -5,8 +5,8 @@ use tree_sitter::Parser;
 use tree_splicer::splice::{splice, Config};
 
 const SPLICER_CFG: Config = Config {
-    inter_splices: 20, // 30
-    seed: 1,
+    inter_splices: 50, // 30
+    seed: 10,
     tests: 10, // 10
 };
 

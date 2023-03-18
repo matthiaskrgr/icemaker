@@ -1452,6 +1452,7 @@ fn find_ICE_string(
         "#[rustc_symbol_name]",
         "break rust",
         "feature(lang_items)",
+        "#[rustc_variance]",
     ];
 
     let interestingness = {

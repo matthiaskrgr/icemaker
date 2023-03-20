@@ -3985,6 +3985,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
+        "-Zmiri-tree-borrows",
         "-O",
     ],
     // and without
@@ -3995,6 +3996,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         // "-Zmiri-tag-raw-pointers", // default
         "-Zmiri-mute-stdout-stderr",
         "-Zmiri-retag-fields",
+        "-Zmiri-tree-borrows",
         //"-Zmir-opt-level=5",
         // "-Zrandomize-layout",
         "-O",

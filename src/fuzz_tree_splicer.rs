@@ -4,15 +4,20 @@ use std::path::PathBuf;
 use tree_sitter::Parser;
 use tree_splicer::splice::{splice, Config};
 
-const SPLICER_CFG: Config = Config {
-    inter_splices: 50, // 30
-    seed: 10,
-    tests: 10, // 10
-};
-
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
+    let SPLICER_CFG: Config = Config {
+        inter_splices: 50, // 30
+        seed: 10,
+        tests: 10, // 10
+        //
+        chaos: 0,
+        deletions: 0,
+        node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
+        language: tree_sitter_rust::language(),
+    };
+
     let file_content = std::fs::read_to_string(path)
         .expect(&format!("splicer failed to read file {}", path.display()));
     // skip if its too long to avoid stack overflows somewhere

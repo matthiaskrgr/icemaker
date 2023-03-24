@@ -896,9 +896,9 @@ dependencies = [
 
 [[package]]
 name = "tree-splicer"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d49c90e5cc9e180f5dda5ae27a4e7c382d7a9700ead54d7c41201cacdb46bd99"
+checksum = "7fd91dddb132c19a9e18e2fe14784ad0a917f11825f8416f49b0e30319bf059a"
 dependencies = [
  "log",
  "rand 0.8.5",

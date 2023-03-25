@@ -8,11 +8,11 @@ use tree_splicer::splice::{splice, Config};
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let SPLICER_CFG: Config = Config {
-        inter_splices: 50, // 30
+        inter_splices: 10, // 30
         seed: 10,
-        tests: 10, // 10
+        tests: 30, // 10
         //
-        chaos: 0,
+        chaos: 2,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),

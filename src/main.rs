@@ -1447,12 +1447,13 @@ fn find_ICE_string(
         "panicked at",
         "RUST_BACKTRACE=",
         "(core dumped)",
-        "mir!(",
+        "mir!",
         "#![no_core]",
         "#[rustc_symbol_name]",
         "break rust",
         "feature(lang_items)",
         "#[rustc_variance]",
+        "qemu: uncaught target signal",
     ];
 
     let interestingness = {

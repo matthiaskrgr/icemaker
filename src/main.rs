@@ -1568,8 +1568,25 @@ fn find_ICE_string(
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
-                            .map(|line| (line, ICEKind::Ice(interestingness)))
-                    }
+                            .map(|line| {
+                                // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+                               let line = if line.contains("left == right") || line.contains("left != right") {
+                                    // collect all lines until from "left!==right" to "stack backtrace:"
+                                    // in hopes this will not blow up memory usage too much
+                                    let mut lines_util_backtrace: Vec<String> = lines.take_while(|line| !line.contains("stack backtrace:")).collect();
+                                    // if "stack backtrace" is contained, we should only have a couple of lines, combine them into a single line
+                                    // we don't need the "stack bracktrace" line itself
+                                    let _: Option<String> = lines_util_backtrace.pop();
+                                    assert!(!lines_util_backtrace.is_empty(), "found 0 lines_util_backtrace while searching for end of 'assertion: L != R' output");
+                                    let line = lines_util_backtrace.join("\\n");
+                                    #[allow(clippy::let_and_return)]
+                                    line
+                                } else {
+                                    line
+                                };
+                                (line, ICEKind::Ice(interestingness))
+                            })
+                        }
                 }
 
                 Executable::ClippyFix | Executable::RustFix => {
@@ -1583,7 +1600,23 @@ fn find_ICE_string(
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        .map(|line| (line, ICEKind::Ice(interestingness)));
+                        .map(|line| {
+                            // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+                            let line = if line.contains("left == right") || line.contains("left != right") {
+                                // collect all lines until from "left!==right" to "stack backtrace:"
+                                // in hopes this will not blow up memory usage too much
+                                let mut lines_util_backtrace: Vec<String> = lines.take_while(|line| !line.contains("stack backtrace:")).collect();
+                                // if "stack backtrace" is contained, we should only have a couple of lines, combine them into a single line
+                                // we don't need the "stack bracktrace" line itself
+                                let _: Option<String> = lines_util_backtrace.pop();
+                                assert!(!lines_util_backtrace.is_empty(), "found 0 lines_util_backtrace while searching for end of 'assertion: L != R' output");
+                                let line = lines_util_backtrace.join("\\n");
+                                #[allow(clippy::let_and_return)]
+                                line
+                            } else {
+                                line
+                            };
+                            (line, ICEKind::Ice(interestingness))});
                     // if we have encounter a "normal" ICE while running clippy --fix, this obv. takes precedece over failure to
                     // apply clippy suggestions
                     if normal_ice.is_some() {

@@ -113,6 +113,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
+        "-Zcrate-attr=feature(return_type_notation)",
+        "-Zcrate-attr=feature(async_fn_in_trait)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2021
@@ -148,6 +150,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_closures)",
         "-Zcrate-attr=feature(const_trait_impl)",
         "-Zcrate-attr=feature(non_lifetime_binders)",
+        "-Zcrate-attr=feature(return_type_notation)",
+        "-Zcrate-attr=feature(async_fn_in_trait)",
         "-Zstrict-init-checks=yes",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
@@ -392,6 +396,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(associated_const_equality)",
         "-Zcrate-attr=feature(associated_type_bounds)",
         "-Zcrate-attr=feature(associated_type_defaults)",
+        "-Zcrate-attr=feature(async_fn_in_trait)",
+        "-Zcrate-attr=feature(return_type_notation)",
         "-Ztranslate-lang=en_US",
     ],
     &[

@@ -743,7 +743,9 @@ pub(crate) fn run_miri(
 
     let no_std = file_string.contains("#![no_std]");
     let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
-    if no_std || platform_intrinsics || (!has_main && !has_test) {
+    let custom_mir = file_string.contains("mir!");
+
+    if no_std || platform_intrinsics || (!has_main && !has_test) || custom_mir {
         // miri is know to not really handles this well
         return CommandOutput::new(
             std::process::Command::new("true")

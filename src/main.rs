@@ -1475,6 +1475,7 @@ fn find_ICE_string(
         "thread 'rustc' panicked at",
         "we would appreciate a bug report",
         "misaligned pointer dereference",
+        "Miri caused an ICE during evaluation.",
     ]
     .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
@@ -1491,6 +1492,7 @@ fn find_ICE_string(
 
     let keywords_generic_ice = [
         "^LLVM ERROR",
+        "Miri caused an ICE during evaluation.",
         "^thread '.*' panicked at",
         "^query stack during panic",
         "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
@@ -1512,7 +1514,6 @@ fn find_ICE_string(
         "SIGKILL: kill",
         "SIGSEGV:",
         "we would appreciate a bug report",
-        "Miri caused an ICE during evaluation."
 
     ].into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
@@ -1544,7 +1545,7 @@ fn find_ICE_string(
         .into_iter()
         .find_map(|executable_output| {
 
-            let mut lines = std::io::Cursor::new(executable_output)
+            let lines = std::io::Cursor::new(executable_output)
                 .lines()
                 .filter_map(|line| line.ok())
                 .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */);
@@ -1555,7 +1556,9 @@ fn find_ICE_string(
                     let ub_line = std::io::Cursor::new(executable_output)
                     .lines()
                     .filter_map(|line| line.ok())
-                    .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */).find(|line| {
+                    // filter out FPs
+                    .filter(|line| !line.contains("pub const SIGSEGV") )
+                    .find(|line| {
                         keywords_miri_ub.iter().any(|regex| {
                             // if the regex is equal to "panicked at: ", make sure the line does NOT contain "the evaluated program panicked at..."
                             // because that would be caused by somethink like panic!() in the code miri executes and we don't care about that
@@ -1566,11 +1569,13 @@ fn find_ICE_string(
                             }
                         })
                     });
-                //    dbg!(&ub_line);
+                    //  dbg!(&ub_line);
                     if let Some(ub_line_inner) = ub_line {
+                        // this is a return inside the iterator
                         Some((ub_line_inner, ICEKind::Ub(UbKind::Uninteresting)))
                     } else {
                         // we didn't find ub, but perhaps miri crashed?
+                        // TRICKY: from just looking at the output, we don't know if it is the program or miri that crashes which is tricky
                         std::io::Cursor::new(executable_output)
                             .lines()
                             .filter_map(|line| line.ok())
@@ -1580,6 +1585,8 @@ fn find_ICE_string(
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
+                             // try to exclude panic! todo! assert! etc in the actual program we are checking
+                            //.filter(|line|  !line.contains("main.rs"))
                             .map(|line| {
                                 // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                                let line = if line.contains("left == right") || line.contains("left != right") {
@@ -1596,10 +1603,17 @@ fn find_ICE_string(
                                 } else {
                                     line
                                 };
-                                (line, ICEKind::Ice(interestingness))
+                                // check if the backtrace mentiones "main.rs", this probably means the panic happened in our program and not directly in std which is boring
+                                if std::io::Cursor::new(executable_output)
+                                    .lines()
+                                    .filter_map(|line| line.ok()).any(|line| line.contains("main.rs")) {
+                                    (line, ICEKind::Ice(Interestingness::Boring))
+                                } else {
+                                    (line, ICEKind::Ice(interestingness))
+                                }
                             })
                         }
-                }
+                } // miri
 
                 Executable::ClippyFix | Executable::RustFix => {
                     // unfortunately, lines().filter.. isn't clone so we have to hack around :(

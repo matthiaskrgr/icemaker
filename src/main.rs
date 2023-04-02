@@ -1473,6 +1473,7 @@ fn find_ICE_string(
         "this indicates a bug in the program",
         "the compiler unexpectedly panicked",
         "thread 'rustc' panicked at",
+        "we would appreciate a bug report",
     ]
     .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
@@ -1508,7 +1509,9 @@ fn find_ICE_string(
         //"(?!.*libc::)^.*(SIGSEGV)",
         "process abort signal",
         "SIGKILL: kill",
-        "SIGSEGV:"
+        "SIGSEGV:",
+        "we would appreciate a bug report",
+        "Miri caused an ICE during evaluation."
 
     ].into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

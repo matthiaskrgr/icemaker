@@ -1543,6 +1543,7 @@ fn find_ICE_string(
     [&output.stdout, &output.stderr]
         .into_iter()
         .find_map(|executable_output| {
+
             let mut lines = std::io::Cursor::new(executable_output)
                 .lines()
                 .filter_map(|line| line.ok())
@@ -1551,7 +1552,10 @@ fn find_ICE_string(
             match executable {
                 Executable::Miri => {
                     // find the line where any (the first) ub keywords is contained in it
-                    let ub_line = lines.find(|line| {
+                    let ub_line = std::io::Cursor::new(executable_output)
+                    .lines()
+                    .filter_map(|line| line.ok())
+                    .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */).find(|line| {
                         keywords_miri_ub.iter().any(|regex| {
                             // if the regex is equal to "panicked at: ", make sure the line does NOT contain "the evaluated program panicked at..."
                             // because that would be caused by somethink like panic!() in the code miri executes and we don't care about that
@@ -1562,11 +1566,15 @@ fn find_ICE_string(
                             }
                         })
                     });
-                    if ub_line.is_some() {
-                        ub_line.map(|line| (line, ICEKind::Ub(UbKind::Uninteresting)))
+                //    dbg!(&ub_line);
+                    if let Some(ub_line_inner) = ub_line {
+                        Some((ub_line_inner, ICEKind::Ub(UbKind::Uninteresting)))
                     } else {
                         // we didn't find ub, but perhaps miri crashed?
-                        lines
+                        std::io::Cursor::new(executable_output)
+                            .lines()
+                            .filter_map(|line| line.ok())
+                            .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */)
                             .find(|line| {
                                 keywords_generic_ice
                                     .iter()

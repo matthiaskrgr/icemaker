@@ -3992,6 +3992,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-symbolic-alignment-check",
         "-Zmiri-tag-raw-pointers",
         "-Zmiri-tree-borrows",
+        "-Cdebug-assertions",
         "-O",
     ],
     // and without
@@ -4003,6 +4004,7 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
         "-Zmiri-mute-stdout-stderr",
         "-Zmiri-retag-fields",
         "-Zmiri-tree-borrows",
+        "-Cdebug-assertions",
         //"-Zmir-opt-level=5",
         // "-Zrandomize-layout",
         "-O",
@@ -4016,6 +4018,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2015",
         "-Zvalidate-mir",
+        "-Cdebug-assertions",
         /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
@@ -4204,6 +4207,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2018",
         "-Zvalidate-mir",
+        "-Cdebug-assertions",
         /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
@@ -4392,6 +4396,7 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zdrop-tracking-mir=yes",
         "--edition=2021",
         "-Zvalidate-mir",
+        "-Cdebug-assertions",
         /*
         "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",

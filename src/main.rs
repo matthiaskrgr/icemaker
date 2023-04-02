@@ -1474,6 +1474,7 @@ fn find_ICE_string(
         "the compiler unexpectedly panicked",
         "thread 'rustc' panicked at",
         "we would appreciate a bug report",
+        "misaligned pointer dereference",
     ]
     .into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

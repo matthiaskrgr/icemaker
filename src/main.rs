@@ -1513,7 +1513,7 @@ fn find_ICE_string(
         "process abort signal",
         "SIGKILL: kill",
         "SIGSEGV:",
-        "we would appreciate a bug report",
+      //  "we would appreciate a bug report",
 
     ].into_iter()
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))

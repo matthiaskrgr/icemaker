@@ -1590,14 +1590,16 @@ fn find_ICE_string(
                             .map(|line| {
                                 // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                                let line = if line.contains("left == right") || line.contains("left != right") {
-                                    // collect all lines until from "left!==right" to "stack backtrace:"
-                                    // in hopes this will not blow up memory usage too much
-                                    let mut lines_util_backtrace: Vec<String> = lines.take_while(|line| !line.contains("stack backtrace:")).collect();
-                                    // if "stack backtrace" is contained, we should only have a couple of lines, combine them into a single line
-                                    // we don't need the "stack bracktrace" line itself
-                                    let _: Option<String> = lines_util_backtrace.pop();
-                                    assert!(!lines_util_backtrace.is_empty(), "found 0 lines_util_backtrace while searching for end of 'assertion: L != R' output");
-                                    let line = lines_util_backtrace.join("\\n");
+
+                                    let left = std::io::Cursor::new(executable_output)
+                                    .lines()
+                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+
+                                let right =                     std::io::Cursor::new(executable_output)           
+                                .lines()
+                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                            
+                                let line = format!("{line}   {left} {right}");
                                     #[allow(clippy::let_and_return)]
                                     line
                                 } else {
@@ -1629,14 +1631,17 @@ fn find_ICE_string(
                         .map(|line| {
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                             let line = if line.contains("left == right") || line.contains("left != right") {
-                                // collect all lines until from "left!==right" to "stack backtrace:"
-                                // in hopes this will not blow up memory usage too much
-                                let mut lines_util_backtrace: Vec<String> = lines.take_while(|line| !line.contains("stack backtrace:")).collect();
-                                // if "stack backtrace" is contained, we should only have a couple of lines, combine them into a single line
-                                // we don't need the "stack bracktrace" line itself
-                                let _: Option<String> = lines_util_backtrace.pop();
-                                assert!(!lines_util_backtrace.is_empty(), "found 0 lines_util_backtrace while searching for end of 'assertion: L != R' output");
-                                let line = lines_util_backtrace.join("\\n");
+
+                                let left = std::io::Cursor::new(executable_output)
+                                .lines()
+                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+
+                            let right =                     std::io::Cursor::new(executable_output)           
+                            .lines()
+                            .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                        
+                            let line = format!("{line}   {left} {right}");
+
                                 #[allow(clippy::let_and_return)]
                                 line
                             } else {
@@ -1683,7 +1688,27 @@ fn find_ICE_string(
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
-                        // get the ICE line which is the longest
+                        .map(|line| {
+                            // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+                            let line = if line.contains("left == right") || line.contains("left != right") {
+
+                                let left = std::io::Cursor::new(executable_output)
+                                .lines()
+                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+
+                            let right =                     std::io::Cursor::new(executable_output)           
+                            .lines()
+                            .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                        
+                            let line = format!("{line}   {left} {right}");
+
+                                #[allow(clippy::let_and_return)]
+                                line
+                            } else {
+                                line
+                            };
+                            line})
+                        // get the lonest ICE line 
                         .max_by_key(|line| line.len())
                         .map(|line| (line, ICEKind::Ice(interestingness)));
                     if ice.is_some() {

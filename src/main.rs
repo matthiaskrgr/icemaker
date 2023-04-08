@@ -1635,13 +1635,11 @@ fn find_ICE_string(
                                 .lines()
                                 .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
-                            let right = std::io::Cursor::new(executable_output)
-                            .lines()
-                            .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                let right = std::io::Cursor::new(executable_output)
+                                .lines()
+                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
-                            let line = format!("{line}   {left} {right}");
-
-                                #[allow(clippy::let_and_return)]
+                                let line = format!("{line}   {left} {right}");
                                 line
                             } else {
                                 line
@@ -1699,11 +1697,11 @@ fn find_ICE_string(
                                     .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
                                 let line = format!("{line}   {left} {right}");
-                                    #[allow(clippy::let_and_return)]
+                                #[allow(clippy::let_and_return)]
+                                line
+                            } else {
                                     line
-                                } else {
-                                    line
-                                };
+                            };
                             line})
                         // get the lonest ICE line 
                         .max_by_key(|line| line.len())

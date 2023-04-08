@@ -7,7 +7,7 @@ use tree_splicer::splice::{splice, Config};
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
-    let SPLICER_CFG: Config = Config {
+    let splicer_cfg: Config = Config {
         inter_splices: 10, // 30
         seed: 10,
         tests: 30, // 10
@@ -38,7 +38,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     );
 
     // TODO just return Iterator here
-    splice(SPLICER_CFG, &hm)
+    splice(splicer_cfg, &hm)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         .collect::<Vec<String>>()
 }

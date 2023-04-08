@@ -1585,20 +1585,19 @@ fn find_ICE_string(
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
-                             // try to exclude panic! todo! assert! etc in the actual program we are checking
+                            // try to exclude panic! todo! assert! etc in the actual program we are checking
                             //.filter(|line|  !line.contains("main.rs"))
                             .map(|line| {
                                 // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
-                               let line = if line.contains("left == right") || line.contains("left != right") {
-
+                                let line = if line.contains("left == right") || line.contains("left != right") {
                                     let left = std::io::Cursor::new(executable_output)
-                                    .lines()
-                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                        .lines()
+                                        .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
-                                let right =                     std::io::Cursor::new(executable_output)           
-                                .lines()
-                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
-                            
+                                let right = std::io::Cursor::new(executable_output)
+                                    .lines()
+                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+
                                 let line = format!("{line}   {left} {right}");
                                     #[allow(clippy::let_and_return)]
                                     line
@@ -1636,10 +1635,10 @@ fn find_ICE_string(
                                 .lines()
                                 .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
-                            let right =                     std::io::Cursor::new(executable_output)           
+                            let right = std::io::Cursor::new(executable_output)
                             .lines()
                             .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
-                        
+
                             let line = format!("{line}   {left} {right}");
 
                                 #[allow(clippy::let_and_return)]
@@ -1691,22 +1690,20 @@ fn find_ICE_string(
                         .map(|line| {
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                             let line = if line.contains("left == right") || line.contains("left != right") {
-
                                 let left = std::io::Cursor::new(executable_output)
-                                .lines()
-                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                    .lines()
+                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
-                            let right =                     std::io::Cursor::new(executable_output)           
-                            .lines()
-                            .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
-                        
-                            let line = format!("{line}   {left} {right}");
+                                let right = std::io::Cursor::new(executable_output)
+                                    .lines()
+                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
-                                #[allow(clippy::let_and_return)]
-                                line
-                            } else {
-                                line
-                            };
+                                let line = format!("{line}   {left} {right}");
+                                    #[allow(clippy::let_and_return)]
+                                    line
+                                } else {
+                                    line
+                                };
                             line})
                         // get the lonest ICE line 
                         .max_by_key(|line| line.len())

@@ -1454,6 +1454,7 @@ fn find_ICE_string(
         "feature(lang_items)",
         "#[rustc_variance]",
         "qemu: uncaught target signal",
+        "[feature(core_intrinsics)",
     ];
 
     let interestingness = {

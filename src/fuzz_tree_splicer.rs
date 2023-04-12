@@ -16,6 +16,9 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
+        max_size: 1048576,
+        // do not reparse for now?
+        reparse: 1048576,
     };
 
     let file_content = std::fs::read_to_string(path)

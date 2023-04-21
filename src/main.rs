@@ -1554,7 +1554,13 @@ fn find_ICE_string(
             let lines = std::io::Cursor::new(executable_output)
                 .lines()
                 .filter_map(|line| line.ok())
-                .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */);
+                // FPs
+                .filter(|line| !line.contains("pub const SIGSEGV"))
+                 // the checked code itself might contain something like RUST_BACKTRACE=... :
+                 // in the output this will look somewhat like this:
+                 // 23 |         panic!(it.next(), Some("note: Run with `RUST_BACKTRACE=1` 
+                // ignore such lines
+                .filter(|line|!(line.chars().nth(0).map(|c| c.is_ascii_digit())  == Some(true) && line.contains(" | ") && line.contains("RUST_BACKTRACE=")));
 
             match executable {
                 Executable::Miri => {

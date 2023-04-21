@@ -1448,7 +1448,7 @@ fn find_ICE_string(
     executable: &Executable,
     output: Output,
 ) -> Option<(String, ICEKind)> {
-    const KEYWORDS: &[&str] = &[
+    const IN_CODE_FP_KEYWORDS: &[&str] = &[
         "panicked at",
         "RUST_BACKTRACE=",
         "(core dumped)",
@@ -1465,7 +1465,7 @@ fn find_ICE_string(
     let interestingness = {
         let file_text: &str = &std::fs::read_to_string(input_file).unwrap_or_default();
 
-        if KEYWORDS.iter().any(|kw| file_text.contains(kw)) {
+        if IN_CODE_FP_KEYWORDS.iter().any(|kw| file_text.contains(kw)) {
             // if we have any of the keywords in the file there likely will be crashes
             Interestingness::Boring
         } else {

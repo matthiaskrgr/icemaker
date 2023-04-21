@@ -76,6 +76,9 @@ pub(crate) struct Args {
 
     #[clap(long)]
     pub(crate) codegen_splice: bool,
+
+    #[clap(long)]
+    pub(crate) incr_fuzz: bool,
 }
 
 /// check whether a file uses features or not

@@ -210,6 +210,80 @@ pub(crate) fn run_rustc_incremental(
     )
 }
 
+// compile 2 variations of a file with shared incr comp cache and try to find crashes
+pub(crate) fn run_rustc_incremental_with_two_files(
+    executable: &str,
+    file_1: &Path,
+    // mutation
+    file_2: &String,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+    let file_2_string = file_2;
+    let file_2 = tempdir_path.join("file2");
+    let file_2 = file_2.as_path();
+    let mut file_2_handle = std::fs::File::create(file_2).unwrap();
+    file_2_handle.write_all(file_2_string.as_bytes()).unwrap();
+
+    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
+
+    let has_main = std::fs::read_to_string(file_1)
+        .unwrap_or_default()
+        .contains("fn main(");
+
+    let mut cmd = Command::new("DUMMY");
+    let mut output = None;
+    let mut actual_args = Vec::new();
+    for i in &[0, 1] {
+        let input = match i {
+            0 => file_1,
+            1 => file_2,
+            _ => unreachable!(),
+        };
+        let mut command = Command::new(executable);
+        if !has_main {
+            command.arg("--crate-type=lib");
+        }
+        command
+            .arg(input)
+            .env("SYSROOT", &*SYSROOT_PATH)
+            // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
+            .arg(format!("-o{}/{}", tempdir_path.display(), i))
+            .arg(format!("-Cincremental={}", tempdir_path.display()))
+            .arg("-Zincremental-verify-ich=yes")
+            .arg(&dump_mir_dir)
+            // also enable debuginfo for incremental, since we are codegenning anyway
+            .arg("-Cdebuginfo=2")
+            .arg("--edition=2021");
+        // save-temps creates /tmp/rustc<hash> dirs that are not cleaned up properly
+        //.arg("-Csave-temps=yes")
+        //   .arg("--edition=2021");
+        //   .arg("-Cpasses=lint");
+
+        //dbg!(&command);
+
+        output = Some(prlimit_run_command(&mut command));
+        actual_args = command
+            .get_args()
+            .map(|s| s.to_owned())
+            .collect::<Vec<OsString>>();
+        //dbg!(&output);
+        cmd = command;
+    }
+
+    let output = output.map(|output| output.unwrap()).unwrap();
+
+    tempdir.close().unwrap();
+    //dbg!(&output);
+    CommandOutput::new(
+        output,
+        get_cmd_string(&cmd),
+        actual_args,
+        crate::Executable::Rustc,
+    )
+}
+
 pub(crate) fn run_clippy(
     executable: &str,
     file: &Path,
@@ -1236,6 +1310,54 @@ pub(crate) fn file_compiles(
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
+    ["2015", "2018", "2021"]
+        .iter()
+        .map(|year| format!("--edition={year}"))
+        .any(|edition_flag| {
+            let mut cmd = Command::new(executable);
+            if !has_main {
+                cmd.arg("--crate-type=lib");
+            } else {
+                cmd.arg("--crate-type=bin");
+            }
+            cmd.arg(&file)
+                .arg("-Zno-codegen")
+                .arg("-Zforce-unstable-if-unmarked")
+                .arg(edition_flag)
+                .args(["--cap-lints", "warn"])
+                .env("CARGO_TERM_COLOR", "never")
+                .current_dir(tempdir_path)
+                .env("CARGO_TERM_COLOR", "never")
+                .env("SYSROOT", &*SYSROOT_PATH);
+
+            matches!(
+                prlimit_run_command(&mut cmd)
+                    .ok()
+                    .map(|x| x.status.success()),
+                Some(true)
+            )
+        })
+}
+
+pub(crate) fn file_compiles_from_string(
+    file_content: &String,
+    executable: &str,
+    global_tempdir_path: &PathBuf,
+) -> bool {
+    let has_main = file_content.contains("fn main(");
+
+    let tempdir = TempDir::new_in(global_tempdir_path, "compiles_from_string_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let file_path = tempdir_path.join("file.rs");
+
+    let mut file_handle =
+        std::fs::File::create(&file_path).expect("failed to create file_compiles_from_string file");
+
+    file_handle.write_all(file_content.as_bytes()).unwrap();
+
+    // to path
+    let file = file_path;
     ["2015", "2018", "2021"]
         .iter()
         .map(|year| format!("--edition={year}"))

@@ -214,6 +214,11 @@ fn check_dir(
         return Vec::new();
     }
 
+    if args.incr_fuzz {
+        let _ = tree_splice_incr_fuzz(global_tempdir_path);
+        std::process::exit(1);
+    }
+
     // search for rust files inside CWD
     let mut files = WalkDir::new(root_path)
         .into_iter()
@@ -2121,4 +2126,92 @@ fn codegen_tree_splicer() {
             file.write_all(file_content.as_bytes())
                 .expect("failed to write to file");
         });
+}
+
+fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
+    // 1) read single source file
+    // 1.5) make sure it compiles //
+    // 2) mutate it //
+    // 3) save mutation to disk // skipped
+    // 4) make sure mutation compiles //
+    // 5) run rustc on orig file and then on the mutation while sharing incr cache
+
+    let root_path = std::env::current_dir().expect("no cwd!");
+
+    // get a list of source files
+    let files = WalkDir::new(root_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
+        .map(|f| f.path().to_owned())
+        .filter(|p| {
+            std::fs::read_to_string(p)
+                .unwrap_or_default()
+                .lines()
+                .count()
+                < 1000
+        })
+        .collect::<Vec<PathBuf>>();
+
+    let ices = files
+        .iter()
+        .map(|orig_file| fuzz_icr_file(orig_file, global_tempdir_path))
+        .flatten()
+        .collect::<Vec<_>>();
+    dbg!(ices);
+    return;
+
+    // dir to put the files in
+
+    // take a single original file, mutate it and incr-check original + a mutation each, return vec of ICEs
+    fn fuzz_icr_file(
+        original_file_path: &PathBuf,
+        global_tempdir_path: &Path,
+    ) -> Vec<(String, ICEKind)> {
+        // content of the original file
+        let file_content =
+            std::fs::read_to_string(original_file_path).expect("failed to read file");
+
+        let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
+        let tempdir_path = tempdir.path();
+
+        // if the original file does not compile, bail out
+        if !file_compiles_from_string(
+            &file_content,
+            &Executable::Rustc.path(),
+            &tempdir_path.to_path_buf(),
+        ) {
+            return Vec::new();
+        }
+        // get mutations of a single file
+        let mutations = fuzz_tree_splicer::splice_file(original_file_path).into_par_iter();
+
+        mutations
+            .filter(|mutation| {
+                // make sure the modified file compiles
+                file_compiles_from_string(
+                    mutation,
+                    &Executable::Rustc.path(),
+                    &tempdir_path.to_path_buf(),
+                )
+            })
+            .map(|mutation| {
+                let (output, cmd_str, _args) = run_rustc_incremental_with_two_files(
+                    &Executable::Rustc.path(),
+                    &&original_file_path.as_path(),
+                    &mutation,
+                    &global_tempdir_path.to_path_buf(),
+                )
+                .unwrap();
+                let maybeice = find_ICE_string(original_file_path, &Executable::Rustc, output);
+                if maybeice.is_some() {
+                    eprintln!(
+                        "!!!\n\nINCR ICE\n\n orig:\n  {file_content} \n\n mutation:\n {mutation}"
+                    );
+                }
+                maybeice
+            })
+            .flatten()
+            .collect::<Vec<_>>()
+    }
 }

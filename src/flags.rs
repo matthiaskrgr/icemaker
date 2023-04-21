@@ -116,6 +116,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(return_type_notation)",
         "-Zcrate-attr=feature(async_fn_in_trait)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
+        "-Zcrate-attr=feature(transmute_generic_consts)",
+        "-Zcrate-attr=feature(fn_ptr_trait)",
     ],
     // basic stuff, edition 2021
     &[
@@ -151,6 +154,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(non_lifetime_binders)",
         "-Zcrate-attr=feature(return_type_notation)",
         "-Zcrate-attr=feature(async_fn_in_trait)",
+        "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
+        "-Zcrate-attr=feature(transmute_generic_consts)",
+        "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zstrict-init-checks=yes",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],

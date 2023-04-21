@@ -2154,7 +2154,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
         .collect::<Vec<PathBuf>>();
 
     let ices = files
-        .iter()
+        .par_iter()
         .map(|orig_file| fuzz_icr_file(orig_file, global_tempdir_path))
         .flatten()
         .collect::<Vec<_>>();

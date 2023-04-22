@@ -85,6 +85,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        "-Zinline-mir-threshold=10000",
+        "-Zinline-mir-hint-threshold=10000",
     ],
     // basic stuff, edition 2018
     &[
@@ -119,6 +121,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
+        "-Zinline-mir-threshold=10000",
+        "-Zinline-mir-hint-threshold=10000",
     ],
     // basic stuff, edition 2021
     &[
@@ -158,6 +162,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zstrict-init-checks=yes",
+        "-Zinline-mir-threshold=10000",
+        "-Zinline-mir-hint-threshold=10000",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // incremental compilation, keep this!

@@ -2211,6 +2211,8 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
                 .unwrap();
                 let maybeice = find_ICE_string(original_file_path, &Executable::Rustc, output);
                 if maybeice.is_some() {
+                    eprintln!("{}", original_file_path.display());
+                    dbg!(&maybeice);
                     eprintln!(
                         "!!!\n\nINCR ICE\n\n orig:\n  {file_content} \n\n mutation:\n {mutation}"
                     );

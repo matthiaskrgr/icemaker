@@ -765,6 +765,7 @@ pub(crate) fn run_rustfmt(
     cmd.env("SYSROOT", &*SYSROOT_PATH)
         .arg(file)
         .arg("--check")
+        .args(["--color", "never"])
         .args(["--edition", "2021"]);
     let output = prlimit_run_command(&mut cmd).unwrap();
     CommandOutput::new(

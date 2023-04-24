@@ -1553,7 +1553,7 @@ fn find_ICE_string(
 
             let lines = std::io::Cursor::new(executable_output)
                 .lines()
-                .filter_map(|line| line.ok())
+                .map_while(Result::ok)
                 // FPs
                 .filter(|line| !line.contains("pub const SIGSEGV"))
                  // the checked code itself might contain something like RUST_BACKTRACE=... :
@@ -1567,7 +1567,7 @@ fn find_ICE_string(
                     // find the line where any (the first) ub keywords is contained in it
                     let ub_line = std::io::Cursor::new(executable_output)
                     .lines()
-                    .filter_map(|line| line.ok())
+                    .map_while(Result::ok)
                     // filter out FPs
                     .filter(|line| !line.contains("pub const SIGSEGV") )
                     .find(|line| {
@@ -1590,7 +1590,7 @@ fn find_ICE_string(
                         // TRICKY: from just looking at the output, we don't know if it is the program or miri that crashes which is tricky
                         std::io::Cursor::new(executable_output)
                             .lines()
-                            .filter_map(|line| line.ok())
+                            .map_while(Result::ok)
                             .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */)
                             .find(|line| {
                                 keywords_generic_ice
@@ -1604,11 +1604,11 @@ fn find_ICE_string(
                                 let line = if line.contains("left == right") || line.contains("left != right") {
                                     let left = std::io::Cursor::new(executable_output)
                                         .lines()
-                                        .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                        .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
                                 let line = format!("{line}   {left} {right}");
                                     #[allow(clippy::let_and_return)]
@@ -1619,7 +1619,7 @@ fn find_ICE_string(
                                 // check if the backtrace mentiones "main.rs", this probably means the panic happened in our program and not directly in std which is boring
                                 if std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .filter_map(|line| line.ok()).any(|line| line.contains("main.rs")) {
+                                    .map_while(Result::ok).any(|line| line.contains("main.rs")) {
                                     (line, ICEKind::Ice(Interestingness::Boring))
                                 } else {
                                     (line, ICEKind::Ice(interestingness))
@@ -1633,7 +1633,7 @@ fn find_ICE_string(
 
                     let normal_ice = std::io::Cursor::new(executable_output)
                         .lines()
-                        .filter_map(|line| line.ok())
+                        .map_while(Result::ok)
                         .find(|line| {
                             keywords_generic_ice
                                 .iter()
@@ -1645,11 +1645,11 @@ fn find_ICE_string(
 
                                 let left = std::io::Cursor::new(executable_output)
                                 .lines()
-                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
                                 .lines()
-                                .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
                                 let line = format!("{line}   {left} {right}");
                                 line
@@ -1665,13 +1665,13 @@ fn find_ICE_string(
                     // rustfix failed to do anything because different lints modified the same line, ignore this/don't report ICE
                     let mut lines = std::io::Cursor::new(executable_output)
                         .lines()
-                        .filter_map(|line| line.ok());
+                        .map_while(Result::ok);
                     if lines.any(|line| line.contains("maybe parts of it were already replaced?")) {
                         return None;
                     }
                     let mut lines = std::io::Cursor::new(executable_output)
                         .lines()
-                        .filter_map(|line| line.ok());
+                        .map_while(Result::ok);
                     // clippy fix failure
 
                     lines
@@ -1702,11 +1702,11 @@ fn find_ICE_string(
                             let line = if line.contains("left == right") || line.contains("left != right") {
                                 let left = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .filter_map(|line| line.ok()).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
                                 let line = format!("{line}   {left} {right}");
                                 #[allow(clippy::let_and_return)]

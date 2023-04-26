@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
 use clap::Parser;
 use colored::Colorize;
@@ -134,8 +134,8 @@ pub(crate) struct Report {
 
 impl From<&ICE> for Report {
     fn from(ice: &ICE) -> Self {
-        unreachable!("DO USE TMPDIR HERE!");
-        
+        //unreachable!("DO USE TMPDIR HERE!");
+
         let original_path = ice.file.clone();
         let original_path_display = original_path.display();
         let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
@@ -197,6 +197,22 @@ Program output:
 impl Report {
     pub(crate) fn print(&self) {
         println!("{}", self.data);
+    }
+
+    pub(crate) fn to_disk(&self) {
+        let tempdir = std::env::temp_dir();
+        let reports_dir = tempdir.join("icemaker_reports");
+        std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
+
+        let display = self.ice.file.display();
+        let file_on_disk = display.to_string().replace('/', "_").replace("\\", "_");
+
+        let report_file = reports_dir.join(file_on_disk);
+
+        let mut file =
+            std::fs::File::create(report_file).expect("repot.to_disk() failed to create file");
+        file.write_all(self.data.as_bytes())
+            .expect("failed to write report");
     }
 }
 

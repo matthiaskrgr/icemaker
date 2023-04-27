@@ -491,17 +491,6 @@ fn check_dir(
     errors.sort_by_key(|ice| ice.file.clone());
     errors.sort_by_key(|ice| ice.ice_msg.clone());
 
-    errors
-        .iter()
-        .map(|ice| {
-            let report: Report = ice.into();
-            report
-        })
-        .for_each(|report| {
-            //report.print();
-            report.to_disk();
-        });
-
     // sort by command
     // errors.sort_by_key(|ice| ice.cmd.clone());
 

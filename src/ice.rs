@@ -107,6 +107,11 @@ impl ICE {
 
         let flags = self.args.join(" ");
 
+        // HACK
+        // also log the ICE to disk here since its probably most convenient at this place in time/code
+        let report: Report = self.into();
+        report.to_disk();
+
         format!(
             "{kind}: {:?} {} '{flags}' '{}', '{}'",
             self.executable,
@@ -209,6 +214,7 @@ impl Report {
 
         let report_file = reports_dir.join(file_on_disk);
 
+        //  FIXME file might already exist
         let mut file =
             std::fs::File::create(report_file).expect("repot.to_disk() failed to create file");
         file.write_all(self.data.as_bytes())

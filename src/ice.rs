@@ -205,6 +205,11 @@ impl Report {
     }
 
     pub(crate) fn to_disk(&self) {
+        // only write ices and ub to disk for now
+        if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
+            return;
+        }
+
         let tempdir = std::env::temp_dir();
         let reports_dir = tempdir.join("icemaker_reports");
         std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");

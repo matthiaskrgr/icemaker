@@ -207,6 +207,8 @@ impl Report {
     pub(crate) fn to_disk(&self) {
         // only write ices and ub to disk for now
         if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
+            // we want these
+        } else {
             return;
         }
 

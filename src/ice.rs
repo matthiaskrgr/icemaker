@@ -217,7 +217,11 @@ impl Report {
         std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
 
         let display = self.ice.file.display();
-        let file_on_disk = display.to_string().replace('/', "_").replace("\\", "_");
+        let file_on_disk = display
+            .to_string()
+            .replace('/', "_")
+            .replace("\\", "_")
+            .replace(".rs", ".md");
 
         let report_file = reports_dir.join(file_on_disk);
 

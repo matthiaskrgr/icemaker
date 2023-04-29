@@ -200,7 +200,7 @@ Program output:
 }
 
 impl Report {
-    pub(crate) fn print(&self) {
+    pub(crate) fn _print(&self) {
         println!("{}", self.data);
     }
 
@@ -220,7 +220,7 @@ impl Report {
         let file_on_disk = display
             .to_string()
             .replace('/', "_")
-            .replace("\\", "_")
+            .replace('\\', "_")
             .replace(".rs", ".md");
 
         let report_file = reports_dir.join(file_on_disk);

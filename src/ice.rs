@@ -204,6 +204,7 @@ impl Report {
         println!("{}", self.data);
     }
 
+    // save a report into /tmp/ for inspection while icemaker is still running
     pub(crate) fn to_disk(&self) {
         // only write ices and ub to disk for now
         if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
@@ -212,16 +213,19 @@ impl Report {
             return;
         }
 
+        // should just print Rustc, Miri, Clippy etc...
+        // we need to append this so that if the miri and rustdoc crash on the file, we don't overwrite previous results :/
+        let executable = format!("{:?}", self.ice.executable);
+
         let tempdir = std::env::temp_dir();
         let reports_dir = tempdir.join("icemaker_reports");
         std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
 
         let display = self.ice.file.display();
-        let file_on_disk = display
-            .to_string()
-            .replace('/', "_")
-            .replace('\\', "_")
-            .replace(".rs", ".md");
+        let mut file_on_disk = display.to_string().replace('/', "_").replace('\\', "_");
+        file_on_disk.push('_');
+        file_on_disk.push_str(&executable);
+        let file_on_disk = file_on_disk.replace(".rs", ".md");
 
         let report_file = reports_dir.join(file_on_disk);
 

@@ -233,68 +233,6 @@ impl Report {
     }
 }
 
-impl ICE {
-    pub(crate) fn to_disk(&self) {
-        let original_path = self.file.clone();
-        let original_path_display = original_path.display();
-        let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
-        let flags = self.args.clone().join(" ");
-
-        //let executable = &self.executable.clone();
-        let executable_bin = &self.executable.path();
-        let mut cmd = std::process::Command::new(&executable_bin);
-        cmd.args(&self.args);
-        cmd.arg(&self.file);
-
-        let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
-        //  let output_stderr = String::from_utf8(prl_output.stdout).unwrap();
-        let output_stdout = String::from_utf8(prl_output.stderr).unwrap();
-
-        let version_output: String = if let Ok(output) = std::process::Command::new(&executable_bin)
-            .arg("--version")
-            .arg("--verbose")
-            .output()
-        {
-            String::from_utf8(output.stdout).unwrap()
-        } else if let Ok(output_verbose) = std::process::Command::new(&executable_bin)
-            .arg("--version")
-            .output()
-        {
-            String::from_utf8(output_verbose.stdout).unwrap()
-        } else {
-            "<failed to get version>".to_string()
-        };
-
-        let text = format!(
-            "
-File: {original_path_display}
-````rust
-{original_code}
-````
-Version information
-````
-{version_output}
-````
-
-Command:
-`{executable_bin} {flags}`
-
-Program output:
-````
-{output_stdout}
-````
-"
-        );
-
-        let file_on_disk = original_path_display
-            .to_string()
-            .replace('/', "_")
-            .replace("\\", "_");
-
-        eprintln!("{text}");
-    }
-}
-
 // in what channel a regression is first noticed?
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum Regression {

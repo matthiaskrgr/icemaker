@@ -157,6 +157,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
+        "-Zcrate-attr=feature(c_str_literals)",
+        "-Zcrate-attr=feature(negative_bounds)",
         "-Zstrict-init-checks=yes",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],

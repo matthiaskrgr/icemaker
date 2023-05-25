@@ -1167,7 +1167,7 @@ impl ICE {
 
                             // check if we have to timeout
                             // use limit * 2 to be a bit more generous since bisecting can take time
-                            if thread_start.elapsed().as_secs() > SECONDS_LIMIT {
+                            if thread_start.elapsed().as_secs() > SECONDS_LIMIT * 2 {
                                 // break from the any()
                                 return true;
                             }
@@ -1216,9 +1216,9 @@ impl ICE {
                     } else {
                         // full set of flags did NOT reproduce the ice...????
                         eprintln!(
-                            "\nfull set of flags on '{}' did not reproduce the ICE??\nflags:{:?}",
+                            "\nfull set of flags on '{}' did not reproduce the ICE??\nflags: {}",
                             file.display(),
-                            args3
+                            args3.iter().map(|s| format!("{s} ")).collect::<String>(),
                         );
                     }
                 }

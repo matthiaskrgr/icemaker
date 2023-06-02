@@ -1547,6 +1547,8 @@ fn find_ICE_string(
         }
     }
 
+    let delay_span_bug_regex = Regex::new("^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$").unwrap();
+
     [&output.stdout, &output.stderr]
         .into_iter()
         .find_map(|executable_output| {
@@ -1718,7 +1720,7 @@ fn find_ICE_string(
                         // get the lonest ICE line 
                         .max_by_key(|line|
                             // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
-                            if Regex::new("^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$").unwrap().is_match(line) {
+                            if delay_span_bug_regex.is_match(line) {
                                 "internal compiler error".len()
                             } else {
                              line.len()

@@ -1716,7 +1716,14 @@ fn find_ICE_string(
                             };
                             line})
                         // get the lonest ICE line 
-                        .max_by_key(|line| line.len())
+                        .max_by_key(|line|
+                            // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
+                            if Regex::new("^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$").unwrap().is_match(line) {
+                                "internal compiler error".len()
+                            } else {
+                             line.len()
+                            }
+                        )
                         .map(|line| (line, ICEKind::Ice(interestingness)));
                     if ice.is_some() {
                         ice

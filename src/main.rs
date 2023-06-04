@@ -1514,6 +1514,7 @@ fn find_ICE_string(
         // llvm assertion failure
         "Assertion `.*' failed",
         // do not include anything like libc::SIGSEGV
+        // note: rustc regex crate does not support this v  :( 
         //"(?!.*lib::)^.*(SIGABRT)",
         //"(?!.*libc::)^.*(SIGSEGV)",
         "process abort signal",

@@ -1070,7 +1070,7 @@ impl ICE {
                 if seconds_elapsed > (SECONDS_LIMIT_MIRI) {
                     print!("\r");
                     println!(
-                        "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                        "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",
                         "HANG".blue(),
                         executable,
                         file.display(),
@@ -1080,7 +1080,12 @@ impl ICE {
                             .iter()
                             .cloned()
                             .map(|s| s.into_string().unwrap())
-                            .collect::<Vec<String>>(),
+                            .map(|s| {
+                                let mut tmp = s;
+                                tmp.push(' ');
+                                tmp
+                            })
+                            .collect::<String>()
                     );
                 }
 
@@ -1234,7 +1239,7 @@ impl ICE {
             if seconds_elapsed > (SECONDS_LIMIT) {
                 print!("\r");
                 println!(
-                    "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                    "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",
                     "HANG".blue(),
                     executable,
                     file.display(),
@@ -1244,7 +1249,12 @@ impl ICE {
                         .iter()
                         .cloned()
                         .map(|s| s.into_string().unwrap())
-                        .collect::<Vec<String>>(),
+                        .map(|s| {
+                            let mut tmp = s;
+                            tmp.push(' ');
+                            tmp
+                        })
+                        .collect::<String>()
                 );
 
                 // the process was killed by prlimit because it exceeded time limit
@@ -1312,7 +1322,7 @@ impl ICE {
         if seconds_elapsed > (SECONDS_LIMIT) {
             print!("\r");
             println!(
-                "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   {:?}",
+                "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",
                 "HANG".blue(),
                 executable,
                 file.display(),
@@ -1322,7 +1332,12 @@ impl ICE {
                     .iter()
                     .cloned()
                     .map(|s| s.into_string().unwrap())
-                    .collect::<Vec<String>>(),
+                    .map(|s| {
+                        let mut tmp = s;
+                        tmp.push(' ');
+                        tmp
+                    })
+                    .collect::<String>()
             );
 
             // the process was killed by prlimit because it exceeded time limit

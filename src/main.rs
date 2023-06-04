@@ -1700,6 +1700,10 @@ fn find_ICE_string(
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
+                        // bonus: if the line contains something like 
+                        //  let _ = writeln!(err, "note: run with `RUST_BACKTRACE=1` \'
+                        // do not yield it (skip it))
+                        .filter(|line|  !(matches!(executable, Executable::Rustfmt) && (Regex::new("write.*RUST_BACKTRACE=").unwrap().is_match(line) || line.starts_with('-') || line.starts_with('+')) || line.contains("`RUST_BACKTRACE=")))
                         .map(|line| {
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                             let line = if line.contains("left == right") || line.contains("left != right") {

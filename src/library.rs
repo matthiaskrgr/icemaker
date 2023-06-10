@@ -78,6 +78,9 @@ pub(crate) struct Args {
     pub(crate) codegen_splice: bool,
 
     #[clap(long)]
+    pub(crate) codegen_splice_omni: bool,
+
+    #[clap(long)]
     pub(crate) incr_fuzz: bool,
 }
 

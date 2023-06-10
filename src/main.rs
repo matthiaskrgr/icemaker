@@ -206,6 +206,11 @@ fn check_dir(
         return Vec::new();
     }
 
+    if args.codegen_splice_omni {
+        codegen_tree_splicer_omni();
+        return Vec::new();
+    }
+
     if args.fuzz {
         let _ = run_random_fuzz(executable, global_tempdir_path);
         return Vec::new();
@@ -2148,6 +2153,76 @@ fn codegen_tree_splicer() {
             //  eprintln!("{}", path.display());
             // fuzz_tree_splicer::splice_file(&hmap)
             fuzz_tree_splicer::splice_file(path)
+        })
+        .flatten()
+        .for_each(|file_content| {
+            let mut hasher = Sha256::new();
+            hasher.update(&file_content);
+            let h = hasher.finalize();
+            let hash = format!("{:X}", h);
+
+            let mut file = std::fs::File::create(format!("icemaker/{hash}.rs"))
+                .expect("could not create file");
+            file.write_all(file_content.as_bytes())
+                .expect("failed to write to file");
+        });
+}
+
+// same but do not restrict fuzzing input set to a single file
+fn codegen_tree_splicer_omni() {
+    use std::collections::HashMap;
+    use tree_sitter::{Parser, Tree};
+
+    let root_path = std::env::current_dir().expect("no cwd!");
+
+    // files we use as dataset
+    let files = WalkDir::new(root_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
+        .map(|f| f.path().to_owned())
+        .filter(|p| {
+            std::fs::read_to_string(p)
+                .unwrap_or_default()
+                .lines()
+                .count()
+                < 1000
+        })
+        .collect::<Vec<PathBuf>>();
+
+    // dir to put the files in
+    std::fs::create_dir("icemaker").expect("could not create icemaker dir");
+
+    let mut parser = Parser::new();
+    // rust!
+    parser.set_language(tree_sitter_rust::language()).unwrap();
+
+    // read all fhe files
+    let hmap = files
+        .iter()
+        .map(|p| (p, std::fs::read_to_string(&p).unwrap_or_default()))
+        .map(|(p, file_content)| {
+            parser
+                .parse(&file_content, None)
+                .map(|t| (p, file_content, t))
+        })
+        .flatten()
+        .map(|(path, file_content, tree)| {
+            (
+                path.display().to_string(),
+                (file_content.into_bytes(), tree),
+            )
+        })
+        .collect::<HashMap<String, (Vec<u8>, Tree)>>();
+
+    //
+
+    files
+        .par_iter()
+        .map(|path| {
+            //  eprintln!("{}", path.display());
+            // fuzz_tree_splicer::splice_file(&hmap)
+            fuzz_tree_splicer::splice_file_from_set(/* path , */ &hmap)
         })
         .flatten()
         .for_each(|file_content| {

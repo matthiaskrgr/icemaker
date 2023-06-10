@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use tree_sitter::Parser;
+use tree_sitter::{Language, Parser, Tree};
 use tree_splicer::splice::{splice, Config};
 
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
@@ -42,6 +42,42 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
 
     // TODO just return Iterator here
     splice(splicer_cfg, &hm)
+        .map(|f| String::from_utf8(f).unwrap_or_default())
+        .collect::<Vec<String>>()
+}
+
+pub(crate) fn splice_file_from_set(
+  //  path: &PathBuf,
+    hmap: &HashMap<String, (Vec<u8>, Tree)>,
+) -> Vec<String> {
+    let splicer_cfg: Config = Config {
+        inter_splices: 10, // 30
+        seed: 30,
+        tests: 100, // 10
+        //
+        chaos: 10,
+        deletions: 0,
+        node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
+        language: tree_sitter_rust::language(),
+        max_size: 1048576,
+        // do not reparse for now?
+        reparse: 1048576,
+    };
+
+    // it seems that with this approach, we no longer have the notion of "files", we just have one big set of input and are able to generate random ouputs from it
+
+    /*
+        let mut parser = Parser::new();
+        // rust!
+        parser.set_language(tree_sitter_rust::language()).unwrap();
+
+        let file_content = std::fs::read_to_string(path)
+            .expect(&format!("splicer failed to read file {}", path.display()));
+    */
+    //  let tree = parser.parse(&file_content, None);
+
+    // TODO just return Iterator here
+    splice(splicer_cfg, &hmap)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         .collect::<Vec<String>>()
 }

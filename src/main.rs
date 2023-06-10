@@ -2175,6 +2175,7 @@ fn codegen_tree_splicer_omni() {
 
     let root_path = std::env::current_dir().expect("no cwd!");
 
+    println!("collecting files..");
     // files we use as dataset
     let files = WalkDir::new(root_path)
         .into_iter()
@@ -2197,6 +2198,8 @@ fn codegen_tree_splicer_omni() {
     // rust!
     parser.set_language(tree_sitter_rust::language()).unwrap();
 
+    println!("parsing files..");
+
     // read all fhe files
     let hmap = files
         .iter()
@@ -2216,6 +2219,8 @@ fn codegen_tree_splicer_omni() {
         .collect::<HashMap<String, (Vec<u8>, Tree)>>();
 
     //
+
+    println!("codegenning...");
 
     files
         .par_iter()

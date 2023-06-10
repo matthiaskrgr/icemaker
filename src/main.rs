@@ -2224,7 +2224,7 @@ fn codegen_tree_splicer_omni() {
 
     files
         .par_iter()
-        .map(|path| {
+        .map(|_path| {
             //  eprintln!("{}", path.display());
             // fuzz_tree_splicer::splice_file(&hmap)
             fuzz_tree_splicer::splice_file_from_set(/* path , */ &hmap)
@@ -2311,7 +2311,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
                 )
             })
             .map(|mutation| {
-                let (output, cmd_str, _args) = run_rustc_incremental_with_two_files(
+                let (output, _cmd_str, _args) = run_rustc_incremental_with_two_files(
                     &Executable::Rustc.path(),
                     &&original_file_path.as_path(),
                     &mutation,

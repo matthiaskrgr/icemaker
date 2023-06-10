@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use tree_sitter::{Language, Parser, Tree};
+use tree_sitter::{Parser, Tree};
 use tree_splicer::splice::{splice, Config};
 
 // read a file from a path and splice-fuzz it returning a set of String that we built from it

@@ -47,15 +47,15 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
 }
 
 pub(crate) fn splice_file_from_set(
-  //  path: &PathBuf,
+    //  path: &PathBuf,
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 10, // 30
+        inter_splices: 2, // 30
         seed: 30,
         tests: 100, // 10
         //
-        chaos: 10,
+        chaos: 0,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),

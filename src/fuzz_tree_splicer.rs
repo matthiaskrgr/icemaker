@@ -55,7 +55,7 @@ pub(crate) fn splice_file_from_set(
         seed: 30,
         tests: 100, // 10
         //
-        chaos: 0,
+        chaos: 1,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),

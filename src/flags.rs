@@ -59,6 +59,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2015
     &[
+        "-Zprint-vtable-sizes",
         "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -88,6 +89,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2018
     &[
+        "-Zprint-vtable-sizes",
         "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",
@@ -122,6 +124,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2021
     &[
+        "-Zprint-vtable-sizes",
         "-Zunstable-options",
         "-Zvalidate-mir",
         "-Zverify-llvm-ir=yes",

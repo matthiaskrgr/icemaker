@@ -81,3 +81,13 @@ pub(crate) fn splice_file_from_set(
         .map(|f| String::from_utf8(f).unwrap_or_default())
         .collect::<Vec<String>>()
 }
+
+// such files will most likely just causes known crashes or hang the splicing
+pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
+    const LINE_LIMIT: usize = 1000;
+
+    let content = std::fs::read_to_string(file).unwrap_or_default();
+    let lines_count = content.lines().count();
+
+    lines_count > LINE_LIMIT || content.contains("#[no_core]") || content.contains("mir!(")
+}

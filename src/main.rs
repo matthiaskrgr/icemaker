@@ -39,6 +39,7 @@ mod smolfuzz;
 
 use crate::flags::*;
 use crate::fuzz::*;
+use crate::fuzz_tree_splicer::*;
 use crate::ice::*;
 use crate::library::*;
 use crate::printing::*;
@@ -2114,13 +2115,7 @@ fn codegen_tree_splicer() {
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
-        .filter(|p| {
-            std::fs::read_to_string(p)
-                .unwrap_or_default()
-                .lines()
-                .count()
-                < 1000
-        })
+        .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();
 
     // dir to put the files in
@@ -2182,13 +2177,7 @@ fn codegen_tree_splicer_omni() {
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
-        .filter(|p| {
-            std::fs::read_to_string(p)
-                .unwrap_or_default()
-                .lines()
-                .count()
-                < 1000
-        })
+        .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();
 
     // dir to put the files in

@@ -1482,6 +1482,8 @@ fn find_ICE_string(
         "qemu: uncaught target signal",
         "[feature(core_intrinsics)",
         "platform_intrinsics",
+        "libc::SIGSEGV",
+        "delay_span_bug_from_inside_query",
     ];
 
     let interestingness = {

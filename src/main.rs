@@ -705,13 +705,19 @@ fn main() {
     let args = Args::parse();
 
     let global_tempdir = if let Some(ref custom_tempdir_path) = args.global_tempdir_path {
-        let custom_tmpdir = std::path::PathBuf::from(&custom_tempdir_path);
+        let mut custom_tmpdir = std::path::PathBuf::from(&custom_tempdir_path);
         let dir_display = custom_tmpdir.display();
+
         assert!(
             custom_tmpdir.is_dir(),
             "global tempdir '{}' not found",
             dir_display
         );
+
+        // otherwise tempdir would be  foo.af32ed2 and not foo/af32ed2
+        custom_tmpdir.push("dir");
+        let dir_display = custom_tmpdir.display();
+
         TempDir::new_in("icemaker_global_tempdir", &format!("{}", dir_display))
             .expect("failed to create global icemaker tempdir")
     } else {
@@ -720,6 +726,8 @@ fn main() {
 
     let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
     let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
+
+    dbg!(&global_tempdir_path);
 
     println!(
         "using {} threads",
@@ -743,6 +751,15 @@ fn main() {
     ctrlc::set_handler(move || {
         println!("\n\nCtrl+C: TERMINATED\n");
 
+        eprintln!("triyng to rm tempdir:");
+        dbg!(&global_tempdir_path_closure.clone());
+        if std::fs::remove_dir_all(global_tempdir_path_closure.clone()).is_err() {
+            eprintln!(
+                "WARNING: failed to remove global tempdir '{}'",
+                global_tempdir_path_closure.display()
+            );
+        }
+
         ALL_ICES_WITH_FLAGS
             .lock()
             .unwrap()
@@ -759,12 +776,6 @@ fn main() {
 
         //dbg!(&global_tempdir_path_closure);
 
-        if std::fs::remove_dir_all(global_tempdir_path_closure.clone()).is_err() {
-            eprintln!(
-                "WARNING: failed to remove '{}'",
-                global_tempdir_path_closure.display()
-            );
-        }
         std::process::exit(42);
     })
     .expect("Error setting Ctrl-C handler");

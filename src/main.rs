@@ -721,7 +721,17 @@ fn main() {
     let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
     let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
 
-    println!("using {} threads", args.threads);
+    println!(
+        "using {} threads",
+        if args.threads != 0 {
+            args.threads
+        } else if let Ok(threads) = std::thread::available_parallelism() {
+            threads.get()
+        } else {
+            // failed to get threads, eh
+            0
+        }
+    );
 
     // rayon thread pool so we can configure number of threads easily
     rayon::ThreadPoolBuilder::new()

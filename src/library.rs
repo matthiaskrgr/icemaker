@@ -82,6 +82,9 @@ pub(crate) struct Args {
 
     #[clap(long)]
     pub(crate) incr_fuzz: bool,
+
+    #[clap(long)]
+    pub(crate) global_tempdir_path: Option<std::path::PathBuf>,
 }
 
 /// check whether a file uses features or not

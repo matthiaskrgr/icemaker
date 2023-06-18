@@ -704,8 +704,20 @@ fn main() {
 
     let args = Args::parse();
 
-    let global_tempdir =
-        TempDir::new("icemaker_global_tempdir").expect("failed to create global icemaker tempdir");
+    let global_tempdir = if let Some(ref custom_tempdir_path) = args.global_tempdir_path {
+        let custom_tmpdir = std::path::PathBuf::from(&custom_tempdir_path);
+        let dir_display = custom_tmpdir.display();
+        assert!(
+            custom_tmpdir.is_dir(),
+            "global tempdir '{}' not found",
+            dir_display
+        );
+        TempDir::new_in("icemaker_global_tempdir", &format!("{}", dir_display))
+            .expect("failed to create global icemaker tempdir")
+    } else {
+        TempDir::new("icemaker_global_tempdir").expect("failed to create global icemaker tempdir")
+    };
+
     let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
     let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
 

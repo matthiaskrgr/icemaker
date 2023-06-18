@@ -721,6 +721,8 @@ fn main() {
     let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
     let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
 
+    println!("using {} threads", args.threads);
+
     // rayon thread pool so we can configure number of threads easily
     rayon::ThreadPoolBuilder::new()
         .num_threads(args.threads)

@@ -53,6 +53,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use clap::Parser;
@@ -61,7 +62,6 @@ use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 use sha2::{Digest, Sha256};
-use std::sync::Mutex;
 use tempdir::TempDir;
 use walkdir::WalkDir;
 
@@ -112,9 +112,11 @@ fn check_dir(
     args: &Args,
     global_tempdir_path: &PathBuf,
     timer: &Timer,
+    errors_json_tmp: &Arc<Mutex<std::fs::File>>,
 ) -> Vec<PathBuf> {
     // read in existing errors
     // read the string INTO Vec<ICE>
+
     let errors_json = root_path.join("errors.json");
     let errors_before: Vec<ICE> = if errors_json.exists() {
         let read = match std::fs::read_to_string(&errors_json) {
@@ -447,6 +449,15 @@ fn check_dir(
                 .flatten()
                 .filter(|opt_ice| opt_ice.is_some())
                 .map(|ice| ice.unwrap())
+                .map(|ice| {
+                    let ice_json =
+                        serde_json::to_string_pretty(&ice).expect("failed ot jsonify ICE");
+                    let errors_tmp = Arc::clone(errors_json_tmp);
+                    let mut f = errors_tmp.lock().unwrap();
+                    writeln!(f, "{}", ice_json)
+                        .expect("failed to write to mutex locked errors_tmp.json");
+                    ice
+                })
                 .collect::<Vec<ICE>>()
         })
         .collect();
@@ -727,7 +738,7 @@ fn main() {
     let global_tempdir_path_closure: PathBuf = global_tempdir.path().to_owned();
     let global_tempdir_path: PathBuf = global_tempdir_path_closure.clone();
 
-    dbg!(&global_tempdir_path);
+    //dbg!(&global_tempdir_path);
 
     println!(
         "using {} threads",
@@ -809,10 +820,15 @@ fn main() {
 
     let timer: Timer = Timer::new();
 
+    let root_path = std::env::current_dir().expect("could not get CWD!");
+    let tmp_file = root_path.join("errors_tmp.json");
+
+    let errors_json_tmp = Arc::new(Mutex::new(std::fs::File::create(tmp_file).unwrap()));
+
     // all checked files
     let files = projects
         .iter()
-        .map(|dir| check_dir(dir, &args, &global_tempdir_path, &timer))
+        .map(|dir| check_dir(dir, &args, &global_tempdir_path, &timer, &errors_json_tmp))
         .flat_map(|v| v.into_iter())
         .collect::<Vec<PathBuf>>();
 

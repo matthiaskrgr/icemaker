@@ -85,6 +85,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zprint-type-sizes",
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
+        "-Zcrate-attr=feature(explicit_tail_calls)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2018
@@ -121,6 +122,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
+        "-Zcrate-attr=feature(explicit_tail_calls)",
     ],
     // basic stuff, edition 2021
     &[
@@ -165,6 +167,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(dyn_star)",
         "-Zcrate-attr=feature(pointer_like_trait)",
         "-Zstrict-init-checks=yes",
+        "-Zcrate-attr=feature(explicit_tail_calls)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // incremental compilation, keep this!

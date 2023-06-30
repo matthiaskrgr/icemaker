@@ -56,6 +56,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Ztranslate-lang=en_US",
         "-Zmaximal-hir-to-mir-coverage",
         "--edition=2021",
+        //  "-Ztreat-err-as-bug=3",
     ],
     // basic stuff, edition 2015
     &[
@@ -87,6 +88,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        //   "-Ztreat-err-as-bug=3",
     ],
     // basic stuff, edition 2018
     &[
@@ -123,6 +125,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        //    "-Ztreat-err-as-bug=3",
     ],
     // basic stuff, edition 2021
     &[
@@ -169,6 +172,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
+        //   "-Ztreat-err-as-bug=3",
     ],
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen

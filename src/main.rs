@@ -1601,6 +1601,15 @@ fn find_ICE_string(
     .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
     .collect::<Vec<_>>();
 
+    let keywords_double_panic_ice = [
+        "thread caused non-unwinding panic. aborting.",
+        "panic in a function that cannot unwind",
+        "thread panicked while panicking. aborting.",
+        "-Z treat-err-as-bug=",
+    ]
+    .into_iter()
+    .collect::<Vec<_>>();
+
     // let output = cmd.output().unwrap();
     // let _exit_status = output.status;
 
@@ -1768,15 +1777,20 @@ fn find_ICE_string(
                 | Executable::CraneliftLocal
                 | Executable::Rustdoc
                 | Executable::Rustfmt => {
+                    let mut double_ice = false;
                     let ice = lines
                         // collect all lines which might be ICE messages
                         .filter(|line| {
+                            let is_double_ice =  keywords_double_panic_ice.iter().any(|kw| line.contains(kw));
+                            if is_double_ice { double_ice = true }
+
                             keywords_generic_ice
                                 .iter()
-                                .any(|regex| regex.is_match(line))
+                                .any(|regex|
+                                     regex.is_match(line)) || is_double_ice
                         })
                         // bonus: if the line contains something like 
-                        //  let _ = writeln!(err, "note: run with `RUST_BACKTRACE=1` \'
+                        //  let _ = writeln!(err, "note: run with `RUST_BACKTRACE=1` \' keywords_double_panic_ice.iter().any(|kw| regex.contains(kw)
                         // do not yield it (skip it))
                         .filter(|line|  !(matches!(executable, Executable::Rustfmt) && (Regex::new("write.*RUST_BACKTRACE=").unwrap().is_match(line) || line.starts_with('-') || line.starts_with('+')) || line.contains("`RUST_BACKTRACE=")))
                         .map(|line| {
@@ -1806,7 +1820,7 @@ fn find_ICE_string(
                              line.len()
                             }
                         )
-                        .map(|line| (line, ICEKind::Ice(interestingness)));
+                        .map(|line|  if double_ice { (line, ICEKind::DoubleIce) } else { (line, ICEKind::Ice(interestingness)) });
                     if ice.is_some() {
                         ice
                     } else {

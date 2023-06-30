@@ -46,6 +46,8 @@ pub enum ICEKind {
     RustFix,
     // [type error] in output
     TypeError,
+    // double, ice while ice via -Ztreat-err-as-bug
+    DoubleIce,
 }
 
 impl Default for ICEKind {
@@ -103,6 +105,7 @@ impl ICE {
             ICEKind::OOM => "OOM".red(),
             ICEKind::RustFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),
+            ICEKind::DoubleIce => "DoubleICE".red(),
         };
 
         let flags = self.args.join(" ");

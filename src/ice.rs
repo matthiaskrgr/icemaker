@@ -277,6 +277,7 @@ pub enum Executable {
     ClippyFix,
     RustFix,
     Kani,
+    GccRs,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
@@ -393,6 +394,8 @@ impl Executable {
                 String::from("/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc")
             }
             Executable::Kani => "kani".into(),
+            // env vars + -Zcodegen-backend= to the rest of the stuff, similar to cranelift
+            Executable::GccRs => "rustc".into(),
         }
     }
 }

@@ -1270,23 +1270,29 @@ pub(crate) fn run_gccrs_local(
 
     //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
     //let tempdir_path = tempdir.path();
-    let output_file = String::from("-o/dev/null");
+
+    let new_tempdir = TempDir::new_in(global_tempdir_path, "newdir").unwrap();
+    let new_tempdir = new_tempdir.path();
+    let new_tempdir = new_tempdir.join("executablename");
+
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
     let mut cmd = Command::new("rustc");
-    cmd.arg(file)
+    cmd
     .args(["+nightly-2023-06-19" , "-Zcodegen-backend=/home/matthias/vcs/github/rustc_codegen_gcc_attempt2/rustc_codegen_gcc/target/release/librustc_codegen_gcc.so", 
     "--sysroot",
      "/home/matthias/vcs/github/rustc_codegen_gcc_attempt2/rustc_codegen_gcc/build_sysroot/sysroot"]).env("LD_LIBRARY_PATH","/home/matthias/vcs/github/rustc_codegen_gcc_attempt2/gcc-build/gcc" )
+     .arg(file)
      .env("RUST_COMPILER_RT_ROOT", "/home/matthias/vcs/github/rustc_codegen_gcc_attempt2/llvm/compiler-rt/")
         .args(rustc_flags)
         // always keep these:
-        .arg(output_file)
+        .arg("-o")
+        .arg(new_tempdir)
         .arg(dump_mir_dir);
     if !has_main {
         cmd.arg("--crate-type=lib");
     }
-    //dbg!(&cmd);
+    //    dbg!(&cmd);
 
     let actual_args = cmd
         .get_args()
@@ -1296,6 +1302,8 @@ pub(crate) fn run_gccrs_local(
     // run the command
     let output = prlimit_run_command(&mut cmd)
         .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
+
+    // eprintln!("{:?}", output);
     CommandOutput::new(
         output,
         get_cmd_string(&cmd),

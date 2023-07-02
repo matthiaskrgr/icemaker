@@ -277,7 +277,8 @@ pub enum Executable {
     ClippyFix,
     RustFix,
     Kani,
-    GccRs,
+    // https://github.com/rust-lang/rustc_codegen_gcc
+    RustcCodegenGCC,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
@@ -395,7 +396,7 @@ impl Executable {
             }
             Executable::Kani => "kani".into(),
             // env vars + -Zcodegen-backend= to the rest of the stuff, similar to cranelift
-            Executable::GccRs => "rustc".into(),
+            Executable::RustcCodegenGCC => "rustc".into(),
         }
     }
 }

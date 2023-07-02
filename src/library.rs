@@ -59,7 +59,7 @@ pub(crate) struct Args {
     pub(crate) kani: bool,
 
     #[clap(long)]
-    pub(crate) gccrs: bool,
+    pub(crate) rustc_codegen_gcc: bool,
 
     // use path to local rustc build with debug assertions
     #[clap(long)]

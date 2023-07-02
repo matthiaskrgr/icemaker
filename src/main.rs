@@ -100,8 +100,8 @@ impl From<&Args> for Executable {
             Executable::CraneliftLocal
         } else if (args).kani {
             Executable::Kani
-        } else if args.gccrs {
-            Executable::GccRs
+        } else if args.rustc_codegen_gcc {
+            Executable::RustcCodegenGCC
         } else {
             Executable::Rustc
         }
@@ -609,7 +609,7 @@ struct Timer {
     clippyfix_time: AtomicUsize,
     rustfix_time: AtomicUsize,
     kani_time: AtomicUsize,
-    gccrs_time: AtomicUsize,
+    rustc_codegen_gcc: AtomicUsize,
 }
 
 impl Timer {
@@ -664,9 +664,9 @@ impl Timer {
             Executable::Kani => {
                 let _ = self.kani_time.fetch_add(elapsed_duration, Ordering::SeqCst);
             }
-            Executable::GccRs => {
+            Executable::RustcCodegenGCC => {
                 let _ = self
-                    .gccrs_time
+                    .rustc_codegen_gcc
                     .fetch_add(elapsed_duration, Ordering::SeqCst);
             }
         }
@@ -713,8 +713,8 @@ impl Timer {
             kani_time: AtomicUsize::new(
                 Duration::from_millis(self.kani_time.into_inner() as u64).as_secs() as usize,
             ),
-            gccrs_time: AtomicUsize::new(
-                Duration::from_millis(self.gccrs_time.into_inner() as u64).as_secs() as usize,
+            rustc_codegen_gcc: AtomicUsize::new(
+                Duration::from_millis(self.rustc_codegen_gcc.into_inner() as u64).as_secs() as usize,
             ),
         }
     }
@@ -966,8 +966,8 @@ impl ICE {
                 compiler_flags,
                 global_tempdir_path,
             ),
-            Executable::GccRs => {
-                run_gccrs_local(exec_path, file, false, compiler_flags, global_tempdir_path)
+            Executable::RustcCodegenGCC => {
+                rustc_codegen_gcc_local(exec_path, file, false, compiler_flags, global_tempdir_path)
             }
         }
         .unwrap();
@@ -1205,7 +1205,7 @@ impl ICE {
                 | Executable::ClippyFix
                 | Executable::RustFix
                 | Executable::CraneliftLocal
-                | Executable::GccRs => {
+                | Executable::RustcCodegenGCC => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir =
                         TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
@@ -1796,7 +1796,7 @@ fn find_ICE_string(
                 | Executable::CraneliftLocal
                 | Executable::Rustdoc
                 | Executable::Rustfmt 
-                | Executable::GccRs => {
+                | Executable::RustcCodegenGCC => {
                     let mut double_ice = false;
                     let ice = lines
                         // collect all lines which might be ICE messages

@@ -1252,7 +1252,8 @@ pub(crate) fn run_cranelift(
     //tempdir.close().unwrap();
 }
 
-pub(crate) fn run_gccrs_local(
+// https://github.com/rust-lang/rustc_codegen_gcc
+pub(crate) fn rustc_codegen_gcc_local(
     executable: &str,
     file: &Path,
     incremental: bool,

@@ -1610,6 +1610,10 @@ fn find_ICE_string(
         "process abort signal",
         "SIGKILL: kill",
         "SIGSEGV:",
+        // rustc_codegen_gcc
+        // "libgccjit.so: error:",
+        // "thread '.*' panicked at",
+
       //  "we would appreciate a bug report",
 
     ].into_iter()

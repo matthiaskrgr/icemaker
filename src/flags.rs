@@ -55,6 +55,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wrust-2021-incompatible-closure-captures",
         "-Ztranslate-lang=en_US",
         "-Zmaximal-hir-to-mir-coverage",
+        // "-Clto=off", // rustc_codegen_gcc
         "--edition=2021",
         //  "-Ztreat-err-as-bug=3",
     ],
@@ -87,6 +88,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        //  "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",
     ],
@@ -125,6 +127,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
     ],
     // basic stuff, edition 2021
@@ -171,9 +174,15 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(pointer_like_trait)",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        // "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",
     ],
+    /* rustc codegen gcc
+    &["--edition=2021"],
+    &["--edition=2015"],
+    &["--edition=2018"],
+    */
     // incremental compilation, keep this!
     // also this might be the only flag for default run that forces actual codegen
     &["INCR_COMP"],

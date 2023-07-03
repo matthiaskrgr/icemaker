@@ -225,7 +225,7 @@ impl Report {
         std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
 
         let display = self.ice.file.display();
-        let mut file_on_disk = display.to_string().replace('/', "_").replace('\\', "_");
+        let mut file_on_disk = display.to_string().replace(['/', '\\'], "_");
         file_on_disk.push('_');
         file_on_disk.push_str(&executable);
         let file_on_disk = file_on_disk.replace(".rs", ".md");

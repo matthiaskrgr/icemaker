@@ -225,7 +225,7 @@ fn check_dir(
     }
 
     if args.incr_fuzz {
-        let _ = tree_splice_incr_fuzz(global_tempdir_path);
+        tree_splice_incr_fuzz(global_tempdir_path);
         std::process::exit(1);
     }
 
@@ -714,7 +714,8 @@ impl Timer {
                 Duration::from_millis(self.kani_time.into_inner() as u64).as_secs() as usize,
             ),
             rustc_codegen_gcc: AtomicUsize::new(
-                Duration::from_millis(self.rustc_codegen_gcc.into_inner() as u64).as_secs() as usize,
+                Duration::from_millis(self.rustc_codegen_gcc.into_inner() as u64).as_secs()
+                    as usize,
             ),
         }
     }
@@ -1277,7 +1278,7 @@ impl ICE {
                                 output
                             };
 
-                            let found_error3 = find_ICE_string(&file, executable, output);
+                            let found_error3 = find_ICE_string(file, executable, output);
                             // remove the tempdir
                             //  tempdir.close().unwrap();
                             if found_error3.is_some() {
@@ -1476,7 +1477,7 @@ fn find_out_crashing_channel(
     stable_path.push("rustc");
 
     let stable_ice: bool = find_ICE_string(
-        &file,
+        file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(stable_path)
@@ -1489,7 +1490,7 @@ fn find_out_crashing_channel(
     .is_some();
 
     let beta_ice: bool = find_ICE_string(
-        &file,
+        file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(beta_path)
@@ -1502,7 +1503,7 @@ fn find_out_crashing_channel(
     .is_some();
 
     let nightly_ice: bool = find_ICE_string(
-        &file,
+        file,
         &Executable::Rustc,
         prlimit_run_command(
             Command::new(nightly_path)
@@ -1666,7 +1667,7 @@ fn find_ICE_string(
                  // in the output this will look somewhat like this:
                  // 23 |         panic!(it.next(), Some("note: Run with `RUST_BACKTRACE=1` 
                 // ignore such lines
-                .filter(|line|!(line.chars().nth(0).map(|c| c.is_ascii_digit())  == Some(true) && line.contains(" | ") && line.contains("RUST_BACKTRACE=")));
+                .filter(|line|!(line.chars().next().map(|c| c.is_ascii_digit())  == Some(true) && line.contains(" | ") && line.contains("RUST_BACKTRACE=")));
 
             match executable {
                 Executable::Miri => {
@@ -1795,7 +1796,7 @@ fn find_ICE_string(
                 | Executable::RustcCGClif
                 | Executable::CraneliftLocal
                 | Executable::Rustdoc
-                | Executable::Rustfmt 
+                | Executable::Rustfmt
                 | Executable::RustcCodegenGCC => {
                     let mut double_ice = false;
                     let ice = lines
@@ -1815,7 +1816,8 @@ fn find_ICE_string(
                         .filter(|line|  !(matches!(executable, Executable::Rustfmt) && (Regex::new("write.*RUST_BACKTRACE=").unwrap().is_match(line) || line.starts_with('-') || line.starts_with('+')) || line.contains("`RUST_BACKTRACE=")))
                         .map(|line| {
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
-                            let line = if line.contains("left == right") || line.contains("left != right") {
+
+                            if line.contains("left == right") || line.contains("left != right") {
                                 let left = std::io::Cursor::new(executable_output)
                                     .lines()
                                     .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
@@ -1829,8 +1831,7 @@ fn find_ICE_string(
                                 line
                             } else {
                                     line
-                            };
-                            line})
+                            }})
                         // get the lonest ICE line 
                         .max_by_key(|line|
                             // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
@@ -2280,13 +2281,12 @@ fn codegen_tree_splicer_omni() {
     // read all fhe files
     let hmap = files
         .iter()
-        .map(|p| (p, std::fs::read_to_string(&p).unwrap_or_default()))
-        .map(|(p, file_content)| {
+        .map(|p| (p, std::fs::read_to_string(p).unwrap_or_default()))
+        .filter_map(|(p, file_content)| {
             parser
                 .parse(&file_content, None)
                 .map(|t| (p, file_content, t))
         })
-        .flatten()
         .map(|(path, file_content, tree)| {
             (
                 path.display().to_string(),
@@ -2390,7 +2390,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
             .map(|mutation| {
                 let (output, _cmd_str, _args) = run_rustc_incremental_with_two_files(
                     &Executable::Rustc.path(),
-                    &&original_file_path.as_path(),
+                    original_file_path.as_path(),
                     &mutation,
                     &global_tempdir_path.to_path_buf(),
                 )

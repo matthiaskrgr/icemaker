@@ -22,7 +22,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     };
 
     let file_content = std::fs::read_to_string(path)
-        .expect(&format!("splicer failed to read file {}", path.display()));
+        .unwrap_or_else(|_| panic!("splicer failed to read file {}", path.display()));
     // skip if its too long to avoid stack overflows somewhere
     if file_content.lines().count() > 1000 {
         return Vec::new();
@@ -77,7 +77,7 @@ pub(crate) fn splice_file_from_set(
     //  let tree = parser.parse(&file_content, None);
 
     // TODO just return Iterator here
-    splice(splicer_cfg, &hmap)
+    splice(splicer_cfg, hmap)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         .collect::<Vec<String>>()
 }

@@ -58,6 +58,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         // "-Clto=off", // rustc_codegen_gcc
         "--edition=2021",
         //  "-Ztreat-err-as-bug=3",
+        "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2015
     &[
@@ -88,9 +89,11 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        "-Zcrate-attr=feature(effects)",
         //  "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",
+        "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2018
     &[
@@ -127,8 +130,10 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
+        "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     // basic stuff, edition 2021
     &[
@@ -174,9 +179,17 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(pointer_like_trait)",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
+        "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",
+        "-Zlower-impl-trait-in-trait-to-assoc-ty",
+    ],
+    // edition 2014
+    &[
+        "--edition=2024",
+        "-Zunstable-options",
+        "-Zlower-impl-trait-in-trait-to-assoc-ty",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

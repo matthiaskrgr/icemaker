@@ -1547,9 +1547,10 @@ fn find_ICE_string(
         "feature(lang_items)",
         "#[rustc_variance]",
         "qemu: uncaught target signal",
-        "[feature(core_intrinsics)",
-        "platform_intrinsics",
-        "libc::SIGSEGV",
+        "core_intrinsics",     // feature(..)
+        "platform_intrinsics", // feature(..)
+        "::SIGSEGV",
+        "SIGSEGV::",
         "delay_span_bug_from_inside_query",
     ];
 

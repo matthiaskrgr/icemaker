@@ -1552,6 +1552,7 @@ fn find_ICE_string(
         "::SIGSEGV",
         "SIGSEGV::",
         "delay_span_bug_from_inside_query",
+        "#[rustc_variance]",
     ];
 
     let interestingness = {

@@ -817,7 +817,7 @@ pub(crate) fn run_miri(
     let has_test = file_string.contains("#[test]");
 
     let no_std = file_string.contains("#![no_std]");
-    let platform_intrinsics = file_string.contains("feature(platform_intrinsics)");
+    let platform_intrinsics = file_string.contains("platform_intrinsics");
     let custom_mir = file_string.contains("mir!");
 
     if no_std || platform_intrinsics || (!has_main && !has_test) || custom_mir {

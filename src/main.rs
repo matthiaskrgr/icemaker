@@ -2278,7 +2278,7 @@ fn codegen_tree_splicer_omni() {
     // rust!
     parser.set_language(tree_sitter_rust::language()).unwrap();
 
-    println!("parsing files..");
+    println!("parsing {} files..", files.len());
 
     // read all fhe files
     let hmap = files

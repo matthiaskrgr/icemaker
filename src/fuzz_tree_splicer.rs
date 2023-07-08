@@ -9,10 +9,10 @@ use tree_splicer::splice::{splice, Config};
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
-        seed: 30,
+        seed: 987,
         tests: 100, // 10
         //
-        chaos: 10,
+        chaos: 2,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
@@ -52,10 +52,10 @@ pub(crate) fn splice_file_from_set(
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
-        seed: 30,
-        tests: 100, // 10
+        seed: 420,
+        tests: 50, // 10
         //
-        chaos: 1,
+        chaos: 2,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
@@ -84,7 +84,7 @@ pub(crate) fn splice_file_from_set(
 
 // such files will most likely just causes known crashes or hang the splicing
 pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
-    const LINE_LIMIT: usize = 1000;
+    const LINE_LIMIT: usize = 200; // was 1000
 
     let content = std::fs::read_to_string(file).unwrap_or_default();
     let lines_count = content.lines().count();

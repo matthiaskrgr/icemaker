@@ -78,7 +78,7 @@ pub(crate) fn splice_file_from_set(
 
     // TODO just return Iterator here
 
-    // TODO tree splicer sometimes just hangs.  can we kill the thread after N seconds?
+    // TODO tree splicer sometimes just hangs.
     splice(splicer_cfg, hmap)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         .collect::<Vec<String>>()

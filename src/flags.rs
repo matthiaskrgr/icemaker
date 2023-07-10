@@ -89,7 +89,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zmaximal-hir-to-mir-coverage",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
-        "-Zcrate-attr=feature(effects)",
+        //        "-Zcrate-attr=feature(effects)",
         //  "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",
@@ -130,7 +130,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zcrate-attr=feature(explicit_tail_calls)",
-        "-Zcrate-attr=feature(effects)",
+        //     "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
         "-Zlower-impl-trait-in-trait-to-assoc-ty",
@@ -179,7 +179,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(pointer_like_trait)",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
-        "-Zcrate-attr=feature(effects)",
+        //    "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         // "-Zlower-impl-trait-in-trait-to-assoc-ty",
         //   "-Ztreat-err-as-bug=3",

@@ -48,6 +48,8 @@ pub enum ICEKind {
     TypeError,
     // double, ice while ice via -Ztreat-err-as-bug
     DoubleIce,
+    // rustfmt failed to format the code
+    RustfmtFailure,
 }
 
 impl Default for ICEKind {
@@ -106,6 +108,7 @@ impl ICE {
             ICEKind::RustFix => "RustFix".yellow(),
             ICEKind::TypeError => "TypeError".yellow(),
             ICEKind::DoubleIce => "DoubleICE".red(),
+            ICEKind::RustfmtFailure => "Fmt".yellow(),
         };
 
         let flags = self.args.join(" ");

@@ -1616,6 +1616,8 @@ fn find_ICE_string(
         // rustc_codegen_gcc
         // "libgccjit.so: error:",
         // "thread '.*' panicked at",
+        // rustfmt formatting failure:
+        "left behind trailing whitespace",
 
       //  "we would appreciate a bug report",
 
@@ -1831,8 +1833,10 @@ fn find_ICE_string(
                                 let line = format!("{line}   {left} {right}");
                                 #[allow(clippy::let_and_return)]
                                 line
+                            } else if matches!(executable, Executable::Rustfmt) && line.contains("left behind trailing whitespace") {
+                                String::from("error[internal]: left behind trailing whitespace")
                             } else {
-                                    line
+                                 line
                             }})
                         // get the lonest ICE line 
                         .max_by_key(|line|

@@ -376,7 +376,13 @@ pub(crate) fn run_clippy_fix(
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {file_stem}");
+        eprintln!(
+            "ERROR: cargo new failed for: '{file_stem}', run_clippy_fix() {}:{}:{}",
+            file!(),
+            line!(),
+            column!()
+        );
+
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -631,7 +637,13 @@ pub(crate) fn run_clippy_fix_with_args(
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {file_stem}");
+        eprintln!(
+            "ERROR: cargo new failed for: '{file_stem}', run_clippy_fix_with_args() {}:{}:{}",
+            file!(),
+            line!(),
+            column!()
+        );
+
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -850,7 +862,12 @@ pub(crate) fn run_miri(
         .status
         .success()
     {
-        eprintln!("ERROR: cargo new failed for: {file_stem}",);
+        eprintln!(
+            "ERROR: cargo new failed for: '{file_stem}', run_miri() {}:{}:{}",
+            file!(),
+            line!(),
+            column!()
+        );
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -995,7 +1012,12 @@ pub(crate) fn run_kani(
             .status
             .success()
         {
-            eprintln!("ERROR: cargo new failed for: {file_stem}",);
+            eprintln!(
+                "ERROR: cargo new failed for: '{file_stem}', run_kani() {}:{}:{}",
+                file!(),
+                line!(),
+                column!()
+            );
             return CommandOutput::new(
                 std::process::Command::new("true")
                     .output()

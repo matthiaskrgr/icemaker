@@ -116,8 +116,10 @@ impl ICE {
 
         // HACK
         // also log the ICE to disk here since its probably most convenient at this place in time/code
-        let report: Report = self.clone().into_report(global_tempdir);
-        report.to_disk();
+
+        // @FIXME this is disabled because its not tempdir'd properly leading to disk trashing
+        // let report: Report = self.clone().into_report(global_tempdir);
+        //  report.to_disk();
 
         format!(
             "{kind}: {:?} {} '{flags}' '{}', '{}'",

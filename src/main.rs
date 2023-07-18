@@ -1108,7 +1108,7 @@ impl ICE {
 
             // we know this is an ICE
             PRINTER.log(PrintMessage::IceFound {
-                ice: ice.to_printable(),
+                ice: ice.to_printable(&global_tempdir_path),
             });
 
             return Some(ice);
@@ -1173,7 +1173,7 @@ impl ICE {
                         kind: icekind,
                     };
                     PRINTER.log(PrintMessage::IceFound {
-                        ice: ice.to_printable(),
+                        ice: ice.to_printable(&global_tempdir_path),
                     });
 
                     return Some(ice);
@@ -1346,7 +1346,7 @@ impl ICE {
                     kind: ICEKind::Hang(seconds_elapsed),
                 };
                 PRINTER.log(PrintMessage::IceFound {
-                    ice: hang.to_printable(),
+                    ice: hang.to_printable(&global_tempdir_path),
                 });
 
                 return Some(hang);
@@ -1433,7 +1433,7 @@ impl ICE {
 
         if let Some(ice) = ret.clone() {
             PRINTER.log(PrintMessage::IceFound {
-                ice: ice.to_printable(),
+                ice: ice.to_printable(&global_tempdir_path),
             });
         }
         ret

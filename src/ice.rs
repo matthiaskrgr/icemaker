@@ -4,6 +4,7 @@ use clap::Parser;
 use colored::Colorize;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use tempdir::TempDir;
 
 use crate::{library::Args, run_commands::prlimit_run_command};
 
@@ -97,7 +98,7 @@ pub(crate) type ICEDisplay = String;
 
 impl ICE {
     // print a ICE to stdout or something
-    pub(crate) fn to_printable(&self) -> ICEDisplay {
+    pub(crate) fn to_printable(&self, global_tempdir: &PathBuf) -> ICEDisplay {
         let kind = match self.kind {
             ICEKind::Ice(Interestingness::Interesting) => "ICE".red(),
             ICEKind::Ice(Interestingness::Boring) => "ice".normal(),
@@ -115,7 +116,7 @@ impl ICE {
 
         // HACK
         // also log the ICE to disk here since its probably most convenient at this place in time/code
-        let report: Report = self.into();
+        let report: Report = self.clone().into_report(global_tempdir);
         report.to_disk();
 
         format!(
@@ -131,7 +132,7 @@ impl ICE {
 /*
 fn _run_treereduce(ice: &ICE) {
     let file = ice.file;
-    let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
+    let original_code = std::fs::read_to_strinaggregateg(&original_path).unwrap_or("<error>".into());
     let flags = self.args.clone().join(" ");
     let executable_bin = &self.executable.path();
     let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
@@ -143,9 +144,13 @@ pub(crate) struct Report {
     data: String,
 }
 
-impl From<&ICE> for Report {
-    fn from(ice: &ICE) -> Self {
+impl ICE {
+    fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
+        let ice = &self;
         //unreachable!("DO USE TMPDIR HERE!");
+        let tempdir =
+            TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir_reporting").unwrap();
+        let tempdir_path = tempdir.path().display();
 
         let original_path = ice.file.clone();
         let original_path_display = original_path.display();
@@ -157,6 +162,7 @@ impl From<&ICE> for Report {
         let mut cmd = std::process::Command::new(executable_bin);
         cmd.args(&ice.args);
         cmd.arg(&ice.file);
+        cmd.current_dir(tempdir_path.to_string());
 
         let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
         //  let output_stderr = String::from_utf8(prl_output.stdout).unwrap();

@@ -1355,6 +1355,10 @@ pub(crate) fn prlimit_run_command(
                     v.unwrap_or_else(|| panic!("failed to unwrap env {:?}", k.to_str())),
                 )
             })
+            .chain(std::iter::once((
+                std::ffi::OsStr::new("RUSTC_ICE"),
+                std::ffi::OsStr::new("0"),
+            )))
             .collect::<Vec<(&std::ffi::OsStr, &std::ffi::OsStr)>>();
         let full_miri = new_command
             .get_args()

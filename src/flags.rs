@@ -92,6 +92,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //  "-Clto=off", // rustc_codegen_gcc
         //   "-Ztreat-err-as-bug=3",
         "-Zcrate-attr=feature(lazy_type_alias)",
+        "-Ztrait-solver=next-coherence",
     ],
     // basic stuff, edition 2018
     &[
@@ -131,6 +132,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //     "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
+        "-Ztrait-solver=next-coherence",
     ],
     // basic stuff, edition 2021
     &[
@@ -181,6 +183,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //    "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //   "-Ztreat-err-as-bug=3",
+        "-Ztrait-solver=next-coherence",
     ],
     // edition 2014
     &["--edition=2024", "-Zunstable-options"],

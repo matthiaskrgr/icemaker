@@ -176,7 +176,7 @@ fn check_dir(
     };
 
     if args.codegen {
-        codegen_git();
+        codegen_git_original_dirs();
         return Vec::new();
     }
 
@@ -2101,7 +2101,8 @@ fn codegen_git() {
 
     let s = String::from_utf8(stdout).unwrap();
     /*
-        3a9e68329aa60201fe4eedeed3e1b80cc68926dc regex_macros/src
+
+    3a9e68329aa60201fe4eedeed3e1b80cc68926dc regex_macros/src
     eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 regex_macros/src/lib.rs
     a7e1f44f5eae607f1fa51951eff463e62d03bd13
     a6945d655576f7497515d6870f476f45ddd07a33 regex_macros
@@ -2144,6 +2145,94 @@ fn codegen_git() {
             std::fs::create_dir_all(dir).expect("failed to create directories");
             std::fs::write(file_path, text).expect("failed to write file");
         })
+}
+
+// try to sort files into their original directories
+fn codegen_git_original_dirs() {
+    println!("querying blobs");
+    let stdout = std::process::Command::new("git")
+        .arg("rev-list")
+        .arg("--objects")
+        .arg("--all")
+        .output()
+        .expect("git rev-list failed")
+        .stdout;
+
+    println!("converting to text");
+
+    let s = String::from_utf8(stdout).unwrap();
+    /*
+
+    3a9e68329aa60201fe4eedeed3e1b80cc68926dc regex_macros/src
+    eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 regex_macros/src/lib.rs
+    a7e1f44f5eae607f1fa51951eff463e62d03bd13
+    a6945d655576f7497515d6870f476f45ddd07a33 regex_macros
+    fd0fd35ca74b281eb4753bc44d2f36583fefbca0 regex_macros/Cargo.toml
+        */
+    println!("writing to files");
+
+    let objects = s
+        .lines()
+        // only interested in rust files
+        .filter(|line| line.ends_with(".rs"))
+        // since we filtered for .rs$, we should always encounter <hash> <path>
+        .map(|line| -> String {
+            let mut split: std::str::SplitWhitespace<'_> = line.split_whitespace();
+            let hash = split.next().unwrap();
+            let path = split.next().unwrap();
+            assert!(split.next().is_none()); // no third token
+
+            // remove the .rs
+            let path_without_extension = &path[0..path.len() - 2];
+            // make it
+            // eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 path/to/file_eb6c6f8f12a6d6db38bcfa741036d9622fad6c89.rs
+            format!("{hash} {path_without_extension}_{hash}.rs")
+        })
+        .collect::<Vec<String>>();
+
+    /*
+    eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 path/to/file_<hash>.rs
+    fd0fd35ca74b281eb4753bc44d2f36583fefbca0 / file_<hash>.rs
+    */
+
+    objects.par_iter().for_each(|line| {
+        //  eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 path/to/file_<hash>.rs
+        let mut split: std::str::SplitWhitespace<'_> = line.split_whitespace();
+        let hash = split.next().unwrap();
+        let path = split.next().unwrap();
+
+        let obj = hash;
+
+        let stdout = std::process::Command::new("git")
+            .arg("cat-file")
+            .arg("-p")
+            .arg(obj)
+            .output()
+            .expect("git cat-file -p <obj> failed")
+            .stdout;
+        // the file content
+        let text = String::from_utf8(stdout).unwrap();
+        let path_path = PathBuf::from(path);
+        let file_path = path_path.file_name().unwrap();
+        let dir = path_path.parent().unwrap();
+
+        if !(path.starts_with("..") || path.starts_with('/')) {
+            // try to create the original directory the file was in
+            if !PathBuf::from(file_path).exists() {
+                std::fs::create_dir_all(dir).expect("failed to create directories");
+            }
+
+            let final_path = format!("{}/{}", dir.display(), file_path.to_str().unwrap());
+
+            std::fs::write(&final_path, text)
+                .expect(&format!("failed to write to file: '{final_path}'"));
+        } else {
+            eprintln!(
+                "not writing file {}",
+                format!("{}/{}", dir.display(), file_path.to_str().unwrap())
+            );
+        }
+    })
 }
 
 fn _codegen_git_and_check() {

@@ -2183,7 +2183,7 @@ fn codegen_git_original_dirs() {
             assert!(split.next().is_none()); // no third token
 
             // remove the .rs
-            let path_without_extension = &path[0..path.len() - 2];
+            let path_without_extension = &path[0..path.len() - ".rs".len()];
             // make it
             // eb6c6f8f12a6d6db38bcfa741036d9622fad6c89 path/to/file_eb6c6f8f12a6d6db38bcfa741036d9622fad6c89.rs
             format!("{hash} {path_without_extension}_{hash}.rs")

@@ -2097,7 +2097,7 @@ fn codegen_git() {
         .expect("git rev-list failed")
         .stdout;
 
-    println!("converting to text");
+    println!("converting to text ({} entries)", stdout.len());
 
     let s = String::from_utf8(stdout).unwrap();
     /*
@@ -2158,7 +2158,7 @@ fn codegen_git_original_dirs() {
         .expect("git rev-list failed")
         .stdout;
 
-    println!("converting to text");
+    println!("converting to text ({} entries)", stdout.len());
 
     let s = String::from_utf8(stdout).unwrap();
     /*
@@ -2175,12 +2175,14 @@ fn codegen_git_original_dirs() {
         .lines()
         // only interested in rust files
         .filter(|line| line.ends_with(".rs"))
+        // if we have more than 2 words, skip (skip paths witl spaces them because my shitty parsing does not handle that :D
+        .filter(|line| line.chars().filter(|c| c == &' ').count() == 1)
         // since we filtered for .rs$, we should always encounter <hash> <path>
         .map(|line| -> String {
             let mut split: std::str::SplitWhitespace<'_> = line.split_whitespace();
             let hash = split.next().unwrap();
             let path = split.next().unwrap();
-            assert!(split.next().is_none()); // no third token
+            assert_eq!(split.next(), None); // no third token
 
             // remove the .rs
             let path_without_extension = &path[0..path.len() - ".rs".len()];

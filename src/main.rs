@@ -2353,6 +2353,9 @@ fn codegen_tree_splicer() {
 
 // same but do not restrict fuzzing input set to a single file
 fn codegen_tree_splicer_omni() {
+    // run it on each dir
+    // for i in `find .  -type d ` ; do ; echo $i ;  cd $i ; prlimit --noheadings --cpu=300  ~/vcs/github/icemaker/target/release/icemaker --codegen-splice-omni ; cd   ~/vcs/github/rust_codegen_grouped  ; done
+
     use std::collections::HashMap;
     use tree_sitter::{Parser, Tree};
 

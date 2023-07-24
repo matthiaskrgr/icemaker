@@ -1677,11 +1677,10 @@ fn find_ICE_string(
                 .filter(|line| {
                     let split = &line.split_ascii_whitespace().take(3).collect::<Vec<_>>()[..];
                     match split {
-                        [_] | [] => true,
                         // skip these  1234 | bla...
                         [a, b] if a.parse::<i32>().is_ok() && *b == "|" => false,
                         [a, b, ..] if a.parse::<i32>().is_ok() && *b == "|" => false,
-                        _ => true,
+                         _ => true,
                 }});
 
             match executable {

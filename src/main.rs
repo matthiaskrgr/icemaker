@@ -1673,7 +1673,16 @@ fn find_ICE_string(
                  // in the output this will look somewhat like this:
                  // 23 |         panic!(it.next(), Some("note: Run with `RUST_BACKTRACE=1` 
                 // ignore such lines
-                .filter(|line|!(line.chars().next().map(|c| c.is_ascii_digit())  == Some(true) && line.contains(" | ") && line.contains("RUST_BACKTRACE=")));
+                //.filter(|line|!(line.chars().next().map(|c| c.is_ascii_digit())  == Some(true) && line.contains(" | ") && line.contains("RUST_BACKTRACE=")));
+                .filter(|line| {
+                    let split = &line.split_ascii_whitespace().take(3).collect::<Vec<_>>()[..];
+                    match split {
+                        [_] | [] => true,
+                        // skip these  1234 | bla...
+                        [a, b] if a.parse::<i32>().is_ok() && *b == "|" => false,
+                        [a, b, ..] if a.parse::<i32>().is_ok() && *b == "|" => false,
+                        _ => true,
+                }});
 
             match executable {
                 Executable::Miri => {

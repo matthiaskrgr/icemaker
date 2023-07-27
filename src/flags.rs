@@ -186,7 +186,17 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Ztrait-solver=next-coherence",
     ],
     // edition 2014
-    &["--edition=2024", "-Zunstable-options"],
+    &[
+        "--edition=2024",
+        "-Zunstable-options",
+        "-Zmir-opt-level=3",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
+        "-Zsanitizer=cfi",
+        "-Clto",
+        "-Zsanitizer-cfi-normalize-integers",
+        "-ocodegen",
+    ],
     /* rustc codegen gcc
     &["--edition=2021"],
     &["--edition=2015"],

@@ -921,6 +921,8 @@ impl ICE {
             });
         }
 
+        // note: `actual_args` are the VERY ORIGINAL ARGS so this contains something like -otmpdir_foo.AFXIU/outfile which will no longer be
+        // a valid path as soon as the tempdir goes out of scope
         let (cmd_output, _cmd, actual_args) = match executable {
             Executable::Clippy => run_clippy(exec_path, file, global_tempdir_path),
             Executable::ClippyFix => run_clippy_fix(exec_path, file, global_tempdir_path),
@@ -972,6 +974,36 @@ impl ICE {
             }
         }
         .unwrap();
+
+        // dbg!(&actual_args);
+
+        // remap actual args
+
+        // this tempdir should live until the end of the function
+        let tempdir =
+            TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir_discover").unwrap();
+        let tempdir_path = tempdir.path().display();
+        let actual_args = actual_args
+            .into_iter()
+            .map(|arg| {
+                if arg.to_str().unwrap().starts_with("-o") {
+                    let mut os = OsString::from("-o");
+                    os.push::<&OsString>(&OsString::from(tempdir_path.to_string()));
+                    os.push::<&OsString>(&OsString::from("/outputfile"));
+                    os
+                } else if arg.to_str().unwrap().starts_with("-Zdump-mir-dir)") {
+                    let mut os = OsString::from("-Zdump-mir-dir=");
+                    os.push::<&OsString>(&OsString::from(tempdir_path.to_string()));
+
+                    os
+                } else {
+                    arg
+                }
+            })
+            .collect::<Vec<OsString>>();
+
+        // dbg!("after remapping");
+        //  dbg!(&actual_args);
 
         /*if cmd_output.stdout.len() > 10_000_000 || cmd_output.stderr.len() > 10_000_000 {
             eprintln!(
@@ -1160,7 +1192,6 @@ impl ICE {
                             .collect::<String>()
                     );
                 }
-
                 if let Some((err_reason, icekind)) = found_error0 {
                     let ice = ICE {
                         regresses_on: Regression::Master,
@@ -1213,6 +1244,7 @@ impl ICE {
 
                     // WE ALREADY HAVE filename etc in the args, rustc erros if we pass 2 files etc
 
+                    // output: get the command output again from file, executable and flags
                     // clippyfix for example needs special handling here
                     let output = if matches!(executable, Executable::ClippyFix) {
                         let (output, _somestr, _flags) = run_clippy_fix_with_args(
@@ -1232,7 +1264,7 @@ impl ICE {
                         prlimit_run_command(&mut cmd).unwrap()
                     };
 
-                    // dbg!(&output);
+                    //  dbg!(&output);
                     let found_error2 = find_ICE_string(file, executable, output);
 
                     // remove the tempdir
@@ -1241,7 +1273,7 @@ impl ICE {
                     if found_error2.is_some() {
                         // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
                         flag_combinations.iter().any(|flag_combination| {
-                            //dbg!(&flag_combination);
+                            //  dbg!(&flag_combination);
 
                             // check if we have to timeout
                             // use limit * 2 to be a bit more generous since bisecting can take time
@@ -1436,6 +1468,7 @@ impl ICE {
                 ice: ice.to_printable(&global_tempdir_path),
             });
         }
+        drop(tempdir);
         ret
     }
 }

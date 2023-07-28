@@ -1033,7 +1033,8 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let mut found_error = find_ICE_string(file, executable, cmd_output);
+        let mut found_error: Option<(String, ICEKind)> =
+            find_ICE_string(file, executable, cmd_output);
 
         // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
         match (&found_error, executable) {
@@ -1049,10 +1050,33 @@ impl ICE {
             _ => {}
         }
 
+        // unmut
         let found_error = found_error;
 
         // check if the file enables any compiler features
         let uses_feature: bool = uses_feature(file);
+
+        // this is basically an unprocessed ICE, we know we have crashed, but we have not reduced the flags yet.
+        // prefer return this over returning an possible hang while minimizing flags later
+        let raw_ice = if let Some((ice_msg, icekind)) = found_error.clone() {
+            let ice = ICE {
+                regresses_on: Regression::Master,
+                needs_feature: uses_feature,
+                file: file.to_owned(),
+                args: compiler_flags
+                    .iter()
+                    .cloned()
+                    .map(|f| f.to_string())
+                    .collect::<Vec<String>>(),
+                error_reason: ice_msg.clone(),
+                ice_msg,
+                executable: Executable::Rustc,
+                kind: icekind,
+            };
+            Some(ice)
+        } else {
+            None
+        };
 
         let exit_code_looks_like_crash = exit_status == 101 ||  /* segmentation fault etc */ (132..=139).contains(&exit_status) ||  /* llvm crash / assertion failure etc */ exit_status == 254;
 
@@ -1362,6 +1386,9 @@ impl ICE {
                         .collect::<String>()
                 );
 
+                if raw_ice.is_some() {
+                    return raw_ice;
+                }
                 // the process was killed by prlimit because it exceeded time limit
                 let hang = ICE {
                     regresses_on: Regression::Master,
@@ -1444,6 +1471,10 @@ impl ICE {
                     })
                     .collect::<String>()
             );
+
+            if raw_ice.is_some() {
+                return raw_ice;
+            }
 
             // the process was killed by prlimit because it exceeded time limit
             let ret_hang = ICE {

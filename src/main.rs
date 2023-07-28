@@ -1171,7 +1171,7 @@ impl ICE {
                 // shitty destructing
 
                 let seconds_elapsed = thread_start.elapsed().as_secs();
-                if seconds_elapsed > (SECONDS_LIMIT_MIRI) {
+                if seconds_elapsed > (SECONDS_LIMIT) {
                     print!("\r");
                     println!(
                         "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",
@@ -1179,7 +1179,7 @@ impl ICE {
                         executable,
                         file.display(),
                         seconds_elapsed,
-                        SECONDS_LIMIT_MIRI,
+                        SECONDS_LIMIT,
                         actual_args
                             .iter()
                             .cloned()

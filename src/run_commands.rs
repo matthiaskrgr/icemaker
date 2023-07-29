@@ -245,7 +245,7 @@ pub(crate) fn run_rustc_lazy_type_alias(
             .arg("-Zwrite-long-types-to-disk=no");
 
         if *i == 1 {
-            cmd.arg("-Zcrate-attr=feature(lazy_type_alias)");
+            command.arg("-Zcrate-attr=feature(lazy_type_alias)");
         }
 
         //dbg!(&command);

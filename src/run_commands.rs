@@ -266,8 +266,22 @@ pub(crate) fn run_rustc_lazy_type_alias(
             output_with_flag = Some(output.clone());
         }
     }
+    let mut all_output_without_flag = String::new();
+    let o = output_without_flag.unwrap().unwrap();
+    let x = String::from_utf8_lossy(&o.stdout);
+    let y = String::from_utf8_lossy(&o.stderr);
+    all_output_without_flag.push_str(&x);
+    all_output_without_flag.push_str(&y);
 
-    if output_without_flag != output_with_flag {
+    let mut all_output_with_flag = String::new();
+    let o = output_with_flag.unwrap().unwrap();
+    let x = String::from_utf8_lossy(&o.stdout);
+    let y = String::from_utf8_lossy(&o.stderr);
+    all_output_with_flag.push_str(&x);
+    all_output_with_flag.push_str(&y);
+
+    // no warnings previously, no before output != after output
+    if all_output_without_flag.is_empty() && all_output_without_flag != all_output_with_flag {
         eprintln!("\n\n LAZY TYPE ALIAS DIFFERENCE {}\n\n", file.display());
     }
 

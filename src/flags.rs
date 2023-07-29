@@ -93,6 +93,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //   "-Ztreat-err-as-bug=3",
         "-Zcrate-attr=feature(lazy_type_alias)",
         "-Ztrait-solver=next-coherence",
+        "-Zcrate-attr=feature(generic_const_items)",
     ],
     // basic stuff, edition 2018
     &[
@@ -129,6 +130,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(fn_ptr_trait)",
         "-Zcrate-attr=feature(explicit_tail_calls)",
         "-Zcrate-attr=feature(lazy_type_alias)",
+        "-Zcrate-attr=feature(generic_const_items)",
         //     "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
@@ -176,6 +178,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(negative_bounds)",
         "-Zcrate-attr=feature(dyn_star)",
         "-Zcrate-attr=feature(pointer_like_trait)",
+        "-Zcrate-attr=feature(generic_const_items)",
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
         "-Zcrate-attr=feature(lazy_type_alias)",
@@ -196,7 +199,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "--edition=2024",
         "-Zunstable-options",
         "-Zmir-opt-level=3",
-
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

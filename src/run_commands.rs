@@ -241,7 +241,8 @@ pub(crate) fn run_rustc_lazy_type_alias(
             .env("SYSROOT", &*SYSROOT_PATH)
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
-            .arg("--edition=2021");
+            .arg("--edition=2021")
+            .arg("-Zwrite-long-types-to-disk=no");
 
         if *i == 1 {
             cmd.arg("-Zcrate-attr=feature(lazy_type_alias)");

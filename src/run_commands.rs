@@ -210,6 +210,76 @@ pub(crate) fn run_rustc_incremental(
     )
 }
 
+pub(crate) fn run_rustc_lazy_type_alias(
+    executable: &str,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
+
+    let has_main = std::fs::read_to_string(file)
+        .unwrap_or_default()
+        .contains("fn main(");
+
+    let mut cmd = Command::new("DUMMY");
+    let mut output = None;
+    let mut actual_args = Vec::new();
+
+    let mut output_without_flag = None;
+    let mut output_with_flag = None;
+
+    for i in &[0, 1] {
+        let mut command = Command::new(executable);
+        if !has_main {
+            command.arg("--crate-type=lib");
+        }
+        command
+            .arg(file)
+            .env("SYSROOT", &*SYSROOT_PATH)
+            // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
+            .arg(format!("-o{}/{}", tempdir_path.display(), i))
+            .arg("--edition=2021");
+
+        if *i == 1 {
+            cmd.arg("-Zcrate-attr=feature(lazy_type_alias)");
+        }
+
+        //dbg!(&command);
+
+        let output_ = Some(prlimit_run_command(&mut command));
+        actual_args = command
+            .get_args()
+            .map(|s| s.to_owned())
+            .collect::<Vec<OsString>>();
+        //dbg!(&output);
+        cmd = command;
+
+        output = output_.map(|output| output.unwrap());
+
+        if *i == 0 {
+            output_without_flag = Some(output.clone());
+        } else {
+            output_with_flag = Some(output.clone());
+        }
+    }
+
+    if output_without_flag != output_with_flag {
+        eprintln!("\n\n LAZY TYPE ALIAS DIFFERENCE {}", file.display());
+    }
+
+    tempdir.close().unwrap();
+    //dbg!(&output);
+    CommandOutput::new(
+        output.unwrap(),
+        get_cmd_string(&cmd),
+        actual_args,
+        crate::Executable::Rustc,
+    )
+}
+
 // compile 2 variations of a file with shared incr comp cache and try to find crashes
 pub(crate) fn run_rustc_incremental_with_two_files(
     executable: &str,

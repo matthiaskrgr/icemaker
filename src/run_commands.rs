@@ -267,7 +267,7 @@ pub(crate) fn run_rustc_lazy_type_alias(
     }
 
     if output_without_flag != output_with_flag {
-        eprintln!("\n\n LAZY TYPE ALIAS DIFFERENCE {}", file.display());
+        eprintln!("\n\n LAZY TYPE ALIAS DIFFERENCE {}\n\n", file.display());
     }
 
     tempdir.close().unwrap();

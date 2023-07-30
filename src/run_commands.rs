@@ -246,6 +246,7 @@ pub(crate) fn run_rustc_lazy_type_alias(
 
         if *i == 1 {
             command.arg("-Zcrate-attr=feature(lazy_type_alias)");
+            command.arg("-Aincomplete_features");
         }
 
         //dbg!(&command);

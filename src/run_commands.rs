@@ -218,8 +218,6 @@ pub(crate) fn run_rustc_lazy_type_alias(
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
-
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
         .contains("fn main(");
@@ -262,6 +260,19 @@ pub(crate) fn run_rustc_lazy_type_alias(
         output = output_.map(|output| output.unwrap());
 
         if *i == 0 {
+            // shortcut: if rustc without lazy_type_alias encountered errors we can already stop checking
+
+            let o = output.clone();
+            let o = o.unwrap();
+            if !o.status.success() {
+                return CommandOutput::new(
+                    Command::new("false").output().unwrap(),
+                    String::new(),
+                    Vec::new(),
+                    crate::Executable::Rustc,
+                );
+            }
+
             output_without_flag = Some(output.clone());
         } else {
             output_with_flag = Some(output.clone());

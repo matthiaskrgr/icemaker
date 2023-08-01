@@ -9,7 +9,7 @@ use tree_splicer::splice::{splice, Config};
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
-        seed: 987,
+        seed: 12,
         tests: 100, // 10
         //
         chaos: 2,
@@ -52,8 +52,8 @@ pub(crate) fn splice_file_from_set(
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
-        seed: 420,
-        tests: 50, // 10
+        seed: 10,
+        tests: 100, // 10
         //
         chaos: 2,
         deletions: 0,

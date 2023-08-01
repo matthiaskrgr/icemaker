@@ -140,6 +140,7 @@ fn _run_treereduce(ice: &ICE) {
     let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
 } */
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub(crate) struct Report {
     ice: ICE,
@@ -147,6 +148,7 @@ pub(crate) struct Report {
 }
 
 impl ICE {
+    #[allow(unused)]
     fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
         //unreachable!("DO USE TMPDIR HERE!");
@@ -213,6 +215,7 @@ Program output:
     }
 }
 
+#[allow(unused)]
 impl Report {
     pub(crate) fn _print(&self) {
         println!("{}", self.data);

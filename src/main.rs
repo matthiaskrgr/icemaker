@@ -229,6 +229,12 @@ fn check_dir(
         std::process::exit(1);
     }
 
+    if (args).analyze {
+        // TODO: pass pathbuf to errors json
+        analyze();
+        std::process::exit(1)
+    }
+
     // search for rust files inside CWD
     let mut files = WalkDir::new(root_path)
         .into_iter()
@@ -838,6 +844,7 @@ fn main() {
     let errors_json_tmp = Arc::new(Mutex::new(std::fs::File::create(tmp_file).unwrap()));
 
     // all checked files
+
     let files = projects
         .iter()
         .map(|dir| check_dir(dir, &args, &global_tempdir_path, &timer, &errors_json_tmp))
@@ -2612,4 +2619,86 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
             .flatten()
             .collect::<Vec<_>>()
     }
+}
+
+fn analyze() {
+    // todo handle all Executables
+
+    // reduce code using $Executable,
+    // make sure to prlimit that
+    // try to fmt the mcve
+    // ok => save fmttd
+    // rustfmt needs --edition from ice.flags
+    //         => try to reduce further?
+    // not ok (ice gone after fmt) => save original
+
+    // if we have mvce and flags, run cargo-bisect rustc IFF the Executable is shipped by rustc (clippy, rustc, rustdoc, miri?)
+
+    // for some flags we could have an "all out" reduction and an
+    // "rustc file.rs" && rustc $flags file.rs
+    // reduction which makes sure the file still compiles under some condition
+
+    // put both versions in the Report
+
+    let root_path = std::env::current_dir().expect("no cwd!");
+    // parse the reported ICEs
+    let errors_json = root_path.join("errors.json");
+    let ices: Vec<ICE> = if errors_json.exists() {
+        let read = match std::fs::read_to_string(&errors_json) {
+            Ok(content) => content,
+            Err(_) => panic!("failed to read '{}'", errors_json.display()),
+        };
+        match serde_json::from_str(&read) {
+            Ok(previous_errors) => previous_errors,
+            Err(e) => {
+                // this can happen if we for example change the representation of Ice so that that the previous file is no longer compatible with the new format
+                eprintln!("Failed to parse errors.json, is it a json file?");
+                eprintln!("origina error: '{e:?}'");
+                Vec::new()
+            }
+        }
+    } else {
+        // we don't have a file, start blank
+        Vec::new()
+    };
+
+    ices.into_iter().for_each(|ice| {
+        let file = &ice.file;
+        let flags = &ice.args;
+        let executable = &ice.executable;
+        let bin = executable.path();
+
+        if matches!(Executable::Rustc, executable) {
+            let mut trd = std::process::Command::new("treereduce-rust");
+            trd.args([
+                "--quiet",
+                "--passes=10",
+                "--min-reduction=10",
+                "--interesting-exit-code=101",
+                "--output '-'",
+            ]);
+            trd.arg("--source");
+            trd.arg(file);
+
+            trd.args(["--", &bin]);
+            trd.args(flags);
+            trd.arg("@@.rs");
+
+            let output = trd.output().unwrap();
+            let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
+
+            let analysis = Analysis {
+                ice: ice.clone(),
+                mvce: reduced_file,
+            };
+
+            dbg!(analysis);
+        }
+    })
+}
+
+#[derive(Debug, Clone)]
+struct Analysis {
+    ice: ICE,
+    mvce: String,
 }

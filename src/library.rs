@@ -88,6 +88,10 @@ pub(crate) struct Args {
 
     #[clap(long)]
     pub(crate) global_tempdir_path: Option<std::path::PathBuf>,
+
+    // read ice json and reduce, bisect, gen report?
+    #[clap(long)]
+    pub(crate) analyze: bool,
 }
 
 /// check whether a file uses features or not

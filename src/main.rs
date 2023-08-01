@@ -1152,7 +1152,13 @@ impl ICE {
 
         // incremental ices don't need to have their flags reduced
         if incremental && found_error.is_some() {
-            let (found_error, kind) = found_error.unwrap();
+            let (mut found_error, kind) = found_error.unwrap();
+            if found_error.len() > ice_msg.len() {
+                ice_msg = found_error.clone();
+            } else {
+                found_error = ice_msg.clone();
+            }
+
             let ice = ICE {
                 regresses_on: Regression::Nightly,
 
@@ -1183,7 +1189,7 @@ impl ICE {
         }
 
         let mut ret = None;
-        if let Some((error_reason, ice_kind)) = found_error {
+        if let Some((mut error_reason, ice_kind)) = found_error {
             let ice_kind = if matches!(ice_kind, ICEKind::Ub(..)) {
                 if miri_finding_is_potentially_interesting {
                     ICEKind::Ub(UbKind::Interesting)
@@ -1228,7 +1234,13 @@ impl ICE {
                             .collect::<String>()
                     );
                 }
-                if let Some((err_reason, icekind)) = found_error0 {
+                if let Some((mut err_reason, icekind)) = found_error0 {
+                    if err_reason.len() > ice_msg.len() {
+                        ice_msg = err_reason.clone();
+                    } else {
+                        err_reason = ice_msg.clone();
+                    }
+
                     let ice = ICE {
                         regresses_on: Regression::Master,
                         needs_feature: uses_feature,
@@ -1428,6 +1440,12 @@ impl ICE {
             // add these for a more accurate representation of what we ran originally
             bad_flags.push(&"-ooutputfile");
             bad_flags.push(&"-Zdump-mir-dir=dir");
+
+            if error_reason.len() > ice_msg.len() {
+                ice_msg = error_reason.clone();
+            } else {
+                error_reason = ice_msg.clone();
+            }
 
             let ret2 = ICE {
                 regresses_on: match executable {

@@ -1021,13 +1021,24 @@ impl ICE {
         //let actual_args = actual_args.into_iter().map(|arg| {}).collect::<Vec<_>>();
 
         // find out the ice message
-        let mut ice_msg = String::from_utf8_lossy(&cmd_output.stderr)
-            .lines()
+        // https://github.com/rust-lang/rust/pull/112849 broke panic messages
+        let stderr = String::from_utf8_lossy(&cmd_output.stderr);
+        let mut lines_iter = stderr.lines();
+
+        let mut ice_msg = lines_iter
             .find(|line| {
                 line.contains("panicked at") || line.contains("error: internal compiler error: ")
             })
             .unwrap_or_default()
             .to_string();
+        if ice_msg.contains("panicked at") {
+            // the panick message is actually on the next line
+            let panic_msg = lines_iter
+                .next()
+                .unwrap_or("icemaker did not find panic message");
+            // reconstruct the old one-line panic msg, somewhat
+            ice_msg = format!(r#"{ice_msg} '{panic_msg}'"#);
+        }
 
         ice_msg = ice_msg.replace("error: internal compiler error:", "ICE:");
 

@@ -51,7 +51,7 @@ use std::ffi::{OsStr, OsString};
 use std::io::BufRead;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
@@ -2692,12 +2692,33 @@ fn analyze() {
 
             let output = trd.output().unwrap();
             let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
+            eprintln!("---------------------------reduced");
+            eprintln!("{reduced_file}");
+
+            eprintln!("---------------------------");
+
+            // find possible edition flags inside the rustcflags which we will also need to pass to rustfmt?
+            let mut fmt = std::process::Command::new("rustfmt")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn()
+                .expect("Failed to spawn rustfnt process");
+
+            let mut stdin = fmt.stdin.take().expect("Failed to open stdin");
+            std::thread::spawn(move || {
+                stdin
+                    .write_all(reduced_file.as_bytes())
+                    .expect("Failed to write to stdin");
+            });
+
+            let output = fmt.wait_with_output().expect("Failed to read stdout");
+            let reduced_fmt_file = String::from_utf8_lossy(&output.stdout).to_string();
 
             let analysis = Analysis {
                 ice: ice.clone(),
-                mvce: reduced_file,
+                mvce: reduced_fmt_file,
             };
-
+            eprintln!("---------------------------formatted:");
             eprintln!("{}", analysis.mvce);
         }
     })

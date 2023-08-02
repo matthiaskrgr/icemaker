@@ -2625,7 +2625,7 @@ fn analyze() {
     // todo handle all Executables
 
     // reduce code using $Executable,
-    // make sure to prlimit that
+    // make sure to prlimit that // check
     // try to fmt the mcve
     // ok => save fmttd
     // rustfmt needs --edition from ice.flags
@@ -2669,7 +2669,10 @@ fn analyze() {
         let bin = executable.path();
 
         if matches!(Executable::Rustc, executable) {
-            let mut trd = std::process::Command::new("treereduce-rust");
+            let mut trd = std::process::Command::new("prlimit");
+            trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32))
+                .arg(format!("--cpu=120")) //  2 mins
+                .arg("treereduce-rust");
             trd.args([
                 "--quiet",
                 "--passes=10",

@@ -2675,13 +2675,16 @@ fn analyze() {
                 "--passes=10",
                 "--min-reduction=10",
                 "--interesting-exit-code=101",
-                "--output '-'",
+                "--output",
+                "-",
             ]);
             trd.arg("--source");
             trd.arg(file);
 
             trd.args(["--", &bin]);
-            trd.args(flags);
+            if !flags.is_empty() {
+                trd.args(flags);
+            }
             trd.arg("@@.rs");
 
             let output = trd.output().unwrap();
@@ -2692,7 +2695,7 @@ fn analyze() {
                 mvce: reduced_file,
             };
 
-            dbg!(analysis);
+            eprintln!("{}", analysis.mvce);
         }
     })
 }

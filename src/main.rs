@@ -2662,6 +2662,12 @@ fn reduce() {
         Vec::new()
     };
 
+    let ices_cloned = ices.clone();
+    let debug_assertions = ices_cloned
+        .iter()
+        .find(|ice| ice.error_reason.contains("Span"))
+        .is_some(); // must not be empty..
+
     ices.into_iter().for_each(|ice| {
         let file = &ice.file;
         let flags = &ice.args;
@@ -2672,11 +2678,12 @@ fn reduce() {
         if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_)) {
             eprintln!("{}", ice.to_printable(&PathBuf::new()));
 
-            eprintln!("------------------original");
+            /*  eprintln!("------------------original");
             eprintln!(
                 "{}",
                 std::fs::read_to_string(file).unwrap_or("FAILURE TO READ ICE FILE".into())
             );
+            */
 
             let mut trd = std::process::Command::new("prlimit");
             trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
@@ -2703,11 +2710,12 @@ fn reduce() {
 
             let output = trd.output().unwrap();
             let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
-            eprintln!("---------------------------reduced");
-            eprintln!("{reduced_file}");
+            /*
+                  eprintln!("---------------------------reduced");
+                        eprintln!("{reduced_file}");
 
-            eprintln!("---------------------------");
-
+                        eprintln!("---------------------------");
+            */
             // find possible edition flags inside the rustcflags which we will also need to pass to rustfmt?
             let mut fmt = std::process::Command::new("rustfmt")
                 .stdin(Stdio::piped())
@@ -2731,7 +2739,7 @@ fn reduce() {
             };
             eprintln!("---------------------------formatted:");
             eprintln!("{}", analysis.mvce);
-            eprintln!("\n\n\n\n\n\n\n\n");
+            eprintln!("\n\n\n");
         }
     })
 }

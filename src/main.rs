@@ -2667,8 +2667,17 @@ fn reduce() {
         let flags = &ice.args;
         let executable = &ice.executable;
         let bin = executable.path();
+        let kind = ice.kind.clone();
 
-        if matches!(Executable::Rustc, executable) {
+        if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_)) {
+            eprintln!("{}", ice.to_printable(&PathBuf::new()));
+
+            eprintln!("------------------original");
+            eprintln!(
+                "{}",
+                std::fs::read_to_string(file).unwrap_or("FAILURE TO READ ICE FILE".into())
+            );
+
             let mut trd = std::process::Command::new("prlimit");
             trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
                 .arg(format!("--cpu=120")) //  2 mins
@@ -2678,6 +2687,8 @@ fn reduce() {
                 "--passes=10",
                 "--min-reduction=10",
                 "--interesting-exit-code=101",
+                "--on-parse-error",
+                "ignore",
                 "--output", // output to stdout
                 "-",
             ]);
@@ -2720,6 +2731,7 @@ fn reduce() {
             };
             eprintln!("---------------------------formatted:");
             eprintln!("{}", analysis.mvce);
+            eprintln!("\n\n\n\n\n\n\n\n");
         }
     })
 }

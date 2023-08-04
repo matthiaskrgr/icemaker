@@ -231,7 +231,7 @@ fn check_dir(
 
     if (args).analyze {
         // TODO: pass pathbuf to errors json
-        analyze();
+        reduce();
         std::process::exit(1)
     }
 
@@ -2621,7 +2621,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
     }
 }
 
-fn analyze() {
+fn reduce() {
     // todo handle all Executables
 
     // reduce code using $Executable,
@@ -2670,7 +2670,7 @@ fn analyze() {
 
         if matches!(Executable::Rustc, executable) {
             let mut trd = std::process::Command::new("prlimit");
-            trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32))
+            trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
                 .arg(format!("--cpu=120")) //  2 mins
                 .arg("treereduce-rust");
             trd.args([
@@ -2678,7 +2678,7 @@ fn analyze() {
                 "--passes=10",
                 "--min-reduction=10",
                 "--interesting-exit-code=101",
-                "--output",
+                "--output", // output to stdout
                 "-",
             ]);
             trd.arg("--source");

@@ -177,7 +177,7 @@ fn check_dir(
 
     if args.codegen {
         codegen_git_original_dirs();
-        return Vec::new();
+        std::process::exit(0);
     }
 
     if args.smolfuzz {
@@ -208,12 +208,12 @@ fn check_dir(
 
     if args.codegen_splice {
         codegen_tree_splicer();
-        return Vec::new();
+        std::process::exit(0);
     }
 
     if args.codegen_splice_omni {
         codegen_tree_splicer_omni();
-        return Vec::new();
+        std::process::exit(0);
     }
 
     if args.fuzz {
@@ -232,7 +232,7 @@ fn check_dir(
     if (args).analyze {
         // TODO: pass pathbuf to errors json
         reduce();
-        std::process::exit(1)
+        std::process::exit(0);
     }
 
     // search for rust files inside CWD

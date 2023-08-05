@@ -1674,6 +1674,8 @@ fn find_ICE_string(
         }
     };
 
+    let mut internal_feature = false;
+
     let keywords_miri_ub = [
         "error: Undefined Behavior",
         // "the evaluated program leaked memory", // memleaks are save apparently
@@ -1827,6 +1829,13 @@ fn find_ICE_string(
                             // try to exclude panic! todo! assert! etc in the actual program we are checking
                             //.filter(|line|  !line.contains("main.rs"))
                             .map(|line| {
+
+                                if line.contains("is internal to the compiler or standard library") {
+                                    // internal feature are can be easily misused and crash rustc
+                                    internal_feature = true;
+                                }
+                                // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+
                                 // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                                 let line = if line.contains("left == right") || line.contains("left != right") {
                                     let left = std::io::Cursor::new(executable_output)
@@ -1867,6 +1876,12 @@ fn find_ICE_string(
                                 .any(|regex| regex.is_match(line))
                         })
                         .map(|line| {
+                           // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+                           if line.contains("is internal to the compiler or standard library") {
+                            // internal feature are can be easily misused and crash rustc
+                            internal_feature = true;
+                        }
+
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                             let line = if line.contains("left == right") || line.contains("left != right") {
 
@@ -1936,7 +1951,10 @@ fn find_ICE_string(
                         .filter(|line|  !(matches!(executable, Executable::Rustfmt) && (Regex::new("write.*RUST_BACKTRACE=").unwrap().is_match(line) || line.starts_with('-') || line.starts_with('+')) || line.contains("`RUST_BACKTRACE=")))
                         .map(|line| {
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
-
+                            if line.contains("is internal to the compiler or standard library") {
+                                // internal feature are can be easily misused and crash rustc
+                                internal_feature = true;
+                            }
                             if line.contains("left == right") || line.contains("left != right") {
                                 let left = std::io::Cursor::new(executable_output)
                                     .lines()
@@ -1971,6 +1989,22 @@ fn find_ICE_string(
                     }
                 }
             }
+        }).map(|tup| {
+            // if we deal with internal features, remap icekind::Interestingness:: to Boring
+            let (txt, icekind) = tup;
+
+            if internal_feature {
+            let new_icekind = match icekind {
+                ICEKind::Ice(_) => ICEKind::Ice(Interestingness::Boring),
+                other => other,
+            };
+
+            (txt, new_icekind)
+        } else {
+            (txt, icekind)
+        }
+
+
         })
 }
 

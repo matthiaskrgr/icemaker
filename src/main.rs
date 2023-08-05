@@ -2680,6 +2680,8 @@ fn reduce(global_tempdir_path: &Path) {
 
     ices.into_iter().for_each(|ice| {
         let file = &ice.file;
+        // if we run inside a tempdir, we need an absolute path, because the file is not copied into the tempdir
+        let file = &file.canonicalize().expect("file canonicalizsation failed");
         let flags = &ice.args;
         let executable = &ice.executable;
         let bin = executable.path();
@@ -2718,7 +2720,6 @@ fn reduce(global_tempdir_path: &Path) {
             }
             trd.arg("@@.rs");
             trd.current_dir(tempdir_path);
-
             let output = trd.output().unwrap();
             let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
             let reduced_file_clone = reduced_file.clone();

@@ -1,3 +1,4 @@
+use std::env::current_dir;
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -384,7 +385,7 @@ pub(crate) fn run_rustc_incremental_with_two_files(
 pub(crate) fn run_clippy(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &Path,
+    global_tempdir_path: &Path,
 ) -> CommandOutput {
     // runs clippy-driver, not cargo-clippy!
 
@@ -405,7 +406,8 @@ pub(crate) fn run_clippy(
         .arg("--edition=2021")
         .arg("-Zvalidate-mir")
         .args(["--cap-lints", "warn"])
-        .args(["-o", "/dev/null"]);
+        .args(["-o", "/dev/null"])
+        .current_dir(&global_tempdir_path);
 
     let output = prlimit_run_command(&mut cmd).unwrap();
 
@@ -806,7 +808,7 @@ pub(crate) fn run_clippy_fix_with_args(
 pub(crate) fn run_rustdoc(
     executable: &str,
     file: &Path,
-    _global_tempdir_path: &Path,
+    global_tempdir_path: &Path,
 ) -> CommandOutput {
     let mut cmd = Command::new(executable);
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
@@ -825,7 +827,8 @@ pub(crate) fn run_rustdoc(
         .arg("-Wrustdoc::missing-doc-code-examples")
         .arg("-Wrustdoc::private-doc-tests")
         .arg("--show-type-layout")
-        .args(["-o", "/dev/null"]);
+        .args(["-o", "/dev/null"])
+        .current_dir(global_tempdir_path);
     let output = prlimit_run_command(&mut cmd).unwrap();
 
     CommandOutput::new(

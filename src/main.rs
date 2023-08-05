@@ -1217,6 +1217,7 @@ impl ICE {
                 // we might produce several of those if we check different flags but they should all be deduplicated laster on?
                 let mut pure_rustc_cmd = Command::new(Executable::Rustc.path());
                 pure_rustc_cmd.arg(file);
+                pure_rustc_cmd.current_dir(global_tempdir_path);
 
                 let pure_rustc_output = prlimit_run_command(&mut pure_rustc_cmd).unwrap();
                 let found_error0 = find_ICE_string(file, &Executable::Rustc, pure_rustc_output);

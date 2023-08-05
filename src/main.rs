@@ -230,8 +230,7 @@ fn check_dir(
     }
 
     if (args).analyze {
-        // TODO: pass pathbuf to errors json
-        reduce();
+        reduce(global_tempdir_path);
         std::process::exit(0);
     }
 
@@ -2626,7 +2625,10 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
     }
 }
 
-fn reduce() {
+fn reduce(global_tempdir_path: &Path) {
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+
     // todo handle all Executables
 
     // reduce code using $Executable,
@@ -2715,6 +2717,7 @@ fn reduce() {
                 trd.args(flags);
             }
             trd.arg("@@.rs");
+            trd.current_dir(tempdir_path);
 
             let output = trd.output().unwrap();
             let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
@@ -2729,6 +2732,7 @@ fn reduce() {
             let mut fmt = std::process::Command::new("rustfmt")
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
+                .current_dir(tempdir_path)
                 .spawn()
                 .expect("Failed to spawn rustfnt process");
 

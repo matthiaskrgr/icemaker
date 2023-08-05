@@ -2662,6 +2662,10 @@ fn reduce() {
         Vec::new()
     };
 
+    const REDUCTION_DIR: &str = "icemaker_reduced";
+    std::fs::create_dir_all(REDUCTION_DIR)
+        .expect("could not create './icemaker_reduced/' dir");
+
     let ices_cloned = ices.clone();
     let debug_assertions = ices_cloned
         .iter()
@@ -2710,6 +2714,7 @@ fn reduce() {
 
             let output = trd.output().unwrap();
             let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
+            let reduced_file_clone = reduced_file.clone();
             /*
                   eprintln!("---------------------------reduced");
                         eprintln!("{reduced_file}");
@@ -2726,12 +2731,18 @@ fn reduce() {
             let mut stdin = fmt.stdin.take().expect("Failed to open stdin");
             std::thread::spawn(move || {
                 stdin
-                    .write_all(reduced_file.as_bytes())
+                    .write_all(reduced_file_clone.as_bytes())
                     .expect("Failed to write to stdin");
             });
 
             let output = fmt.wait_with_output().expect("Failed to read stdout");
-            let reduced_fmt_file = String::from_utf8_lossy(&output.stdout).to_string();
+
+            // if rustfmt failed, save the original file
+            let reduced_fmt_file = if output.status.success() {
+                String::from_utf8_lossy(&output.stdout).to_string()
+            } else {
+                reduced_file
+            };
 
             let analysis = Analysis {
                 ice: ice.clone(),
@@ -2740,6 +2751,11 @@ fn reduce() {
             eprintln!("---------------------------formatted:");
             eprintln!("{}", analysis.mvce);
             eprintln!("\n\n\n");
+            // write reduced file to disk
+            let mut dir = PathBuf::from(REDUCTION_DIR);
+            // REDUCTION_DIR/filename.rs
+            let path_reduced_file = dir.join(file.file_name().expect("could not get filename"));
+            std::fs::write(path_reduced_file, analysis.mvce).expect("could not write file content");
         }
     })
 }

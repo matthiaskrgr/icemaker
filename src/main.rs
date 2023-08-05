@@ -731,6 +731,11 @@ fn main() {
     // how long did we take?
     let global_start_time = Instant::now();
 
+    // do not dump backtraces to disk all the time
+    // RUSTC_ICE=..
+    // https://github.com/rust-lang/rust/pull/108714
+    std::env::set_var("RUSTC_ICE", "0");
+
     let args = Args::parse();
 
     let global_tempdir = if let Some(ref custom_tempdir_path) = args.global_tempdir_path {
@@ -2663,8 +2668,7 @@ fn reduce() {
     };
 
     const REDUCTION_DIR: &str = "icemaker_reduced";
-    std::fs::create_dir_all(REDUCTION_DIR)
-        .expect("could not create './icemaker_reduced/' dir");
+    std::fs::create_dir_all(REDUCTION_DIR).expect("could not create './icemaker_reduced/' dir");
 
     let ices_cloned = ices.clone();
     let debug_assertions = ices_cloned

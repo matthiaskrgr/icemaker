@@ -229,7 +229,7 @@ fn check_dir(
         std::process::exit(1);
     }
 
-    if (args).analyze {
+    if (args).reduce {
         reduce(global_tempdir_path);
         std::process::exit(0);
     }

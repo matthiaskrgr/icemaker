@@ -2784,6 +2784,7 @@ fn reduce(global_tempdir_path: &Path) {
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
                 .current_dir(tempdir_path)
+                .arg("--edition=2021")
                 .spawn()
                 .expect("Failed to spawn rustfnt process");
 

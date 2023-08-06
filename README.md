@@ -14,6 +14,7 @@ Features:
 * find rustc diagnostics that change the file but do not managed to actually fix the broken code
 * use "prlimit" to protect against etenally hanging processes or OOMs during infinite loops
 * fuzz incremental compilation by using tree-splicer-rust to cause modifications for incremental compilation testing
+* automatic testcase reduction for rustc with treereduce-rust
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "prlimit" to limit memory and runtime of a process
@@ -35,6 +36,7 @@ https://github.com/langston-barrett/tree-splicer code mutator which icemaker can
 
 Trophy case (700+):  
   
+https://github.com/rust-lang/rust/issues/114529  
 https://github.com/rust-lang/rust/issues/114478  
 https://github.com/rust-lang/rust/issues/114471  
 https://github.com/rust-lang/rust/issues/114468  

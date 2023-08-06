@@ -2661,9 +2661,6 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
 }
 
 fn reduce(global_tempdir_path: &Path) {
-    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
-    let tempdir_path = tempdir.path();
-
     // todo handle all Executables
 
     // reduce code using $Executable,
@@ -2726,6 +2723,9 @@ fn reduce(global_tempdir_path: &Path) {
         let bin = executable.path();
         let kind = ice.kind.clone();
 
+        let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
+        let tempdir_path = tempdir.path();
+
         if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_)) {
             eprintln!("{}", ice.to_printable(&PathBuf::new()));
 
@@ -2763,7 +2763,7 @@ fn reduce(global_tempdir_path: &Path) {
                 &format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32),
                 "--cpu=60",
             ]);
-                trd.arg(&bin);
+            trd.arg(&bin);
 
             if !flags.is_empty() {
                 trd.args(flags);
@@ -2811,7 +2811,7 @@ fn reduce(global_tempdir_path: &Path) {
             eprintln!("{}", analysis.mvce);
             eprintln!("\n\n\n");
             // write reduced file to disk
-            let mut dir = PathBuf::from(REDUCTION_DIR);
+            let dir = PathBuf::from(REDUCTION_DIR);
             // REDUCTION_DIR/filename.rs
             let path_reduced_file = dir.join(file.file_name().expect("could not get filename"));
             std::fs::write(path_reduced_file, analysis.mvce).expect("could not write file content");

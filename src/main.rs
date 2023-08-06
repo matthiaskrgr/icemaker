@@ -2707,11 +2707,15 @@ fn reduce(global_tempdir_path: &Path) {
     const REDUCTION_DIR: &str = "icemaker_reduced";
     std::fs::create_dir_all(REDUCTION_DIR).expect("could not create './icemaker_reduced/' dir");
 
+    /*
     let ices_cloned = ices.clone();
+
+
     let debug_assertions = ices_cloned
         .iter()
         .find(|ice| ice.error_reason.contains("Span"))
         .is_some(); // must not be empty..
+    */
 
     ices.into_iter().for_each(|ice| {
         let file = &ice.file;
@@ -2746,10 +2750,21 @@ fn reduce(global_tempdir_path: &Path) {
                 "--output", // output to stdout
                 "-",
             ]);
+
             trd.arg("--source");
             trd.arg(file);
 
-            trd.args(["--", &bin]);
+            trd.arg("--");
+            // we also need to run the rustc that treereduce-rust launches inside prlimit to not blow up the system
+
+            trd.args([
+                "prlimit",
+                "--noheadings",
+                &format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32),
+                "--cpu=60",
+            ]);
+                trd.arg(&bin);
+
             if !flags.is_empty() {
                 trd.args(flags);
             }

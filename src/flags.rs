@@ -187,18 +187,19 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         // "-Clto=off", // rustc_codegen_gcc
         //   "-Ztreat-err-as-bug=3",
         "-Ztrait-solver=next-coherence",
+        "-Zcrate-attr=feature(inline_const_pat)",
     ],
     // edition 2014
     &[
-        //  "-Zsanitizer=cfi",
-        //  "-Clto",
-        //  "-Zsanitizer-cfi-normalize-integers",
-        //  "-ocodegen",
-        //  "-Cdebuginfo=2",
-        //  "-Copt-level=3",
+        "-Zsanitizer=cfi",
+        "-Clto",
+        "-Zsanitizer-cfi-normalize-integers",
+        "-ocodegen",
+        "-Cdebuginfo=2",
+        "-Copt-level=3",
         "--edition=2024",
         "-Zunstable-options",
-        //  "-Zmir-opt-level=3",
+        "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

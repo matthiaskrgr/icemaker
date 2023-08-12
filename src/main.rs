@@ -2715,6 +2715,8 @@ fn reduce(global_tempdir_path: &Path) {
     */
 
     ices.into_iter().for_each(|ice| {
+        let reduction_start_time = Instant::now();
+
         let file = &ice.file;
         // if we run inside a tempdir, we need an absolute path, because the file is not copied into the tempdir
         let file = &file.canonicalize().expect("file canonicalizsation failed");
@@ -2808,7 +2810,9 @@ fn reduce(global_tempdir_path: &Path) {
                 ice: ice.clone(),
                 mvce: reduced_fmt_file,
             };
-            eprintln!("---------------------------formatted:");
+            let seconds_elapsed = reduction_start_time.elapsed().as_secs();
+
+            eprintln!("reduction took {seconds_elapsed} seconds...........formatted:");
             eprintln!("{}", analysis.mvce);
             eprintln!("\n\n\n");
             // write reduced file to disk

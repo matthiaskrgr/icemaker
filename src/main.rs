@@ -2788,7 +2788,7 @@ fn reduce(global_tempdir_path: &Path) {
                 .current_dir(tempdir_path)
                 .arg("--edition=2021")
                 .spawn()
-                .expect("Failed to spawn rustfnt process");
+                .expect("Failed to spawn rustfmt process");
 
             let mut stdin = fmt.stdin.take().expect("Failed to open stdin");
             std::thread::spawn(move || {
@@ -2818,7 +2818,9 @@ fn reduce(global_tempdir_path: &Path) {
             // write reduced file to disk
             let dir = PathBuf::from(REDUCTION_DIR);
             // REDUCTION_DIR/filename.rs
-            let path_reduced_file = dir.join(file.file_name().expect("could not get filename"));
+            // @TODO do not overwrite already reduced files here if flags are different
+            let path_reduced_file: PathBuf =
+                dir.join(file.file_name().expect("could not get filename"));
             std::fs::write(path_reduced_file, analysis.mvce).expect("could not write file content");
         }
     })

@@ -191,16 +191,16 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // edition 2014
     &[
-        "-Zsanitizer=cfi",
+        /* "-Zsanitizer=cfi",
         "-Clto",
         "-Zsanitizer-cfi-normalize-integers",
         "-Ccodegen-units=1",
         "-ocodegen",
         "-Cdebuginfo=2",
-        "-Copt-level=3",
+        "-Copt-level=3",*/
         "--edition=2024",
         "-Zunstable-options",
-        "-Zmir-opt-level=3",
+        //   "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

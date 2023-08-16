@@ -1836,17 +1836,19 @@ fn find_ICE_string(
                                 }
                                 // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
 
-                                // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
+
                                 let line = if line.contains("left == right") || line.contains("left != right") {
+                                    // try to find a line that starts with "assertion (...  failed)"
                                     let left = std::io::Cursor::new(executable_output)
                                         .lines()
-                                        .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                        .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
-                                let line = format!("{line}   {left} {right}");
+
+                                 let line = format!("{line}   '{left}' '{right}'");
                                     #[allow(clippy::let_and_return)]
                                     line
                                 } else {
@@ -1873,7 +1875,7 @@ fn find_ICE_string(
                         .find(|line| {
                             keywords_generic_ice
                                 .iter()
-                                .any(|regex| regex.is_match(line))
+                                .any(|regex| regex.is_match(line)) || line.contains("left == right") || line.contains("left != right") 
                         })
                         .map(|line| {
                            // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
@@ -1884,16 +1886,15 @@ fn find_ICE_string(
 
                             // we found the line with for example "assertion failed: `(left == right)`" , but it would be nice to get some more insight what left and right is
                             let line = if line.contains("left == right") || line.contains("left != right") {
-
                                 let left = std::io::Cursor::new(executable_output)
-                                .lines()
-                                .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                    .lines()
+                                    .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
-                                .lines()
-                                .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                    .lines()
+                                    .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
-                                let line = format!("{line}   {left} {right}");
+                                let line = format!("{line}   '{left}' '{right}'");
                                 line
                             } else {
                                 line
@@ -1943,7 +1944,9 @@ fn find_ICE_string(
                             keywords_generic_ice
                                 .iter()
                                 .any(|regex|
-                                     regex.is_match(line)) || is_double_ice
+                                     regex.is_match(line)) || is_double_ice 
+                                    // assertion failure
+                                     || line.contains("left == right") || line.contains("left != right") 
                         })
                         // bonus: if the line contains something like 
                         //  let _ = writeln!(err, "note: run with `RUST_BACKTRACE=1` \' keywords_double_panic_ice.iter().any(|kw| regex.contains(kw)
@@ -1958,13 +1961,14 @@ fn find_ICE_string(
                             if line.contains("left == right") || line.contains("left != right") {
                                 let left = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with("  left:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with("  left:")).unwrap_or_default();
 
                                 let right = std::io::Cursor::new(executable_output)
                                     .lines()
-                                    .map_while(Result::ok).skip_while(|line| line.contains("assertion failed:")).find(|line| line.starts_with(" right:")).unwrap_or_default();
+                                    .map_while(Result::ok).skip_while(|line| line.starts_with("assertion")).find(|line| line.starts_with(" right:")).unwrap_or_default();
 
-                                let line = format!("{line}   {left} {right}");
+                                    let line = format!("{line}   '{left}' '{right}'");
+
                                 #[allow(clippy::let_and_return)]
                                 line
                             } else if matches!(executable, Executable::Rustfmt) && line.contains("left behind trailing whitespace") {
@@ -1973,15 +1977,16 @@ fn find_ICE_string(
                                  line
                             }})
                         // get the lonest ICE line 
-                        .max_by_key(|line|
+                        .max_by_key(|line| { 
                             // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
                             if delay_span_bug_regex.is_match(line) {
                                 "internal compiler error".len()
                             } else {
                              line.len()
                             }
+                        }
                         )
-                        .map(|line|  if double_ice { (line, ICEKind::DoubleIce) } else { (line, ICEKind::Ice(interestingness)) });
+                        .map(|line| if double_ice {  (line, ICEKind::DoubleIce) } else { (line, ICEKind::Ice(interestingness)) });
                     if ice.is_some() {
                         ice
                     } else {

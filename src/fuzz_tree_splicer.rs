@@ -8,7 +8,7 @@ use tree_splicer::splice::{splice, Config};
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 1, // 30
+        inter_splices: 30, // 30
         seed: 5,
         tests: 100, // 10
         //
@@ -51,7 +51,7 @@ pub(crate) fn splice_file_from_set(
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 1, // 30
+        inter_splices: 30, // 30
         seed: 5,
         tests: 100, // 10
         //

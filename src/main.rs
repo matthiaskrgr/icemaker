@@ -2525,7 +2525,7 @@ fn codegen_tree_splicer_omni() {
         .collect::<Vec<PathBuf>>();
 
     // dir to put the files in
-    std::fs::create_dir("icemaker").expect("could not create icemaker dir");
+    std::fs::create_dir("icemaker_omni").expect("could not create icemaker_omni dir");
 
     let mut parser = Parser::new();
     // rust!

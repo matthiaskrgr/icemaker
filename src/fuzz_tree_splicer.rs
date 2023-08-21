@@ -8,11 +8,11 @@ use tree_splicer::splice::{splice, Config};
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 2, // 30
-        seed: 12,
+        inter_splices: 1, // 30
+        seed: 5,
         tests: 100, // 10
         //
-        chaos: 2,
+        chaos: 3,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
@@ -51,11 +51,11 @@ pub(crate) fn splice_file_from_set(
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 2, // 30
-        seed: 10,
+        inter_splices: 1, // 30
+        seed: 5,
         tests: 100, // 10
         //
-        chaos: 2,
+        chaos: 3,
         deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
@@ -86,10 +86,14 @@ pub(crate) fn splice_file_from_set(
 
 // such files will most likely just causes known crashes or hang the splicing
 pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
-    const LINE_LIMIT: usize = 200; // was 1000
+    const LINE_LIMIT: usize = 300; // was 1000
 
     let content = std::fs::read_to_string(file).unwrap_or_default();
     let lines_count = content.lines().count();
 
-    lines_count > LINE_LIMIT || content.contains("#[no_core]") || content.contains("mir!(")
+    lines_count > LINE_LIMIT
+        || content.contains("#[no_core]")
+        || content.contains("mir!(")
+        // if the file is in an "icemaker" dir, do not use it for fuzzing...
+        || file.display().to_string().contains("icemaker")
 }

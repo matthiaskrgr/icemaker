@@ -2733,7 +2733,12 @@ fn reduce(global_tempdir_path: &Path) {
         let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
         let tempdir_path = tempdir.path();
 
-        if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_)) {
+        if matches!(executable, Executable::Rustc)
+            && matches!(kind, ICEKind::Ice(_))
+            && !
+        // skip OOMs which treereduce cant really handle
+       ice.error_reason.contains("allocating stack failed")
+        {
             eprintln!("{}", ice.to_printable(&PathBuf::new()));
 
             /*  eprintln!("------------------original");

@@ -61,6 +61,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wprivate-interfaces",
         "-Wprivate-bounds",
         "-Wmultiple-supertrait-upcastable",
+        "-Welided-lifetimes-in-associated-constant",
     ],
     // basic stuff, edition 2015
     &[

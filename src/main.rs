@@ -2568,7 +2568,7 @@ fn codegen_tree_splicer_omni() {
             let h = hasher.finalize();
             let hash = format!("{:X}", h);
 
-            let mut file = std::fs::File::create(format!("icemaker/{hash}.rs"))
+            let mut file = std::fs::File::create(format!("icemaker_omni/{hash}.rs"))
                 .expect("could not create file");
             file.write_all(file_content.as_bytes())
                 .expect("failed to write to file");

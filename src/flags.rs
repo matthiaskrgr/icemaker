@@ -58,6 +58,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         // "-Clto=off", // rustc_codegen_gcc
         "--edition=2021",
         //  "-Ztreat-err-as-bug=3",
+        "-Wprivate-interfaces",
+        "-Wprivate-bounds",
+        "-Wmultiple-supertrait-upcastable",
     ],
     // basic stuff, edition 2015
     &[

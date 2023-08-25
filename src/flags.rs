@@ -98,6 +98,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(lazy_type_alias)",
         "-Ztrait-solver=next-coherence",
         "-Zcrate-attr=feature(generic_const_items)",
+        "-Zrandomize-layout",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=20",
     ],
     // basic stuff, edition 2018
     &[
@@ -139,6 +142,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
         "-Ztrait-solver=next-coherence",
+        "-Zrandomize-layout",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=20",
     ],
     // basic stuff, edition 2021
     &[
@@ -192,6 +198,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         //   "-Ztreat-err-as-bug=3",
         "-Ztrait-solver=next-coherence",
         "-Zcrate-attr=feature(inline_const_pat)",
+        "-Zrandomize-layout",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=20",
     ],
     // edition 2014
     &[
@@ -204,6 +213,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Copt-level=3",*/
         "--edition=2024",
         "-Zunstable-options",
+        "-Zinline-mir=yes",
+        "-Zinline-mir-threshold=20",
         //   "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc

@@ -284,7 +284,6 @@ pub enum Executable {
     RustAnalyzer,
     Rustfmt,
     Miri,
-    RustcCGClif,
     // extra:
     // icemaker --local-debug-assertions --cranelift-local  --expensive-flags
     CraneliftLocal,
@@ -402,9 +401,7 @@ impl Executable {
                 p.push("miri");
                 p.display().to_string()
             }
-            Executable::RustcCGClif => {
-                String::from("/home/matthias/vcs/github/rustc_codegen_cranelift/dist/rustc-clif")
-            }
+
             Executable::CraneliftLocal => {
                 String::from("/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc")
             }

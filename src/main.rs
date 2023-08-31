@@ -94,8 +94,6 @@ impl From<&Args> for Executable {
             Executable::Miri
         } else if args.rustc {
             Executable::Rustc
-        } else if args.cranelift {
-            Executable::RustcCGClif
         } else if (args).cranelift_local {
             Executable::CraneliftLocal
         } else if (args).kani {
@@ -352,7 +350,7 @@ fn check_dir(
 
                     match executable {
                         Executable::Rustc
-                        | Executable::RustcCGClif
+                        
                         /* | Executable::CraneliftLocal */ => {
                             // with expensive flags, run on each of the editions separately
                             let editions = if args.expensive_flags {
@@ -609,7 +607,6 @@ struct Timer {
     rla_time: AtomicUsize,
     rustfmt_time: AtomicUsize,
     miri_time: AtomicUsize,
-    cgclif_time: AtomicUsize,
     craneliftlocal_time: AtomicUsize,
     clippyfix_time: AtomicUsize,
     rustfix_time: AtomicUsize,
@@ -646,11 +643,7 @@ impl Timer {
             Executable::Miri => {
                 let _ = self.miri_time.fetch_add(elapsed_duration, Ordering::SeqCst);
             }
-            Executable::RustcCGClif => {
-                let _ = self
-                    .cgclif_time
-                    .fetch_add(elapsed_duration, Ordering::SeqCst);
-            }
+
             Executable::CraneliftLocal => {
                 let _ = self
                     .craneliftlocal_time
@@ -702,9 +695,7 @@ impl Timer {
             miri_time: AtomicUsize::new(
                 Duration::from_millis(self.miri_time.into_inner() as u64).as_secs() as usize,
             ),
-            cgclif_time: AtomicUsize::new(
-                Duration::from_millis(self.cgclif_time.into_inner() as u64).as_secs() as usize,
-            ),
+
             craneliftlocal_time: AtomicUsize::new(
                 Duration::from_millis(self.craneliftlocal_time.into_inner() as u64).as_secs()
                     as usize,
@@ -956,13 +947,7 @@ impl ICE {
                 compiler_flags,
                 global_tempdir_path,
             ),
-            Executable::RustcCGClif => run_cranelift(
-                exec_path,
-                file,
-                incremental,
-                compiler_flags,
-                global_tempdir_path,
-            ),
+
             Executable::CraneliftLocal => {
                 let mut compiler_flags = compiler_flags.to_vec();
                 compiler_flags.push("-Zcodegen-backend=cranelift");
@@ -1293,7 +1278,6 @@ impl ICE {
 
             match executable {
                 Executable::Rustc
-                | Executable::RustcCGClif
                 | Executable::ClippyFix
                 | Executable::RustFix
                 | Executable::CraneliftLocal
@@ -1929,7 +1913,6 @@ fn find_ICE_string(
                 | Executable::Clippy
                 | Executable::Kani //@FIXME
                 | Executable::RustAnalyzer
-                | Executable::RustcCGClif
                 | Executable::CraneliftLocal
                 | Executable::Rustdoc
                 | Executable::Rustfmt

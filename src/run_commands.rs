@@ -1324,56 +1324,6 @@ pub(crate) fn run_kani(
     )
 }
 
-pub(crate) fn run_cranelift(
-    executable: &str,
-    file: &Path,
-    incremental: bool,
-    rustc_flags: &[&str],
-    global_tempdir_path: &PathBuf,
-) -> CommandOutput {
-    if incremental {
-        // only run incremental compilation tests
-        return run_rustc_incremental(executable, file, global_tempdir_path);
-    }
-    // if the file contains no "main", run with "--crate-type lib"
-    let has_main = std::fs::read_to_string(file)
-        .unwrap_or_default()
-        .contains("fn main(");
-
-    //let tempdir = TempDir::new("rustc_testrunner_tmpdir").unwrap();
-    //let tempdir_path = tempdir.path();
-    let output_file = String::from("-o/dev/null");
-    let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
-
-    let mut cmd = Command::new(executable);
-    cmd.arg(file)
-        .args(rustc_flags)
-        // always keep these:
-        .arg(output_file)
-        .arg(dump_mir_dir);
-    if !has_main {
-        cmd.arg("--crate-type=lib");
-    }
-    //dbg!(&cmd);
-
-    let actual_args = cmd
-        .get_args()
-        .map(|s| s.to_owned())
-        .collect::<Vec<OsString>>();
-
-    // run the command
-    let output = prlimit_run_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
-    CommandOutput::new(
-        output,
-        get_cmd_string(&cmd),
-        actual_args,
-        crate::Executable::RustcCGClif,
-    )
-    // remove tempdir
-    //tempdir.close().unwrap();
-}
-
 // https://github.com/rust-lang/rustc_codegen_gcc
 pub(crate) fn rustc_codegen_gcc_local(
     executable: &str,
@@ -1431,7 +1381,7 @@ pub(crate) fn rustc_codegen_gcc_local(
         output,
         get_cmd_string(&cmd),
         actual_args,
-        crate::Executable::RustcCGClif,
+        crate::Executable::Rustc,
     )
     // remove tempdir
     //tempdir.close().unwrap();

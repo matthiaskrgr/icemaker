@@ -286,7 +286,7 @@ pub enum Executable {
     Miri,
     // extra:
     // icemaker --local-debug-assertions --cranelift-local  --expensive-flags
-    CraneliftLocal,
+    Cranelift,
     ClippyFix,
     RustFix,
     Kani,
@@ -402,7 +402,7 @@ impl Executable {
                 p.display().to_string()
             }
 
-            Executable::CraneliftLocal => {
+            Executable::Cranelift => {
                 String::from("/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc")
             }
             Executable::Kani => "kani".into(),

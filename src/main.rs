@@ -94,8 +94,9 @@ impl From<&Args> for Executable {
             Executable::Miri
         } else if args.rustc {
             Executable::Rustc
-        } else if (args).cranelift_local {
-            Executable::CraneliftLocal
+        } else if (args).cranelift {
+            // from local-debug-assertions build, -Zcodegen-backend=cranelift
+            Executable::Cranelift
         } else if (args).kani {
             Executable::Kani
         } else if args.rustc_codegen_gcc {
@@ -160,7 +161,7 @@ fn check_dir(
                 &Executable::Rustfmt,
                 &Executable::ClippyFix,
                 &Executable::Miri,
-                &Executable::CraneliftLocal,
+                &Executable::Cranelift,
             ]
         } else {
             vec![
@@ -340,7 +341,7 @@ fn check_dir(
                 .filter(|executable| {
                     !EXCEPTION_LIST.contains(file)
                         || (matches!(executable, Executable::Miri)
-                            || (matches!(executable, Executable::CraneliftLocal))
+                            || (matches!(executable, Executable::Cranelift))
                                 && !MIRI_EXCEPTION_LIST.contains(file))
                 })
                 .map(|executable| {
@@ -644,7 +645,7 @@ impl Timer {
                 let _ = self.miri_time.fetch_add(elapsed_duration, Ordering::SeqCst);
             }
 
-            Executable::CraneliftLocal => {
+            Executable::Cranelift => {
                 let _ = self
                     .craneliftlocal_time
                     .fetch_add(elapsed_duration, Ordering::SeqCst);
@@ -948,7 +949,7 @@ impl ICE {
                 global_tempdir_path,
             ),
 
-            Executable::CraneliftLocal => {
+            Executable::Cranelift => {
                 let mut compiler_flags = compiler_flags.to_vec();
                 compiler_flags.push("-Zcodegen-backend=cranelift");
                 run_rustc(
@@ -1280,7 +1281,7 @@ impl ICE {
                 Executable::Rustc
                 | Executable::ClippyFix
                 | Executable::RustFix
-                | Executable::CraneliftLocal
+                | Executable::Cranelift
                 | Executable::RustcCodegenGCC => {
                     // if the full set of flags (last) does not reproduce the ICE, bail out immediately (or assert?)
                     let tempdir =
@@ -1913,7 +1914,7 @@ fn find_ICE_string(
                 | Executable::Clippy
                 | Executable::Kani //@FIXME
                 | Executable::RustAnalyzer
-                | Executable::CraneliftLocal
+                | Executable::Cranelift
                 | Executable::Rustdoc
                 | Executable::Rustfmt
                 | Executable::RustcCodegenGCC => {

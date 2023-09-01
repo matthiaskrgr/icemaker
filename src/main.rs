@@ -234,15 +234,14 @@ fn check_dir(
     }
 
     // search for rust files inside CWD
-    let mut files = WalkDir::new(root_path)
-        .into_iter()
+    let mut files = WalkDir::new(root_path).into_iter().par_bridge()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
         .collect::<Vec<PathBuf>>();
 
     // check biggest files first
-    files.sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
+    files.par_sort_by_cached_key(|file| std::fs::metadata(file).unwrap().len());
     files.reverse();
 
     /*

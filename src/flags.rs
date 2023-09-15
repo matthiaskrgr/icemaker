@@ -605,7 +605,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Cdebuginfo=2",
         "-Zcrate-attr=feature(never_type_fallback)",
         "-Zcrate-attr=feature(no_core)",
-        "-Zcrate-attr=feature(no_coverage)",
         "-Zcrate-attr=feature(no_sanitize)",
         "-Zcrate-attr=feature(non_exhaustive_omitted_patterns_lint)",
         "-Zcrate-attr=feature(object_safe_for_dispatch)",

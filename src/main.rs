@@ -234,7 +234,9 @@ fn check_dir(
     }
 
     // search for rust files inside CWD
-    let mut files = WalkDir::new(root_path).into_iter().par_bridge()
+    let mut files = WalkDir::new(root_path)
+        .into_iter()
+        .par_bridge()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
@@ -2537,6 +2539,9 @@ fn codegen_tree_splicer_omni() {
 
     println!("codegenning...");
 
+    let total = hmap.len();
+    let mut counter: AtomicUsize = 0.into();
+
     files
         .par_iter()
         .map(|_path| {
@@ -2550,6 +2555,14 @@ fn codegen_tree_splicer_omni() {
             hasher.update(&file_content);
             let h = hasher.finalize();
             let hash = format!("{:X}", h);
+
+            PRINTER.log(PrintMessage::Progress {
+                index: counter.load(Ordering::SeqCst),
+                total_number_of_files: total,
+                file_name: String::new(),
+            });
+
+            counter.fetch_add(1, Ordering::SeqCst);
 
             let mut file = std::fs::File::create(format!("icemaker_omni/{hash}.rs"))
                 .expect("could not create file");

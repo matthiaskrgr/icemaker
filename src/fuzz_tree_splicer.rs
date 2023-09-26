@@ -51,7 +51,7 @@ pub(crate) fn splice_file_from_set(
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 1, // 30
+        inter_splices: 2, // 30
         seed: 2,
         tests: 50, // 10
         //

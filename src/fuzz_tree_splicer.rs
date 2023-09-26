@@ -9,11 +9,11 @@ use tree_splicer::splice::{splice, Config};
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
-        seed: 5,
+        seed: 2,
         tests: 100, // 10
         //
-        chaos: 0,
-        deletions: 0,
+        chaos: 2,
+        deletions: 1,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
@@ -51,12 +51,12 @@ pub(crate) fn splice_file_from_set(
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let splicer_cfg: Config = Config {
-        inter_splices: 2, // 30
-        seed: 5,
-        tests: 500, // 10
+        inter_splices: 1, // 30
+        seed: 2,
+        tests: 50, // 10
         //
-        chaos: 1,
-        deletions: 1,
+        chaos: 0,     // 1
+        deletions: 0, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
@@ -95,6 +95,7 @@ pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
         || content.contains("no_core")
         || content.contains("lang_items")
         || content.contains("mir!(")
+        || content.contains("break rust")
         // if the file is in an "icemaker" dir, do not use it for fuzzing...
         || file.display().to_string().contains("icemaker")
 }

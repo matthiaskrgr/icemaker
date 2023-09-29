@@ -2731,9 +2731,9 @@ fn reduce(global_tempdir_path: &Path) {
 
         if matches!(executable, Executable::Rustc)
             && matches!(kind, ICEKind::Ice(_))
-            && !
+            && 
         // skip OOMs which treereduce cant really handle
-       ice.error_reason.contains("allocating stack failed")
+        ! ice.error_reason.contains("allocating stack failed")
         {
             eprintln!("{}", ice.to_printable(&PathBuf::new()));
 

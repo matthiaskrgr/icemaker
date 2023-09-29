@@ -89,6 +89,10 @@ pub(crate) struct Args {
     // read ice json and reduce, bisect, gen report?
     #[clap(long)]
     pub(crate) reduce: bool,
+
+    // reduce based on the tmp file, do not wait for a complete run
+    #[clap(long)]
+    pub(crate) reduce_tmp: bool,
 }
 
 /// check whether a file uses features or not

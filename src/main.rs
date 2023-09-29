@@ -229,7 +229,12 @@ fn check_dir(
     }
 
     if (args).reduce {
-        reduce(global_tempdir_path);
+        reduce(global_tempdir_path, false);
+        std::process::exit(0);
+    }
+
+    if (args).reduce_tmp {
+        reduce(global_tempdir_path, true);
         std::process::exit(0);
     }
 
@@ -2661,7 +2666,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
     }
 }
 
-fn reduce(global_tempdir_path: &Path) {
+fn reduce(global_tempdir_path: &Path, reduce_tmp: bool) {
     // todo handle all Executables
 
     // reduce code using $Executable,
@@ -2682,7 +2687,7 @@ fn reduce(global_tempdir_path: &Path) {
 
     let root_path = std::env::current_dir().expect("no cwd!");
     // parse the reported ICEs
-    let errors_json = root_path.join("errors.json");
+    let errors_json =  if reduce_tmp { root_path.join("errors_tmp.json") } else { root_path.join("errors.json") } ;
     let ices: Vec<ICE> = if errors_json.exists() {
         let read = match std::fs::read_to_string(&errors_json) {
             Ok(content) => content,

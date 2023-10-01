@@ -1714,6 +1714,8 @@ fn find_ICE_string(
         // "thread '.*' panicked at",
         // rustfmt formatting failure:
         "left behind trailing whitespace",
+        "cycle encountered after",
+        "error: rustc interrupted by",
 
       //  "we would appreciate a bug report",
 

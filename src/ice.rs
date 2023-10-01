@@ -149,7 +149,7 @@ pub(crate) struct Report {
 
 impl ICE {
     #[allow(unused)]
-    fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
+    pub(crate) fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
         //unreachable!("DO USE TMPDIR HERE!");
         let tempdir =

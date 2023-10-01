@@ -352,7 +352,6 @@ fn check_dir(
 
                     match executable {
                         Executable::Rustc
-                        
                         /* | Executable::CraneliftLocal */ => {
                             // with expensive flags, run on each of the editions separately
                             let editions = if args.expensive_flags {
@@ -571,6 +570,15 @@ fn check_dir(
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
+
+    // TODO generate report for new ices:
+    new_ices
+        .into_iter()
+        .map(|ice| {
+            let ice = ice.clone();
+            ice.into_report(global_tempdir_path)
+        })
+        .for_each(|ice_report| ice_report.to_disk());
 
     /*
     let root_path_string = root_path.display().to_string();
@@ -1931,7 +1939,7 @@ fn find_ICE_string(
                             keywords_generic_ice
                                 .iter()
                                 .any(|regex|
-                                     regex.is_match(line)) || is_double_ice 
+                                     regex.is_match(line)) || is_double_ice
                                     // assertion failure
                                      || line.contains("left == right") || line.contains("left != right") 
                         })
@@ -1964,7 +1972,7 @@ fn find_ICE_string(
                                  line
                             }})
                         // get the lonest ICE line 
-                        .max_by_key(|line| { 
+                        .max_by_key(|line| {
                             // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
                             if delay_span_bug_regex.is_match(line) {
                                 "internal compiler error".len()
@@ -2733,7 +2741,7 @@ fn reduce(global_tempdir_path: &Path) {
 
         if matches!(executable, Executable::Rustc)
             && matches!(kind, ICEKind::Ice(_))
-            && 
+            &&
         // skip OOMs which treereduce cant really handle
         ! ice.error_reason.contains("allocating stack failed")
         {

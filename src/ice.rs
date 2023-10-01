@@ -226,9 +226,11 @@ impl Report {
     pub(crate) fn to_disk(&self) {
         // only write ices and ub to disk for now
         if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
-            eprintln!("reported!");
             // we want these
+            /*
+            eprintln!("reported!");
             eprint!("{}", self.data);
+             */
         } else {
             return;
         }
@@ -237,9 +239,11 @@ impl Report {
         // we need to append this so that if the miri and rustdoc crash on the file, we don't overwrite previous results :/
         let executable = format!("{:?}", self.ice.executable);
 
-        let tempdir = std::env::temp_dir();
-        let reports_dir = tempdir.join("icemaker_reports");
-        std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
+        let system_temp_dir = std::env::temp_dir();
+        let reports_dir = system_temp_dir.join("icemaker_reports");
+        if !PathBuf::from(&reports_dir).exists() {
+            std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
+        }
 
         let display = self.ice.file.display();
         let mut file_on_disk = display.to_string().replace(['/', '\\'], "_");
@@ -247,11 +251,11 @@ impl Report {
         file_on_disk.push_str(&executable);
         let file_on_disk = file_on_disk.replace(".rs", ".md");
 
-        let report_file = reports_dir.join(file_on_disk);
+        let report_file_path = reports_dir.join(file_on_disk);
 
         //  FIXME file might already exist
         let mut file =
-            std::fs::File::create(report_file).expect("report.to_disk() failed to create file");
+            std::fs::File::create(report_file_path).expect("report.to_disk() failed to create file");
         file.write_all(self.data.as_bytes())
             .expect("failed to write report");
     }

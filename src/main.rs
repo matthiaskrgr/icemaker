@@ -2542,7 +2542,7 @@ fn codegen_tree_splicer_omni() {
     println!("codegenning...");
 
     let total = hmap.len();
-    let mut counter: AtomicUsize = 0.into();
+    let counter: AtomicUsize = 0.into();
 
     files
         .par_iter()
@@ -2836,6 +2836,7 @@ fn reduce(global_tempdir_path: &Path) {
 
 #[derive(Debug, Clone)]
 struct Analysis {
+    #[allow(unused)]
     ice: ICE,
     mvce: String,
 }

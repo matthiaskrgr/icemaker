@@ -1,4 +1,3 @@
-use std::env::current_dir;
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::{Path, PathBuf};

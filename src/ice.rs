@@ -245,17 +245,27 @@ impl Report {
             std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
         }
 
-        let display = self.ice.file.display();
+        let display = self
+            .ice
+            .file
+            .file_name()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or_default()
+            .to_string();
         let mut file_on_disk = display.to_string().replace(['/', '\\'], "_");
         file_on_disk.push('_');
         file_on_disk.push_str(&executable);
-        let file_on_disk = file_on_disk.replace(".rs", ".md");
+        let mut file_on_disk = file_on_disk.replace(".rs", "");
+        file_on_disk.push_str(".md");
 
         let report_file_path = reports_dir.join(file_on_disk);
 
+        dbg!(&report_file_path);
+
         //  FIXME file might already exist
-        let mut file =
-            std::fs::File::create(report_file_path).expect("report.to_disk() failed to create file");
+        let mut file = std::fs::File::create(report_file_path)
+            .expect("report.to_disk() failed to create file");
         file.write_all(self.data.as_bytes())
             .expect("failed to write report");
     }

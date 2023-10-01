@@ -157,6 +157,7 @@ impl ICE {
         let tempdir_path = tempdir.path().display();
 
         let original_path = ice.file.clone();
+        let original_path = original_path.canonicalize().unwrap();
         let original_path_display = original_path.display();
         let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
         let flags = ice.args.clone().join(" ");
@@ -165,7 +166,7 @@ impl ICE {
         let executable_bin = &ice.executable.path();
         let mut cmd = std::process::Command::new(executable_bin);
         cmd.args(&ice.args);
-        cmd.arg(&ice.file);
+        cmd.arg(&original_path);
         cmd.current_dir(tempdir_path.to_string());
 
         let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
@@ -225,7 +226,9 @@ impl Report {
     pub(crate) fn to_disk(&self) {
         // only write ices and ub to disk for now
         if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
+            eprintln!("reported!");
             // we want these
+            eprint!("{}", self.data);
         } else {
             return;
         }
@@ -248,7 +251,7 @@ impl Report {
 
         //  FIXME file might already exist
         let mut file =
-            std::fs::File::create(report_file).expect("repot.to_disk() failed to create file");
+            std::fs::File::create(report_file).expect("report.to_disk() failed to create file");
         file.write_all(self.data.as_bytes())
             .expect("failed to write report");
     }

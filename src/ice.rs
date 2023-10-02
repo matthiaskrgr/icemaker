@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tempdir::TempDir;
 
-use crate::{library::Args, run_commands::prlimit_run_command};
+use crate::{library::Args, reduce_ice_code_to_string, run_commands::prlimit_run_command};
 
 // represents a crash that we found by running an `Executable` with a set of flags on a .rs file
 #[allow(clippy::upper_case_acronyms)]
@@ -151,6 +151,9 @@ impl ICE {
     #[allow(unused)]
     pub(crate) fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
+
+        let mvce_string = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
+
         //unreachable!("DO USE TMPDIR HERE!");
         let tempdir =
             TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir_reporting").unwrap();
@@ -191,6 +194,13 @@ impl ICE {
         let data = format!(
             "
 File: {original_path_display}
+
+mvce:
+````rust
+{mvce_string}
+````
+
+original:
 ````rust
 {original_code}
 ````

@@ -2850,6 +2850,108 @@ pub(crate) fn reduce_ice_code(ice: ICE, global_tempdir_path: &Path) {
     }
 }
 
+pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) -> String {
+    let reduction_start_time: Instant = Instant::now();
+
+    let file = &ice.file;
+    // if we run inside a tempdir, we need an absolute path, because the file is not copied into the tempdir
+    let file = &file.canonicalize().expect("file canonicalizsation failed");
+    let flags = &ice.args;
+    let executable = &ice.executable;
+    let bin = executable.path();
+    let kind = ice.kind.clone();
+
+    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    if matches!(executable, Executable::Rustc)
+        && matches!(kind, ICEKind::Ice(_))
+        &&
+    // skip OOMs which treereduce cant really handle
+    ! ice.error_reason.contains("allocating stack failed")
+    {
+        eprintln!("{}", ice.to_printable(&PathBuf::new()));
+
+        /*  eprintln!("------------------original");
+        eprintln!(
+            "{}",
+            std::fs::read_to_string(file).unwrap_or("FAILURE TO READ ICE FILE".into())
+        );
+        */
+
+        let mut trd = std::process::Command::new("prlimit");
+        trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
+            .arg(format!("--cpu=120")) //  2 mins
+            .arg("treereduce-rust");
+        trd.args([
+            "--quiet",
+            "--passes=10",
+            "--min-reduction=10",
+            "--interesting-exit-code=101",
+            "--on-parse-error",
+            "ignore",
+            "--output", // output to stdout
+            "-",
+        ]);
+
+        trd.arg("--source");
+        trd.arg(file);
+
+        trd.arg("--");
+        // we also need to run the rustc that treereduce-rust launches inside prlimit to not blow up the system
+
+        trd.args([
+            "prlimit",
+            "--noheadings",
+            &format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32),
+            "--cpu=60",
+        ]);
+        trd.arg(&bin);
+
+        if !flags.is_empty() {
+            trd.args(flags);
+        }
+        trd.arg("@@.rs");
+        trd.current_dir(tempdir_path);
+        let output = trd.output().unwrap();
+        let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
+        let reduced_file_clone = reduced_file.clone();
+        /*
+              eprintln!("---------------------------reduced");
+                    eprintln!("{reduced_file}");
+
+                    eprintln!("---------------------------");
+        */
+        // find possible edition flags inside the rustcflags which we will also need to pass to rustfmt?
+        let mut fmt = std::process::Command::new("rustfmt")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .current_dir(tempdir_path)
+            .arg("--edition=2021")
+            .spawn()
+            .expect("Failed to spawn rustfmt process");
+
+        let mut stdin = fmt.stdin.take().expect("Failed to open stdin");
+        std::thread::spawn(move || {
+            stdin
+                .write_all(reduced_file_clone.as_bytes())
+                .expect("Failed to write to stdin");
+        });
+
+        let output = fmt.wait_with_output().expect("Failed to read stdout");
+
+        // if rustfmt failed, save the original file
+        let reduced_fmt_file = if output.status.success() {
+            String::from_utf8_lossy(&output.stdout).to_string()
+        } else {
+            reduced_file
+        };
+
+        return reduced_fmt_file;
+    }
+    String::from("ERROR")
+}
+
 #[derive(Debug, Clone)]
 struct Analysis {
     #[allow(unused)]

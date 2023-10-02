@@ -571,7 +571,7 @@ fn check_dir(
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
 
-    // TODO generate report for new ices:
+    eprintln!("Generating reports...");
     new_ices
         .into_iter()
         .map(|ice| {
@@ -579,6 +579,8 @@ fn check_dir(
             ice.into_report(global_tempdir_path)
         })
         .for_each(|ice_report| ice_report.to_disk());
+
+    eprintln!("done");
 
     /*
     let root_path_string = root_path.display().to_string();
@@ -2703,7 +2705,7 @@ fn reduce(global_tempdir_path: &Path) {
             Err(e) => {
                 // this can happen if we for example change the representation of Ice so that that the previous file is no longer compatible with the new format
                 eprintln!("Failed to parse errors.json, is it a json file?");
-                eprintln!("origina error: '{e:?}'");
+                eprintln!("original error: '{e:?}'");
                 Vec::new()
             }
         }

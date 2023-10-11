@@ -99,6 +99,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zrandomize-layout",
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
+        "-Zpolonius=next",
     ],
     // basic stuff, edition 2018
     &[
@@ -141,6 +142,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zrandomize-layout",
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
+        "-Zpolonius=next",
     ],
     // basic stuff, edition 2021
     &[
@@ -195,6 +197,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zrandomize-layout",
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
+        "-Zpolonius=next",
     ],
     // edition 2014
     &[

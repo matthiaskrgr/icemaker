@@ -53,15 +53,15 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
         seed: 2,
-        tests: 50, // 10
+        tests: 200, // 10
         //
-        chaos: 0,     // 1
+        chaos: 30,    // 1
         deletions: 0, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
         // do not reparse for now?
-        reparse: 1048576,
+        reparse: 30,
     };
 
     // it seems that with this approach, we no longer have the notion of "files", we just have one big set of input and are able to generate random ouputs from it

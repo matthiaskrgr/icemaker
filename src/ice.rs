@@ -195,7 +195,7 @@ impl ICE {
             "
 File: {original_path_display}
 
-mvce:
+auto-reduced (treereduce-rust):
 ````rust
 {mvce_string}
 ````

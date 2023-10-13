@@ -163,7 +163,15 @@ impl ICE {
         let original_path = original_path.canonicalize().unwrap();
         let original_path_display = original_path.display();
         let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
-        let flags = ice.args.clone().join(" ");
+        let flags = ice
+            .args
+            .clone()
+            .into_iter()
+            .filter(|flag| {
+                !["-ooutputfile".to_string(), "-Zdump-mir-dir=dir".to_string()].contains(&flag)
+            })
+            .collect::<Vec<_>>();
+        let flags = flags.join(" ");
 
         //let executable = &self.executable.clone();
         let executable_bin = &ice.executable.path();

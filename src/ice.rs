@@ -212,10 +212,21 @@ Version information
 Command:
 `{executable_bin} {flags}`
 
-Program output:
-````
+<!--
+Include a backtrace in the code block by setting `RUST_BACKTRACE=1` in your
+environment. E.g. `RUST_BACKTRACE=1 cargo build`.
+-->
+<details><summary><strong>Program output</strong></summary>
+<p>
+
+```
 {output_stdout}
-````
+```
+
+</p>
+</details>
+
+
 "
         );
 

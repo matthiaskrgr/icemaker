@@ -207,6 +207,22 @@ impl ICE {
     {original_code}
     ````"
             )
+        // if we have a very long original snippet. collapse it
+        } else if original_code.len() > 999 {
+            format!(
+                "auto-reduced (treereduce-rust):
+````rust
+{mvce_string}
+````
+
+<details><summary><strong>original code</strong></summary>
+<p>
+
+original:
+````rust
+{original_code}
+````"
+            )
         } else {
             format!(
                 "auto-reduced (treereduce-rust):

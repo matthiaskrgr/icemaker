@@ -199,11 +199,17 @@ impl ICE {
             "<failed to get version>".to_string()
         };
 
-        let data = format!(
-            "
-File: {original_path_display}
-
-auto-reduced (treereduce-rust):
+        // if we failed to reduce the originl code, don't print original and snippet
+        let snippet = if mvce_string == original_code {
+            format!(
+                "snippet:
+    ````rust
+    {original_code}
+    ````"
+            )
+        } else {
+            format!(
+                "auto-reduced (treereduce-rust):
 ````rust
 {mvce_string}
 ````
@@ -211,7 +217,16 @@ auto-reduced (treereduce-rust):
 original:
 ````rust
 {original_code}
-````
+````"
+            )
+        };
+
+        let data = format!(
+            "
+File: {original_path_display}
+
+{snippet}
+
 Version information
 ````
 {version_output}

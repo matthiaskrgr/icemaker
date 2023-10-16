@@ -276,6 +276,16 @@ environment. E.g. `RUST_BACKTRACE=1 cargo build`.
     }
 }
 
+static REPORTS_DIR: Lazy<PathBuf> = Lazy::new(|| {
+    let system_temp_dir = std::env::temp_dir();
+    let reports_dir = system_temp_dir.join("icemaker_reports");
+    // ':' in paths may not work under windows, yolo!
+    let date = chrono::offset::Local::now()
+        .format("%Y-%m-%d %H:%M:%S")
+        .to_string();
+    reports_dir.join(date)
+});
+
 #[allow(unused)]
 impl Report {
     pub(crate) fn _print(&self) {
@@ -299,8 +309,7 @@ impl Report {
         // we need to append this so that if the miri and rustdoc crash on the file, we don't overwrite previous results :/
         let executable = format!("{:?}", self.ice.executable);
 
-        let system_temp_dir = std::env::temp_dir();
-        let reports_dir = system_temp_dir.join("icemaker_reports");
+        let reports_dir = REPORTS_DIR.to_owned();
         if !PathBuf::from(&reports_dir).exists() {
             std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
         }
@@ -322,6 +331,7 @@ impl Report {
         let report_file_path = reports_dir.join(file_on_disk);
 
         dbg!(&report_file_path);
+        eprintln!();
 
         //  FIXME file might already exist
         let mut file = std::fs::File::create(report_file_path)

@@ -62,7 +62,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wprivate-bounds",
         "-Wmultiple-supertrait-upcastable",
         "-Welided-lifetimes-in-associated-constant",
-        "--cap-lints=warn",
     ],
     // basic stuff, edition 2015
     &[

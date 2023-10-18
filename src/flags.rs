@@ -62,7 +62,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wprivate-bounds",
         "-Wmultiple-supertrait-upcastable",
         "-Welided-lifetimes-in-associated-constant",
-        "--cap-lints=warn",
     ],
     // basic stuff, edition 2015
     &[
@@ -101,7 +100,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "--cap-lints=warn",
     ],
     // basic stuff, edition 2018
     &[
@@ -144,7 +142,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "--cap-lints=warn",
     ],
     // basic stuff, edition 2021
     &[
@@ -199,7 +196,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "--cap-lints=warn",
     ],
     // edition 2014
     &[
@@ -216,7 +212,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(adt_const_params)",
-        "--cap-lints=warn",
         //   "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc

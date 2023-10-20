@@ -306,7 +306,7 @@ impl Report {
     // save a report into /tmp/ for inspection while icemaker is still running
     pub(crate) fn to_disk(&self) {
         // only write ices and ub to disk for now
-        if let ICEKind::Ice(..) | ICEKind::Ub(..) = self.ice.kind {
+        if let ICEKind::Ice(..) | ICEKind::Ub(..) | ICEKind::DoubleIce = self.ice.kind {
             // we want these
             /*
             eprintln!("reported!");

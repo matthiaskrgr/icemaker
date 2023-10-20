@@ -96,6 +96,7 @@ pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
         || content.contains("lang_items")
         || content.contains("mir!(")
         || content.contains("break rust")
+        || (content.contains("failure-status: 101") && content.contains("known-bug"))
         // if the file is in an "icemaker" dir, do not use it for fuzzing...
         || file.display().to_string().contains("icemaker")
 }

@@ -163,6 +163,17 @@ impl ICE {
         let original_path = original_path.canonicalize().unwrap();
         let original_path_display = original_path.display();
         let original_code = std::fs::read_to_string(&original_path).unwrap_or("<error>".into());
+
+        // when fetching the Executable output, run Executable against the mvce inseatead of the original file
+        // need to save the mvce to disk for this; put it into the tempdir
+        let mvce_file_path = tempdir.path().join("mvce.rs");
+        let mvce_display = mvce_file_path.display();
+        let mut mvce_file = std::fs::File::create(&mvce_file_path)
+            .expect(&format!("failed to create mvce file '{mvce_display}'"));
+        mvce_file
+            .write_all(mvce_string.as_bytes())
+            .expect(&format!("failed to write mvce '{mvce_display}'"));
+
         let flags = ice
             .args
             .clone()
@@ -177,7 +188,7 @@ impl ICE {
         let executable_bin = &ice.executable.path();
         let mut cmd = std::process::Command::new(executable_bin);
         cmd.args(&ice.args);
-        cmd.arg(&original_path);
+        cmd.arg(&mvce_file_path);
         cmd.current_dir(tempdir_path.to_string());
 
         let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");

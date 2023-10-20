@@ -571,7 +571,11 @@ fn check_dir(
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
 
-    eprintln!("Generating reports...");
+    if new_ices.len() == 0 {
+        eprintln!("No new, ices, skipping reports...");
+    } else {
+        eprintln!("Generating reports...");
+    }
     new_ices
         .into_iter()
         .map(|ice| {
@@ -2864,8 +2868,8 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
     let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    if matches!(executable, Executable::Rustc)
-        && matches!(kind, ICEKind::Ice(_))
+    if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_))
+        || matches!(kind, ICEKind::DoubleIce)
         &&
     // skip OOMs which treereduce cant really handle
     ! ice.error_reason.contains("allocating stack failed")
@@ -2949,7 +2953,7 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
 
         return reduced_fmt_file;
     }
-    String::from("ERROR")
+    String::from("ERROR in icemaker while reducing file with treereduce")
 }
 
 #[derive(Debug, Clone)]

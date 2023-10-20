@@ -152,7 +152,8 @@ impl ICE {
     pub(crate) fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
 
-        let mvce_string = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
+        let mvce_string: String = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
+        //dbg!(&mvce_string);
 
         //unreachable!("DO USE TMPDIR HERE!");
         let tempdir =
@@ -170,8 +171,7 @@ impl ICE {
         let mvce_display = mvce_file_path.display();
         let mut mvce_file = std::fs::File::create(&mvce_file_path)
             .expect(&format!("failed to create mvce file '{mvce_display}'"));
-        mvce_file
-            .write_all(mvce_string.as_bytes())
+        write!(mvce_file, "{}", mvce_string)
             .expect(&format!("failed to write mvce '{mvce_display}'"));
 
         let flags = ice
@@ -213,10 +213,10 @@ impl ICE {
         // if we failed to reduce the originl code, don't print original and snippet
         let snippet = if mvce_string == original_code {
             format!(
-                "snippet:
-    ````rust
-    {original_code}
-    ````"
+"snippet:
+````rust
+{original_code}
+````"
             )
         // if we have a very long original snippet. collapse it
         } else if original_code.len() > 999 {

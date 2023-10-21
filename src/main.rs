@@ -564,6 +564,17 @@ fn check_dir(
 
     println!("{diff}");
 
+    // write the diff into report folder
+    let reports_dir = crate::ice::REPORTS_DIR.to_owned();
+    if !PathBuf::from(&reports_dir).exists() {
+        std::fs::create_dir_all(&reports_dir).expect("failed to create icemaker reports dir!");
+    }
+    let diff_path = reports_dir.join("errors.diff");
+    let mut file =
+        std::fs::File::create(diff_path).expect("report.to_disk() failed to create file");
+    file.write_all(diff.as_bytes())
+        .expect("failed to write report");
+
     let new_ices = errors
         .iter()
         .filter(|new_ice| !errors_before.contains(new_ice))

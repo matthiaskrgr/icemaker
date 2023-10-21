@@ -213,7 +213,7 @@ impl ICE {
         // if we failed to reduce the originl code, don't print original and snippet
         let snippet = if mvce_string == original_code {
             format!(
-"snippet:
+                "snippet:
 ````rust
 {original_code}
 ````"
@@ -287,7 +287,7 @@ environment. E.g. `RUST_BACKTRACE=1 cargo build`.
     }
 }
 
-static REPORTS_DIR: Lazy<PathBuf> = Lazy::new(|| {
+pub(crate) static REPORTS_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let system_temp_dir = std::env::temp_dir();
     let reports_dir = system_temp_dir.join("icemaker_reports");
     // ':' in paths may not work under windows, yolo!

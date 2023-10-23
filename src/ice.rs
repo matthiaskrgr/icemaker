@@ -232,7 +232,9 @@ impl ICE {
 original:
 ````rust
 {original_code}
-````"
+````
+</p>
+</details>"
             )
         } else {
             format!(

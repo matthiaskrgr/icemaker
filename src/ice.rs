@@ -294,7 +294,7 @@ pub(crate) static REPORTS_DIR: Lazy<PathBuf> = Lazy::new(|| {
     let reports_dir = system_temp_dir.join("icemaker_reports");
     // ':' in paths may not work under windows, yolo!
     let date = chrono::offset::Local::now()
-        .format("%Y-%m-%d_%H:%M:%S")
+        .format("%Y-%m-%d_%H-%M-%S")
         .to_string();
     reports_dir.join(date)
 });

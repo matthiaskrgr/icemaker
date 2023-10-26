@@ -174,6 +174,19 @@ impl ICE {
         write!(mvce_file, "{}", mvce_string)
             .expect(&format!("failed to write mvce '{mvce_display}'"));
 
+        // add feature flags into the mvce
+
+        // filter and convert ""-Zcrate-attr=feature(x)" to "#![feature(x)]"
+        let feature_flags = &ice
+            .args
+            .clone()
+            .iter()
+            .filter(|flag| flag.starts_with("-Zcrate-attr=feature("))
+            .map(|flag| flag.replace("-Zcrate-attr=", ""))
+            .map(|feature| format!("#![{feature}]\n"))
+            .collect::<String>();
+        dbg!(feature_flags);
+
         let flags = ice
             .args
             .clone()
@@ -216,6 +229,7 @@ impl ICE {
                 "snippet:
 ````rust
 {original_code}
+{feature_flags}
 ````"
             )
         // if we have a very long original snippet. collapse it
@@ -224,6 +238,7 @@ impl ICE {
                 "auto-reduced (treereduce-rust):
 ````rust
 {mvce_string}
+{feature_flags}
 ````
 
 <details><summary><strong>original code</strong></summary>
@@ -241,6 +256,7 @@ original:
                 "auto-reduced (treereduce-rust):
 ````rust
 {mvce_string}
+{feature_flags}
 ````
 
 original:

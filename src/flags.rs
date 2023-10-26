@@ -213,6 +213,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(adt_const_params)",
+        "-Zthir-unsafeck=yes",
         //   "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc

@@ -185,7 +185,6 @@ impl ICE {
             .map(|flag| flag.replace("-Zcrate-attr=", ""))
             .map(|feature| format!("#![{feature}]\n"))
             .collect::<String>();
-        dbg!(feature_flags);
 
         let flags = ice
             .args

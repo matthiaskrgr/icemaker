@@ -207,6 +207,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
         "-Cdebuginfo=2",
         "-Copt-level=3",*/
+        "-Zmir-opt-level=5",
+        "-Zvalidate-mir",
         "--edition=2024",
         "-Zunstable-options",
         "-Zinline-mir=yes",

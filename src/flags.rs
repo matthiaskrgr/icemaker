@@ -198,7 +198,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
     ],
-    // edition 2014
+    // edition 2024
     &[
         /* "-Zsanitizer=cfi",
         "-Clto",
@@ -213,6 +213,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(adt_const_params)",
+        "-Zcrate-attr=feature(coroutines)",
+        "-Zcrate-attr=feature(gen_blocks)",
         "-Zthir-unsafeck=yes",
         //   "-Zmir-opt-level=3",
     ],

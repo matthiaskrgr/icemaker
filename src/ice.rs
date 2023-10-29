@@ -152,6 +152,7 @@ impl ICE {
     pub(crate) fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
 
+        let ice_oneliner = self.to_printable(global_tempdir_path);
         let mvce_string: String = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
         //dbg!(&mvce_string);
 
@@ -266,8 +267,10 @@ original:
         };
 
         let data = format!(
-            "
+            "<!--
+{ice_oneliner}
 File: {original_path_display}
+-->
 
 {snippet}
 

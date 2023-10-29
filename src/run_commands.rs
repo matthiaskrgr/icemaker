@@ -1477,7 +1477,7 @@ pub(crate) fn file_compiles(
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    ["2015", "2018", "2021"]
+    ["2015", "2018", "2021", "2024"]
         .iter()
         .map(|year| format!("--edition={year}"))
         .any(|edition_flag| {
@@ -1525,7 +1525,7 @@ pub(crate) fn file_compiles_from_string(
 
     // to path
     let file = file_path;
-    ["2015", "2018", "2021"]
+    ["2015", "2018", "2021", "2024"]
         .iter()
         .map(|year| format!("--edition={year}"))
         .any(|edition_flag| {

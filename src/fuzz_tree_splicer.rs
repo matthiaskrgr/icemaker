@@ -53,7 +53,7 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: 2, // 30
         seed: 2,
-        tests: 200, // 10
+        tests: 100, // 10
         //
         chaos: 30,    // 1
         deletions: 0, //

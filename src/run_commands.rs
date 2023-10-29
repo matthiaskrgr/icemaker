@@ -94,9 +94,8 @@ pub(crate) fn run_rustc(
         return run_rustc_incremental(executable, file, global_tempdir_path);
     }
     // if the file contains no "main", run with "--crate-type lib"
-    let has_main = std::fs::read_to_string(file)
-        .unwrap_or_default()
-        .contains("fn main(");
+    let file_as_text = std::fs::read_to_string(file).unwrap_or_default();
+    let has_main = file_as_text.contains("fn main(");
 
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path().display();
@@ -111,6 +110,35 @@ pub(crate) fn run_rustc(
 
     //  we need to remove the original -o flag from the rustflags because rustc will not accept two -o's
     let rustc_flags = rustc_flags.iter().filter(|flag| **flag != "-ocodegen");
+    // if a file has #![feature(foo)] and we pass "-Zcrate-attr=feature(foo)" in addition to that, that may cause an error
+    let regex = Regex::new(r"\[feature\(.*\)\]").unwrap();
+    // extract all the used feature gates
+    let features_enabled_in_file = regex
+        .find_iter(&file_as_text)
+        .map(|x| x.as_str())
+        .map(|s| s.strip_prefix("[feature(").unwrap_or(s))
+        .map(|s| s.strip_suffix(")]").unwrap_or(s))
+        .map(|s| s.split(","))
+        .flatten()
+        .filter(|s| s.len() > 0)
+        // remove surrounding whitespaces etc
+        .map(|s| s.trim())
+        .map(|s| s.trim_matches(|c| ['(', ')', '[', ']'].contains(&c)))
+        .collect::<Vec<&str>>();
+
+    // if a rustc flag specifies a feature that is already contained in the file, skip the rustc flag to avoid duplicate features:
+    let rustc_flags = rustc_flags
+        .filter(|flag| {
+            // no feature flag, keep
+            !flag.contains("-Zcrate-attr=feature(")
+                ||
+                // feature flag, only keep if not specified in file already
+                 flag.contains("-Zcrate-attr=feature(")
+                    && !features_enabled_in_file
+                        .iter()
+                        .any(|fif| flag.contains(fif))
+        })
+        .map(|x| *x);
 
     let dump_mir_dir = format!("-Zdump-mir-dir={tempdir_path}");
 

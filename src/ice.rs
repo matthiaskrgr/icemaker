@@ -98,7 +98,7 @@ pub(crate) type ICEDisplay = String;
 
 impl ICE {
     // print a ICE to stdout or something
-    pub(crate) fn to_printable(&self, global_tempdir: &PathBuf) -> ICEDisplay {
+    pub(crate) fn to_printable(&self) -> ICEDisplay {
         let kind = match self.kind {
             ICEKind::Ice(Interestingness::Interesting) => "ICE".red(),
             ICEKind::Ice(Interestingness::Boring) => "ice".normal(),
@@ -152,7 +152,7 @@ impl ICE {
     pub(crate) fn into_report(self, global_tempdir_path: &PathBuf) -> Report {
         let ice = &self;
 
-        let ice_oneliner = self.to_printable(global_tempdir_path);
+        let ice_oneliner = self.to_printable();
         let mvce_string: String = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
         //dbg!(&mvce_string);
 

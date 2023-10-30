@@ -1205,7 +1205,7 @@ impl ICE {
 
             // we know this is an ICE
             PRINTER.log(PrintMessage::IceFound {
-                ice: ice.to_printable(&global_tempdir_path),
+                ice: ice.to_printable(),
             });
 
             return Some(ice);
@@ -1276,7 +1276,7 @@ impl ICE {
                         kind: icekind,
                     };
                     PRINTER.log(PrintMessage::IceFound {
-                        ice: ice.to_printable(&global_tempdir_path),
+                        ice: ice.to_printable(),
                     });
 
                     return Some(ice);
@@ -1452,7 +1452,7 @@ impl ICE {
                     kind: ICEKind::Hang(seconds_elapsed),
                 };
                 PRINTER.log(PrintMessage::IceFound {
-                    ice: hang.to_printable(&global_tempdir_path),
+                    ice: hang.to_printable(),
                 });
 
                 return Some(hang);
@@ -1549,7 +1549,7 @@ impl ICE {
 
         if let Some(ice) = ret.clone() {
             PRINTER.log(PrintMessage::IceFound {
-                ice: ice.to_printable(&global_tempdir_path),
+                ice: ice.to_printable(),
             });
         }
         drop(tempdir);
@@ -2769,7 +2769,7 @@ pub(crate) fn reduce_ice_code(ice: ICE, global_tempdir_path: &Path) {
     // skip OOMs which treereduce cant really handle
     ! ice.error_reason.contains("allocating stack failed")
     {
-        eprintln!("{}", ice.to_printable(&PathBuf::new()));
+        eprintln!("{}", ice.to_printable());
 
         /*  eprintln!("------------------original");
         eprintln!(
@@ -2885,7 +2885,7 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
     // skip OOMs which treereduce cant really handle
     ! ice.error_reason.contains("allocating stack failed")
     {
-        eprintln!("{}", ice.to_printable(&PathBuf::new()));
+        eprintln!("{}", ice.to_printable());
 
         /*  eprintln!("------------------original");
         eprintln!(

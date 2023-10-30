@@ -2866,8 +2866,6 @@ pub(crate) fn reduce_ice_code(ice: ICE, global_tempdir_path: &Path) {
 }
 
 pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) -> String {
-    let reduction_start_time: Instant = Instant::now();
-
     let file = &ice.file;
     // if we run inside a tempdir, we need an absolute path, because the file is not copied into the tempdir
     let file = &file.canonicalize().expect("file canonicalizsation failed");

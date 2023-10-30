@@ -156,7 +156,6 @@ impl ICE {
         let mvce_string: String = reduce_ice_code_to_string(ice.clone(), global_tempdir_path);
         //dbg!(&mvce_string);
 
-        //unreachable!("DO USE TMPDIR HERE!");
         let tempdir =
             TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir_reporting").unwrap();
         let tempdir_path = tempdir.path().display();
@@ -176,7 +175,6 @@ impl ICE {
             .expect(&format!("failed to write mvce '{mvce_display}'"));
 
         // add feature flags into the mvce
-
         // filter and convert ""-Zcrate-attr=feature(x)" to "#![feature(x)]"
         let feature_flags = &ice
             .args
@@ -207,6 +205,31 @@ impl ICE {
         let prl_output = prlimit_run_command(&mut cmd).expect("prlimit process failed");
         //  let output_stderr = String::from_utf8(prl_output.stdout).unwrap();
         let output_stdout = String::from_utf8(prl_output.stderr).unwrap();
+
+        /*
+        // TODO: bail in case of exceutable != rustc || exectuable ==  local debug assertions
+        let mut bisection = std::process::Command::new("cargo-bisect-rustc");
+        bisection
+            .arg("--preserve")
+            .arg(format!("--test-dir={tempdir_path}"))
+            .args(["--regress", "ice"])
+            .args([
+                "--script=prlimit",
+                "--",
+                "--noheadings",
+                &format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32),
+                &format!("--cpu={}", 30),
+            ])
+            // rustc run by prlimit:
+            .arg("rustc")
+            .arg(&mvce_file_path)
+            // does this cause problems?
+            .current_dir(tempdir_path.to_string());
+        dbg!(&bisection);
+
+        let bisection_output = bisection.output();
+        dbg!(bisection_output);
+         */
 
         let version_output: String = if let Ok(output) = std::process::Command::new(executable_bin)
             .arg("--version")

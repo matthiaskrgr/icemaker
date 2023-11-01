@@ -216,6 +216,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(adt_const_params)",
         "-Zcrate-attr=feature(coroutines)",
+        "-Zcrate-attr=feature(coroutine_clone)",
         "-Zcrate-attr=feature(gen_blocks)",
         "-Zthir-unsafeck=yes",
         //   "-Zmir-opt-level=3",

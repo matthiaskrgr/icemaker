@@ -2574,6 +2574,11 @@ fn codegen_tree_splicer_omni() {
         .map(|_path| {
             //  eprintln!("{}", path.display());
             // fuzz_tree_splicer::splice_file(&hmap)
+            PRINTER.log(PrintMessage::Progress {
+                index: counter.load(Ordering::SeqCst),
+                total_number_of_files: total,
+                file_name: String::new(),
+            });
             fuzz_tree_splicer::splice_file_from_set(/* path , */ &hmap)
         })
         .flatten()
@@ -2582,12 +2587,6 @@ fn codegen_tree_splicer_omni() {
             hasher.update(&file_content);
             let h = hasher.finalize();
             let hash = format!("{:X}", h);
-
-            PRINTER.log(PrintMessage::Progress {
-                index: counter.load(Ordering::SeqCst),
-                total_number_of_files: total,
-                file_name: String::new(),
-            });
 
             counter.fetch_add(1, Ordering::SeqCst);
 

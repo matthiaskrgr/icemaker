@@ -610,7 +610,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(object_safe_for_dispatch)",
         "-Zcrate-attr=feature(optimize_attribute)",
         "-Zcrate-attr=feature(platform_intrinsics)",
-        "-Zcrate-attr=feature(plugin)",
         "-Zcrate-attr=feature(precise_pointer_size_matching)",
         "-Ztranslate-lang=en_US",
     ],

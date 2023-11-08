@@ -101,6 +101,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
+        "-Zcrate-attr=feature(trait_upcasting)",
     ],
     // basic stuff, edition 2018
     &[
@@ -143,6 +144,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
+        "-Zcrate-attr=feature(trait_upcasting)",
     ],
     // basic stuff, edition 2021
     &[
@@ -197,6 +199,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
+        "-Zcrate-attr=feature(trait_upcasting)",
     ],
     // edition 2024
     &[
@@ -219,6 +222,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(coroutine_clone)",
         "-Zcrate-attr=feature(gen_blocks)",
         "-Zthir-unsafeck=yes",
+        "-Zcrate-attr=feature(trait_upcasting)",
         //   "-Zmir-opt-level=3",
     ],
     /* rustc codegen gcc

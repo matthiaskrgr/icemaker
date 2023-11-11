@@ -223,7 +223,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(gen_blocks)",
         "-Zthir-unsafeck=yes",
         "-Zcrate-attr=feature(trait_upcasting)",
-        //   "-Zmir-opt-level=3",
+        "-Zcross-crate-inline-threshold=always",
+        "-Zinline-mir-hint-threshold=20",
+        "-Zinline-mir-threshold=20",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

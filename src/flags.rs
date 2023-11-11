@@ -200,6 +200,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        // need codegen
+        "-Zcodegen-backend=cranelift",
+        "-ocodegen",
     ],
     // edition 2024
     &[

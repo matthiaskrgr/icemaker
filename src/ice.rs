@@ -206,6 +206,11 @@ impl ICE {
         //  let output_stderr = String::from_utf8(prl_output.stdout).unwrap();
         let output_stdout = String::from_utf8(prl_output.stderr).unwrap();
 
+        let query_stack = output_stdout
+            .lines()
+            .filter(|line| line.starts_with('#') && line.contains(" [") || line.contains("] "))
+            .collect::<String>();
+
         /*
         // TODO: bail in case of exceutable != rustc || exectuable ==  local debug assertions
         let mut bisection = std::process::Command::new("cargo-bisect-rustc");
@@ -319,6 +324,10 @@ environment. E.g. `RUST_BACKTRACE=1 cargo build`.
 </p>
 </details>
 
+<!--
+query stack:
+{query_stack}
+-->
 
 "
         );

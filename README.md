@@ -15,6 +15,7 @@ Features:
 * use "prlimit" to protect against etenally hanging processes or OOMs during infinite loops
 * fuzz incremental compilation by using tree-splicer-rust to cause modifications for incremental compilation testing
 * automatic testcase reduction for rustc with treereduce-rust
+* somewhat automatic report generation for the bugtracker (for rustc atleast)
 
 Requirements: 
  * by default, we build with the "ci" feature disabled and require "prlimit" to limit memory and runtime of a process

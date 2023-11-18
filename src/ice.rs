@@ -209,6 +209,7 @@ impl ICE {
         let query_stack = output_stdout
             .lines()
             .filter(|line| line.starts_with('#') && line.contains(" [") || line.contains("] "))
+            .map(|l| format!("{l}\n"))
             .collect::<String>();
 
         /*

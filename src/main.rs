@@ -1741,6 +1741,8 @@ fn find_ICE_string(
         "left behind trailing whitespace",
         "cycle encountered after",
         "error: rustc interrupted by",
+        "cycle detected when",
+
 
       //  "we would appreciate a bug report",
 

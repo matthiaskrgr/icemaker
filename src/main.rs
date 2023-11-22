@@ -582,21 +582,25 @@ fn check_dir(
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
 
-    if new_ices.len() == 0 {
-        eprintln!("No new, ices, skipping reports...");
+    if args.skip_report {
+        eprintln!("Skipping reports as asked via --skip-report");
     } else {
-        eprintln!("Generating reports...");
+        if new_ices.len() == 0 {
+            eprintln!("No new, ices, skipping reports...");
+        } else {
+            eprintln!("Generating reports...");
+        }
+
+        new_ices
+            .into_iter()
+            .map(|ice| {
+                let ice = ice.clone();
+                ice.into_report(global_tempdir_path)
+            })
+            .for_each(|ice_report| ice_report.to_disk());
+
+        eprintln!("done");
     }
-    new_ices
-        .into_iter()
-        .map(|ice| {
-            let ice = ice.clone();
-            ice.into_report(global_tempdir_path)
-        })
-        .for_each(|ice_report| ice_report.to_disk());
-
-    eprintln!("done");
-
     /*
     let root_path_string = root_path.display().to_string();
 

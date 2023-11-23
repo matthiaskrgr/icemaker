@@ -200,9 +200,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
-        // need codegen
-        "-Zcodegen-backend=cranelift",
-        "-ocodegen",
     ],
     // edition 2024
     &[
@@ -229,6 +226,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcross-crate-inline-threshold=always",
         "-Zinline-mir-hint-threshold=20",
         "-Zinline-mir-threshold=20",
+        // need codegen
+        "-Zcodegen-backend=cranelift",
+        "-ocodegen",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

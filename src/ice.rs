@@ -2,6 +2,7 @@ use std::{io::Write, path::PathBuf};
 
 use clap::Parser;
 use colored::Colorize;
+use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tempdir::TempDir;
@@ -412,6 +413,20 @@ pub enum Regression {
     Beta,
     Nightly,
     Master,
+}
+
+// ice is reproducible on:
+pub struct RegressionDetailed {
+    Stable: bool,
+    Beta: bool,
+    Nightly: bool,
+    Master: bool,
+    LocalDebugAssertions: bool,
+}
+
+lazy_static! {
+    pub(crate) static ref RUSTUP_HOME: PathBuf =
+        home::rustup_home().expect("could not find rustup home");
 }
 
 impl std::fmt::Display for Regression {

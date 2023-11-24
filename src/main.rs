@@ -1650,6 +1650,18 @@ fn find_out_crashing_channel(
     }
 }
 
+fn get_crashing_channels(
+    bad_flags: &Vec<&&str>,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> RegressionDetailed {
+    let rustup_home = &ice::RUSTUP_HOME;
+
+    // WIP copy other stuff into here, see function above
+
+    todo!();
+}
+
 /// take the executable we used and the executables/runs output and determine whether the should raise an ICE or not (by looking at the exit status / stderr for example)
 #[allow(non_snake_case)]
 fn find_ICE_string(
@@ -1784,6 +1796,15 @@ fn find_ICE_string(
     }
 
     let delay_span_bug_regex = Regex::new("^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$").unwrap();
+
+    /*
+    for text in [&output.stdout, &output.stderr] {
+        let text = String::from_utf8(text.clone()).unwrap_or_default();
+        if text.contains("deadlock detected") {
+            eprintln!("\nDEADLOCK\n\n{text}\n\n\n\n");
+        }
+    }
+    */
 
     [&output.stdout, &output.stderr]
         .into_iter()

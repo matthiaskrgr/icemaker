@@ -216,7 +216,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zunstable-options",
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
-        "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(adt_const_params)",
         "-Zcrate-attr=feature(coroutines)",
         "-Zcrate-attr=feature(coroutine_clone)",
@@ -226,6 +225,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcross-crate-inline-threshold=always",
         "-Zinline-mir-hint-threshold=20",
         "-Zinline-mir-threshold=20",
+        "-Zcrate-attr=feature(fn_delegation)",
+        "-Zcrate-attr=feature(unnamed_fields)",
+        "-Zcrate-attr=feature(never_pattern)",
         // need codegen
         "-Zcodegen-backend=cranelift",
         "-ocodegen",

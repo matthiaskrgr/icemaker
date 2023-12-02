@@ -1684,7 +1684,7 @@ fn find_ICE_string(
         "platform_intrinsics", // feature(..)
         "::SIGSEGV",
         "SIGSEGV::",
-        "delay_span_bug_from_inside_query",
+        "span_delayed_bug_from_inside_query",
         "#[rustc_variance]",
         "rustc_layout_scalar_valid_range_end", // rustc attr
         "rustc_attrs",
@@ -1731,7 +1731,7 @@ fn find_ICE_string(
         "Miri caused an ICE during evaluation.",
         "^thread '.*' panicked at",
         "^query stack during panic",
-        "^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$",
+        "^error: internal compiler error: no errors encountered even though `span_delayed_bug` issued$",
         "^error: internal compiler error: ",
         "RUST_BACKTRACE=",
         "error: Undefined Behavior",
@@ -1795,7 +1795,7 @@ fn find_ICE_string(
         }
     }
 
-    let delay_span_bug_regex = Regex::new("^error: internal compiler error: no errors encountered even though `delay_span_bug` issued$").unwrap();
+    let delay_span_bug_regex = Regex::new("^error: internal compiler error: no errors encountered even though `span_delayed_bug` issued$").unwrap();
 
     /*
     for text in [&output.stdout, &output.stderr] {

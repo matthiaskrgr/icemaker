@@ -35,8 +35,11 @@ https://github.com/langston-barrett/treereduce testcase reducion
 https://github.com/langston-barrett/tree-splicer code mutator which icemaker can use to generate more code  
 
 
-Trophy case (830+):  
+Trophy case (840+):  
   
+https://github.com/rust-lang/rust/issues/118575  
+https://github.com/rust-lang/rustc_codegen_cranelift/issues/1434  
+https://github.com/rust-lang/rust/issues/118564  
 https://github.com/rust-lang/rust/issues/118531  
 https://github.com/rust-lang/rust/issues/118530  
 https://github.com/rust-lang/rust/issues/118520  

@@ -1,19 +1,26 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use rand::Rng;
 use tree_sitter::{Parser, Tree};
 use tree_splicer::splice::{splice, Config};
 
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+
+    const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..30;
+    let random_inter_splices = rng.gen_range(INTER_SPLICES_RANGE);
+    let random_seed = rng.gen::<u64>();
+
     let splicer_cfg: Config = Config {
-        inter_splices: 2, // 30
-        seed: 2,
+        inter_splices: random_inter_splices,
+        seed: random_seed,
         tests: 100, // 10
         //
-        chaos: 2,
-        deletions: 1,
+        chaos: 10,
+        deletions: 0,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
@@ -50,18 +57,24 @@ pub(crate) fn splice_file_from_set(
     //  path: &PathBuf,
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
+    let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
+
+    const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..30;
+    let random_inter_splices = rng.gen_range(INTER_SPLICES_RANGE);
+    let random_seed = rng.gen::<u64>();
+
     let splicer_cfg: Config = Config {
-        inter_splices: 2, // 30
-        seed: 2,
-        tests: 100, // 10
+        inter_splices: random_inter_splices,
+        seed: random_seed,
+        tests: 30, // 10
         //
-        chaos: 30,    // 1
+        chaos: 10,    // % chance that a chaos mutation will occur
         deletions: 0, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
         // do not reparse for now?
-        reparse: 30,
+        reparse: 1048576,
     };
 
     // it seems that with this approach, we no longer have the notion of "files", we just have one big set of input and are able to generate random ouputs from it

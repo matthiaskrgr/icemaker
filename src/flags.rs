@@ -227,6 +227,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(fn_delegation)",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(never_patterns)",
+        "-Zcrate-attr=feature(lifetime_capture_rules_2024)",
         // need codegen
         "-Zcodegen-backend=cranelift",
         "-ocodegen",

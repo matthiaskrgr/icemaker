@@ -10,6 +10,7 @@ use regex::Regex;
 use clap::Parser;
 use tempdir::TempDir;
 
+use crate::ice::Executable;
 use crate::library::Args;
 use crate::{find_ICE_string, flags};
 
@@ -1418,107 +1419,41 @@ pub(crate) fn rustc_codegen_gcc_local(
 pub(crate) fn run_marker(
     executable: &str,
     file: &Path,
-    rustc_flags: &[&str],
+    compiler_flags: &[&str],
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
-    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
-        .replace('.', "_")
-        .replace(['[', ']'], "_");
+    /*
+       LD_LIBRARY_PATH='/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/lib:/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/lib:/home/matthias/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib'
+    /home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/bin/marker_rustc_driver /home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/bin/rustc   /tmp/GLACIER2/fixed/83017.rs
+    */
 
-    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+    let has_main = std::fs::read_to_string(file)
+        .unwrap_or_default()
+        .contains("pub(crate) fn main(");
 
-    let has_main = file_string.contains("fn main() {\n");
+    let mut cmd = Command::new("/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/bin/marker_rustc_driver");
+    cmd.arg(
+        "/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/bin/rustc",
+    );
 
-    // running miri is a bit more complicated:
-    // first we need a new tempdir
-
-    let has_test = file_string.contains("#[test]");
-
-    let no_std = file_string.contains("#![no_std]");
-    let platform_intrinsics = file_string.contains("platform_intrinsics");
-    let custom_mir = file_string.contains("mir!");
-
-    if no_std || platform_intrinsics || (!has_main && !has_test) {
-        // miri is know to not really handles this well
-        return CommandOutput::new(
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-            crate::Executable::Marker,
-        );
+    if !has_main {
+        cmd.arg("--crate-type=lib");
     }
+    cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
+      //  .env("SYSROOT", &*SYSROOT_PATH)
+        .env("CARGO_TERM_COLOR", "never")
+        .env("LD_LIBRARY_PATH", "/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/lib:/home/matthias/.rustup/toolchains/nightly-2023-11-16-x86_64-unknown-linux-gnu/lib:/home/matthias/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib")
+        .arg(file)
+        .arg("-Zunstable-options")
+        .arg("--edition=2024")
+        .args(["--cap-lints", "warn"])
+        .args(["-o", "/dev/null"])
+        .current_dir(&global_tempdir_path);
 
-    let edition = rustc_flags
-        .iter()
-        .find(|flag| flag.starts_with("--edition="));
-
-    let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_miri_tempdir").unwrap();
-    let tempdir_path = tempdir.path();
-    // create a new cargo project inside the tmpdir
-    if !std::process::Command::new("cargo")
-        .arg("new")
-        .arg(file_stem)
-        .args(["--vcs", "none"])
-        .current_dir(tempdir_path)
-        .output()
-        .expect("failed to exec cargo new")
-        .status
-        .success()
-    {
-        eprintln!(
-            "ERROR: cargo new failed for: '{file_stem}', run_miri() {}:{}:{}",
-            file!(),
-            line!(),
-            column!()
-        );
-        return CommandOutput::new(
-            std::process::Command::new("true")
-                .output()
-                .expect("failed to run 'true'"),
-            String::new(),
-            Vec::new(),
-            crate::Executable::Marker,
-        );
-    }
-    let source_path = {
-        let mut sp = tempdir_path.to_owned();
-        sp.push(file_stem);
-        sp.push("src/");
-        sp.push("main.rs");
-        sp
-    };
-
-    // write the content of the file we want to check into tmpcrate/src/main.rs
-    std::fs::write(source_path, file_string).expect("failed to write to file");
-
-    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
-
-    let mut crate_path = tempdir_path.to_owned();
-    crate_path.push(file_stem);
-
-    let mut cmd = std::process::Command::new("cargo");
-
-    cmd.arg("marker")
-        .current_dir(&crate_path)
-        .env(
-            "RUSTFLAGS",
-            rustc_flags
-                .iter()
-                .filter(|f| !f.contains("--edition"))
-                .map(|f| format!(" {f}"))
-                .collect::<String>(),
-        )
-        .args(["--lints", "marker_lints = '0.4.3'"]);
-
-    let out = prlimit_run_command(&mut cmd)
-        .unwrap_or_else(|_| panic!("Error: {cmd:?}, executable: {executable:?}"));
-
-    // dbg!(&out);
+    let output = prlimit_run_command(&mut cmd).unwrap();
 
     CommandOutput::new(
-        out,
+        output,
         get_cmd_string(&cmd),
         Vec::new(),
         crate::Executable::Marker,

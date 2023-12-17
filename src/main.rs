@@ -101,6 +101,8 @@ impl From<&Args> for Executable {
             Executable::Kani
         } else if args.rustc_codegen_gcc {
             Executable::RustcCodegenGCC
+        } else if args.marker {
+            Executable::Marker
         } else {
             Executable::Rustc
         }
@@ -642,7 +644,8 @@ struct Timer {
     clippyfix_time: AtomicUsize,
     rustfix_time: AtomicUsize,
     kani_time: AtomicUsize,
-    rustc_codegen_gcc: AtomicUsize,
+    rustc_codegen_gcc_time: AtomicUsize,
+    marker_time: AtomicUsize,
 }
 
 impl Timer {
@@ -695,7 +698,12 @@ impl Timer {
             }
             Executable::RustcCodegenGCC => {
                 let _ = self
-                    .rustc_codegen_gcc
+                    .rustc_codegen_gcc_time
+                    .fetch_add(elapsed_duration, Ordering::SeqCst);
+            }
+            Executable::Marker => {
+                let _ = self
+                    .marker_time
                     .fetch_add(elapsed_duration, Ordering::SeqCst);
             }
         }
@@ -740,9 +748,12 @@ impl Timer {
             kani_time: AtomicUsize::new(
                 Duration::from_millis(self.kani_time.into_inner() as u64).as_secs() as usize,
             ),
-            rustc_codegen_gcc: AtomicUsize::new(
-                Duration::from_millis(self.rustc_codegen_gcc.into_inner() as u64).as_secs()
+            rustc_codegen_gcc_time: AtomicUsize::new(
+                Duration::from_millis(self.rustc_codegen_gcc_time.into_inner() as u64).as_secs()
                     as usize,
+            ),
+            marker_time: AtomicUsize::new(
+                Duration::from_millis(self.marker_time.into_inner() as u64).as_secs() as usize,
             ),
         }
     }
@@ -1000,6 +1011,7 @@ impl ICE {
             Executable::RustcCodegenGCC => {
                 rustc_codegen_gcc_local(exec_path, file, false, compiler_flags, global_tempdir_path)
             }
+            Executable::Marker => run_marker(exec_path, file, compiler_flags, global_tempdir_path),
         }
         .unwrap();
 
@@ -1412,7 +1424,8 @@ impl ICE {
                 | Executable::RustAnalyzer
                 | Executable::Rustfmt
                 | Executable::Miri
-                | Executable::Kani => {}
+                | Executable::Kani
+                | Executable::Marker => {}
             }
 
             let seconds_elapsed = thread_start.elapsed().as_secs();
@@ -1970,7 +1983,8 @@ fn find_ICE_string(
                 | Executable::Cranelift
                 | Executable::Rustdoc
                 | Executable::Rustfmt
-                | Executable::RustcCodegenGCC => {
+                | Executable::RustcCodegenGCC
+                | Executable::Marker => {
                     let mut double_ice = false;
                     let ice = lines
                         // collect all lines which might be ICE messages

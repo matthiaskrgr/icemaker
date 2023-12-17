@@ -458,6 +458,8 @@ pub enum Executable {
     Kani,
     // https://github.com/rust-lang/rustc_codegen_gcc
     RustcCodegenGCC,
+    // https://github.com/rust-marker/marker
+    Marker,
 }
 
 static LOCAL_DEBUG_ASSERTIONS: Lazy<bool> = Lazy::new(|| Args::parse().local_debug_assertions);
@@ -574,6 +576,7 @@ impl Executable {
             Executable::Kani => "kani".into(),
             // env vars + -Zcodegen-backend= to the rest of the stuff, similar to cranelift
             Executable::RustcCodegenGCC => "rustc".into(),
+            Executable::Marker => String::from("marker"),
         }
     }
 }

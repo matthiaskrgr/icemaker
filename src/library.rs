@@ -92,6 +92,9 @@ pub(crate) struct Args {
     // skip report generation to avoid running into OOMS or disk issues etc
     #[clap(long)]
     pub(crate) skip_report: bool,
+
+    #[clap(long)]
+    pub(crate) marker: bool,
 }
 
 /// check whether a file uses features or not

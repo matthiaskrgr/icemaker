@@ -63,6 +63,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Wmultiple-supertrait-upcastable",
         "-Welided-lifetimes-in-associated-constant",
         "--cap-lints=warn",
+        "-Zverbose",
+        "--verbose",
     ],
     // basic stuff, edition 2015
     &[
@@ -230,6 +232,9 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(noop_waker)",
         "-Zcrate-attr=feature(async_iterator)",
         "-Zcrate-attr=feature(async_closure)",
+        "-Zcrate-attr=feature(async_iter_from_iter)",
+        "-Zcrate-attr=feature(const_waker)",
+        "-Zcrate-attr=feature(async_for_loop)",
         "-Zcrate-attr=feature(lifetime_capture_rules_2024)",
         // need codegen
         "-Zcodegen-backend=cranelift",

@@ -104,6 +104,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zlint-mir",
     ],
     // basic stuff, edition 2018
     &[
@@ -147,6 +148,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zlint-mir",
     ],
     // basic stuff, edition 2021
     &[
@@ -202,6 +204,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zlint-mir",
     ],
     // edition 2024
     &[
@@ -236,6 +239,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_waker)",
         "-Zcrate-attr=feature(async_for_loop)",
         "-Zcrate-attr=feature(lifetime_capture_rules_2024)",
+        "-Zlint-mir",
         // need codegen
         "-Zcodegen-backend=cranelift",
         "-ocodegen",

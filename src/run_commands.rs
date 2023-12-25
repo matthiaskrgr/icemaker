@@ -96,7 +96,7 @@ pub(crate) fn run_rustc(
     }
     // if the file contains no "main", run with "--crate-type lib"
     let file_as_text = std::fs::read_to_string(file).unwrap_or_default();
-    let has_main = file_as_text.contains("fn main(");
+    let has_main = file_has_main(&file);
 
     let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
     let tempdir_path = tempdir.path().display();
@@ -189,9 +189,7 @@ pub(crate) fn run_rustc_incremental(
 
     let dump_mir_dir = String::from("-Zdump-mir-dir=/dev/null");
 
-    let has_main = std::fs::read_to_string(file)
-        .unwrap_or_default()
-        .contains("fn main(");
+    let has_main = file_has_main(&file);
 
     let mut cmd = Command::new("DUMMY");
     let mut output = None;
@@ -468,7 +466,7 @@ pub(crate) fn run_clippy_fix(
     // https://github.com/matthiaskrgr/icemaker/issues/26
     let file = std::fs::canonicalize(file).unwrap();
 
-    let has_main = file_string.contains("pub(crate) fn main(");
+    let has_main = file_has_main(&file);
 
     let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_clippyfix_tempdir").unwrap();
     let tempdir_path = tempdir.path();

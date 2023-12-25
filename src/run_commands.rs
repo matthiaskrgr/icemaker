@@ -432,8 +432,9 @@ pub(crate) fn run_clippy(
         .arg(file)
         .args(flags::CLIPPYLINTS)
         .args(flags::RUSTC_ALLOW_BY_DEFAULT_LINTS)
-        .arg("--edition=2021")
+        .arg("--edition=2024")
         .arg("-Zvalidate-mir")
+        .arg("-Zlint-mir")
         .args(["--cap-lints", "warn"])
         .args(["-o", "/dev/null"])
         .current_dir(&global_tempdir_path);

@@ -11,7 +11,7 @@ use clap::Parser;
 use tempdir::TempDir;
 
 use crate::ice::Executable;
-use crate::library::Args;
+use crate::library::{file_has_main, Args};
 use crate::{find_ICE_string, flags};
 
 lazy_static! {
@@ -417,15 +417,12 @@ pub(crate) fn run_clippy(
 ) -> CommandOutput {
     // runs clippy-driver, not cargo-clippy!
 
-    let has_main = std::fs::read_to_string(file)
-        .unwrap_or_default()
-        .contains("fn main(");
-
     let mut cmd = Command::new(executable);
 
-    if !has_main {
+    if !file_has_main(&file) {
         cmd.arg("--crate-type=lib");
     }
+
     cmd.env("RUSTFLAGS", "-Z force-unstable-if-unmarked")
         .env("SYSROOT", &*SYSROOT_PATH)
         .env("CARGO_TERM_COLOR", "never")
@@ -1466,6 +1463,7 @@ pub(crate) fn run_marker(
 pub(crate) fn prlimit_run_command(
     new_command: &mut std::process::Command,
 ) -> std::result::Result<Output, std::io::Error> {
+    // deconstruct our previous Command and wrap it by a "prlimit run ..."
     if cfg!(feature = "ci") {
         // return as is
         new_command.output()

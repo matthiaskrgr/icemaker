@@ -1,3 +1,5 @@
+use std::io;
+
 use clap::Parser;
 use itertools::Itertools;
 
@@ -105,6 +107,17 @@ pub fn uses_feature(file: &std::path::Path) -> bool {
             eprintln!("Failed to read '{}'", file.display());
             false
         }
+    }
+}
+
+pub fn file_has_main(file: &dyn AsRef<std::path::Path>) -> bool {
+    use std::io::BufRead;
+
+    match std::fs::File::open(file) {
+        Ok(file) => io::BufReader::new(file)
+            .lines()
+            .any(|line| line.unwrap_or_default().contains("fn main(")),
+        Err(_) => false,
     }
 }
 

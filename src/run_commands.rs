@@ -419,7 +419,8 @@ pub(crate) fn run_clippy(
 
     let has_main = std::fs::read_to_string(file)
         .unwrap_or_default()
-        .contains("pub(crate) fn main(");
+        .contains("fn main(");
+
     let mut cmd = Command::new(executable);
 
     if !has_main {

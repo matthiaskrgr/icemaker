@@ -59,6 +59,7 @@ use std::time::Instant;
 use clap::Parser;
 use colored::Colorize;
 use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use regex::Regex;
 use sha2::{Digest, Sha256};
@@ -1675,6 +1676,73 @@ fn get_crashing_channels(
     todo!();
 }
 
+static KEYWORDS_MIRI_UB: Lazy<Vec<Regex>> = Lazy::new(|| {
+    [
+        "error: Undefined Behavior",
+        // "the evaluated program leaked memory", // memleaks are save apparently
+        "this indicates a bug in the program",
+        "the compiler unexpectedly panicked",
+        "thread 'rustc' panicked at",
+        "we would appreciate a bug report",
+        "misaligned pointer dereference",
+        "Miri caused an ICE during evaluation.",
+    ]
+    .into_iter()
+    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+    .collect::<Vec<_>>()
+});
+
+static KEYWORDS_CLIPPYFIX_FAILURE: Lazy<Vec<Regex>> = Lazy::new(|| {
+    [
+    ".*likely indicates a bug in either rustc or cargo itself.*",
+    ".*after fixes were automatically applied the compiler reported errors within these files.*",
+    ".*fixing code with the `--broken-code` flag.*",
+]
+.into_iter()
+.map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+.collect::<Vec<_>>()
+});
+
+static KEYWORDS_GENERIC_ICE: Lazy<Vec<Regex>> = Lazy::new(|| {
+    [
+    "^LLVM ERROR",
+    "Miri caused an ICE during evaluation.",
+    "^thread '.*' panicked at",
+    "^query stack during panic",
+    "^error: internal compiler error: no errors encountered even though `span_delayed_bug` issued$",
+    "^error: internal compiler error: ",
+    "RUST_BACKTRACE=",
+    "error: Undefined Behavior",
+    //"MIRIFLAGS",
+    "segmentation fault",
+    "(core dumped)",
+    "^fatal runtime error: stack overflow",
+    "^Unusual: ",
+    "^Undefined behavior:",
+    // llvm assertion failure
+    "Assertion `.*' failed",
+    // do not include anything like libc::SIGSEGV
+    // note: rustc regex crate does not support this v  :( 
+    //"(?!.*lib::)^.*(SIGABRT)",
+    //"(?!.*libc::)^.*(SIGSEGV)",
+    "process abort signal",
+    "SIGKILL: kill",
+    "SIGSEGV:",
+    // rustc_codegen_gcc
+    // "libgccjit.so: error:",
+    // "thread '.*' panicked at",
+    // rustfmt formatting failure:
+    "left behind trailing whitespace",
+    "cycle encountered after",
+    "error: rustc interrupted by",
+
+  //  "we would appreciate a bug report",
+
+].into_iter()
+.map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
+.collect::<Vec<_>>()
+});
+
 /// take the executable we used and the executables/runs output and determine whether the should raise an ICE or not (by looking at the exit status / stderr for example)
 #[allow(non_snake_case)]
 fn find_ICE_string(
@@ -1716,75 +1784,12 @@ fn find_ICE_string(
 
     let mut internal_feature = false;
 
-    let keywords_miri_ub = [
-        "error: Undefined Behavior",
-        // "the evaluated program leaked memory", // memleaks are save apparently
-        "this indicates a bug in the program",
-        "the compiler unexpectedly panicked",
-        "thread 'rustc' panicked at",
-        "we would appreciate a bug report",
-        "misaligned pointer dereference",
-        "Miri caused an ICE during evaluation.",
-    ]
-    .into_iter()
-    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
-    .collect::<Vec<_>>();
-
-    let keywords_clippyfix_failure = [
-        ".*likely indicates a bug in either rustc or cargo itself.*",
-        ".*after fixes were automatically applied the compiler reported errors within these files.*",
-        ".*fixing code with the `--broken-code` flag.*",
-    ]
-    .into_iter()
-    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
-    .collect::<Vec<_>>();
-
-    let keywords_generic_ice = [
-        "^LLVM ERROR",
-        "Miri caused an ICE during evaluation.",
-        "^thread '.*' panicked at",
-        "^query stack during panic",
-        "^error: internal compiler error: no errors encountered even though `span_delayed_bug` issued$",
-        "^error: internal compiler error: ",
-        "RUST_BACKTRACE=",
-        "error: Undefined Behavior",
-        //"MIRIFLAGS",
-        "segmentation fault",
-        "(core dumped)",
-        "^fatal runtime error: stack overflow",
-        "^Unusual: ",
-        "^Undefined behavior:",
-        // llvm assertion failure
-        "Assertion `.*' failed",
-        // do not include anything like libc::SIGSEGV
-        // note: rustc regex crate does not support this v  :( 
-        //"(?!.*lib::)^.*(SIGABRT)",
-        //"(?!.*libc::)^.*(SIGSEGV)",
-        "process abort signal",
-        "SIGKILL: kill",
-        "SIGSEGV:",
-        // rustc_codegen_gcc
-        // "libgccjit.so: error:",
-        // "thread '.*' panicked at",
-        // rustfmt formatting failure:
-        "left behind trailing whitespace",
-        "cycle encountered after",
-        "error: rustc interrupted by",
-
-      //  "we would appreciate a bug report",
-
-    ].into_iter()
-    .map(|kw| Regex::new(kw).unwrap_or_else(|_| panic!("failed to construct regex: {kw}")))
-    .collect::<Vec<_>>();
-
     let keywords_double_panic_ice = [
         "thread caused non-unwinding panic. aborting.",
         "panic in a function that cannot unwind",
         "thread panicked while panicking. aborting.",
         "-Z treat-err-as-bug=",
-    ]
-    .into_iter()
-    .collect::<Vec<_>>();
+    ];
 
     // let output = cmd.output().unwrap();
     // let _exit_status = output.status;
@@ -1851,7 +1856,7 @@ fn find_ICE_string(
                     // filter out FPs
                     .filter(|line| !line.contains("pub const SIGSEGV") )
                     .find(|line| {
-                        keywords_miri_ub.iter().any(|regex| {
+                        KEYWORDS_MIRI_UB.iter().any(|regex| {
                             // if the regex is equal to "panicked at: ", make sure the line does NOT contain "the evaluated program panicked at..."
                             // because that would be caused by somethink like panic!() in the code miri executes and we don't care about that
                             if regex.to_string() == "panicked at:" {
@@ -1873,7 +1878,7 @@ fn find_ICE_string(
                             .map_while(Result::ok)
                             .filter(|line| !line.contains("pub const SIGSEGV") /* FPs */)
                             .find(|line| {
-                                keywords_generic_ice
+                                KEYWORDS_GENERIC_ICE
                                     .iter()
                                     .any(|regex| regex.is_match(line))
                             })
@@ -1924,7 +1929,7 @@ fn find_ICE_string(
                         .lines()
                         .map_while(Result::ok)
                         .find(|line| {
-                            keywords_generic_ice
+                            KEYWORDS_GENERIC_ICE
                                 .iter()
                                 .any(|regex| regex.is_match(line)) || line.contains("left == right") || line.contains("left != right") 
                         })
@@ -1970,7 +1975,7 @@ fn find_ICE_string(
 
                     lines
                         .find(|line| {
-                            keywords_clippyfix_failure
+                            KEYWORDS_CLIPPYFIX_FAILURE
                                 .iter()
                                 .any(|regex| regex.is_match(line))
                         })
@@ -1992,7 +1997,7 @@ fn find_ICE_string(
                             let is_double_ice =  keywords_double_panic_ice.iter().any(|kw| line.contains(kw));
                             if is_double_ice { double_ice = true }
 
-                            keywords_generic_ice
+                            KEYWORDS_GENERIC_ICE
                                 .iter()
                                 .any(|regex|
                                      regex.is_match(line)) || is_double_ice

@@ -1664,18 +1664,6 @@ fn find_out_crashing_channel(
     }
 }
 
-fn get_crashing_channels(
-    bad_flags: &Vec<&&str>,
-    file: &Path,
-    global_tempdir_path: &PathBuf,
-) -> RegressionDetailed {
-    let rustup_home = &ice::RUSTUP_HOME;
-
-    // WIP copy other stuff into here, see function above
-
-    todo!();
-}
-
 static KEYWORDS_MIRI_UB: Lazy<Vec<Regex>> = Lazy::new(|| {
     [
         "error: Undefined Behavior",
@@ -2296,6 +2284,7 @@ pub(crate) fn run_space_heater(
     ICEs
 }
 
+#[allow(unused)]
 fn codegen_git() {
     println!("querying blobs");
     let stdout = std::process::Command::new("git")

@@ -416,6 +416,7 @@ pub enum Regression {
 }
 
 // ice is reproducible on:
+#[allow(non_snake_case, unused)]
 pub struct RegressionDetailed {
     Stable: bool,
     Beta: bool,

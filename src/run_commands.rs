@@ -237,6 +237,7 @@ pub(crate) fn run_rustc_incremental(
     )
 }
 
+#[allow(unused)]
 pub(crate) fn run_rustc_lazy_type_alias(
     executable: &str,
     file: &Path,

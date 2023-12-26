@@ -66,7 +66,7 @@ pub(crate) fn splice_file_from_set(
 
     const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..30;
     let random_inter_splices = rng.gen_range(INTER_SPLICES_RANGE);
-    let random_seed = rng.gen::<u64>();
+    let random_seed = rng.gen::<u8>() as u64;
 
     eprintln!(
         "slice_file: random_inter_splices: '{random_inter_splices}', random_seed: '{random_seed}'"
@@ -75,7 +75,7 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 400, // 10
+        tests: 50, // 10
         //
         chaos: 10,    // % chance that a chaos mutation will occur
         deletions: 0, //

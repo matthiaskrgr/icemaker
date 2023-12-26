@@ -1012,7 +1012,7 @@ impl ICE {
             Executable::RustcCodegenGCC => {
                 rustc_codegen_gcc_local(exec_path, file, false, compiler_flags, global_tempdir_path)
             }
-            Executable::Marker => run_marker(exec_path, file, compiler_flags, global_tempdir_path),
+            Executable::Marker => run_marker(file, compiler_flags, global_tempdir_path),
         }
         .unwrap();
 

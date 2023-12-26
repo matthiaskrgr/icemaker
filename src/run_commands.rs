@@ -10,7 +10,6 @@ use regex::Regex;
 use clap::Parser;
 use tempdir::TempDir;
 
-use crate::ice::Executable;
 use crate::library::{file_has_main, Args};
 use crate::{find_ICE_string, flags};
 
@@ -1416,9 +1415,9 @@ pub(crate) fn rustc_codegen_gcc_local(
 
 // https://github.com/rust-marker/marker
 pub(crate) fn run_marker(
-    executable: &str,
     file: &Path,
-    compiler_flags: &[&str],
+    // @TODO pass editions here?
+    _compiler_flags: &[&str],
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
     /*

@@ -191,7 +191,7 @@ impl ICE {
             .clone()
             .into_iter()
             .filter(|flag| {
-                !["-ooutputfile".to_string(), "-Zdump-mir-dir=dir".to_string()].contains(&flag)
+                !["-ooutputfile".to_string(), "-Zdump-mir-dir=dir".to_string()].contains(flag)
             })
             .collect::<Vec<_>>();
         let flags = flags.join(" ");

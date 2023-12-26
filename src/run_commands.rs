@@ -118,9 +118,8 @@ pub(crate) fn run_rustc(
         .map(|x| x.as_str())
         .map(|s| s.strip_prefix("[feature(").unwrap_or(s))
         .map(|s| s.strip_suffix(")]").unwrap_or(s))
-        .map(|s| s.split(","))
-        .flatten()
-        .filter(|s| s.len() > 0)
+        .flat_map(|s| s.split(','))
+        .filter(|s| !s.is_empty())
         // remove surrounding whitespaces etc
         .map(|s| s.trim())
         .map(|s| s.trim_matches(|c| ['(', ')', '[', ']'].contains(&c)))
@@ -138,7 +137,7 @@ pub(crate) fn run_rustc(
                         .iter()
                         .any(|fif| flag.contains(fif))
         })
-        .map(|x| *x);
+        .copied();
 
     let dump_mir_dir = format!("-Zdump-mir-dir={tempdir_path}");
 
@@ -1446,7 +1445,7 @@ pub(crate) fn run_marker(
         .arg("--edition=2024")
         .args(["--cap-lints", "warn"])
         .args(["-o", "/dev/null"])
-        .current_dir(&global_tempdir_path);
+        .current_dir(global_tempdir_path);
 
     let output = prlimit_run_command(&mut cmd).unwrap();
 

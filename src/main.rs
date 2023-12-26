@@ -588,7 +588,7 @@ fn check_dir(
     if args.skip_report {
         eprintln!("Skipping reports as asked via --skip-report");
     } else {
-        if new_ices.len() == 0 {
+        if new_ices.is_empty() {
             eprintln!("No new, ices, skipping reports...");
         } else {
             eprintln!("Generating reports...");
@@ -1089,6 +1089,7 @@ impl ICE {
             find_ICE_string(file, executable, cmd_output);
 
         // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
+        #[allow(clippy::single_match)]
         match (&found_error, executable) {
             (Some((errstring, ICEKind::Ice(_))), Executable::Rustdoc) => {
                 if !file_compiles(
@@ -2424,12 +2425,13 @@ fn codegen_git_original_dirs() {
 
             let final_path = format!("{}/{}", dir.display(), file_path.to_str().unwrap());
 
-            std::fs::write(&final_path, text)
-                .expect(&format!("failed to write to file: '{final_path}'"));
+            std::fs::write(&final_path, text).unwrap_or_else(|_| {
+                panic!("failed to write to file: '{final_path}'");
+            });
         } else {
             eprintln!(
                 "not writing file {}",
-                format!("{}/{}", dir.display(), file_path.to_str().unwrap())
+                format_args!("{}/{}", dir.display(), file_path.to_str().unwrap())
             );
         }
     })
@@ -2814,7 +2816,7 @@ pub(crate) fn reduce_ice_code(ice: ICE, global_tempdir_path: &Path) {
 
         let mut trd = std::process::Command::new("prlimit");
         trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
-            .arg(format!("--cpu=120")) //  2 mins
+            .arg("--cpu=120") //  2 mins
             .arg("treereduce-rust");
         trd.args([
             "--quiet",
@@ -2928,7 +2930,7 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
 
         let mut trd = std::process::Command::new("prlimit");
         trd.arg(format!("--as={}", 3076_u32 * 1000_u32 * 1000_u32)) // 3 gb of ram
-            .arg(format!("--cpu=120")) //  2 mins
+            .arg("--cpu=120") //  2 mins
             .arg("treereduce-rust");
         trd.args([
             "--quiet",

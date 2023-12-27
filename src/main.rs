@@ -60,6 +60,8 @@ use clap::Parser;
 use colored::Colorize;
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use rayon::prelude::*;
 use regex::Regex;
 use sha2::{Digest, Sha256};
@@ -132,7 +134,7 @@ fn check_dir(
             Err(e) => {
                 // this can happen if we for example change the representation of Ice so that that the previous file is no longer compatible with the new format
                 eprintln!("Failed to parse errors.json, is it a json file?");
-                eprintln!("origina error: '{e:?}'");
+                eprintln!("original error: '{e:?}'");
                 Vec::new()
             }
         }
@@ -2500,13 +2502,16 @@ fn codegen_tree_splicer() {
 
     let root_path = std::env::current_dir().expect("no cwd!");
 
-    let files = WalkDir::new(root_path)
+    let mut files = WalkDir::new(root_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         .map(|f| f.path().to_owned())
         .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();
+
+    // shuffle the vec
+    files.shuffle(&mut thread_rng());
 
     // dir to put the files in
     std::fs::create_dir("icemaker").expect("could not create icemaker dir");

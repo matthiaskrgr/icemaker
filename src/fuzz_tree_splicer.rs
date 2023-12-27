@@ -108,7 +108,7 @@ pub(crate) fn splice_file_from_set(
 
 // such files will most likely just causes known crashes or hang the splicing
 pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
-    const LINE_LIMIT: usize = 300; // was 1000
+    const LINE_LIMIT: usize = 400; // was 1000
 
     let content = std::fs::read_to_string(file).unwrap_or_default();
     let lines_count = content.lines().count();

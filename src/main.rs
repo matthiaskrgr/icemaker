@@ -1722,7 +1722,9 @@ static KEYWORDS_GENERIC_ICE: Lazy<Vec<Regex>> = Lazy::new(|| {
     // "thread '.*' panicked at",
     // rustfmt formatting failure:
     "left behind trailing whitespace",
-    "cycle encountered after",
+    // more rustc
+    // "cycle encountered after",
+    // "cycle detected",
     "error: rustc interrupted by",
 
   //  "we would appreciate a bug report",

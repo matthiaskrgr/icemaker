@@ -75,7 +75,7 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 50, // 10
+        tests: 200, // 10
         //
         chaos: 10,    // % chance that a chaos mutation will occur
         deletions: 0, //

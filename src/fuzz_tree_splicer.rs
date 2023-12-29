@@ -36,6 +36,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let file_content = std::fs::read_to_string(path)
         .unwrap_or_else(|_| panic!("splicer failed to read file {}", path.display()));
     // skip if its too long to avoid stack overflows somewhere
+    // TODO use ignore_files_for_splicing() here
     if file_content.lines().count() > 1000 {
         return Vec::new();
     }

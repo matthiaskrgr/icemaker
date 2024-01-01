@@ -1762,6 +1762,7 @@ fn find_ICE_string(
         "#[rustc_variance]",
         "rustc_layout_scalar_valid_range_end", // rustc attr
         "rustc_attrs",
+        "staged_api",
     ];
 
     let interestingness = {

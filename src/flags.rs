@@ -222,7 +222,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(coroutines)",
         "-Zcrate-attr=feature(coroutine_clone)",
         "-Zcrate-attr=feature(gen_blocks)",
-        "-Zthir-unsafeck=yes",
         "-Zinline-mir",
         "-Zcross-crate-inline-threshold=always",
         "-Zinline-mir-threshold=300",
@@ -707,7 +706,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &["-Zunpretty=expanded,hygiene"],
     &["-Zunpretty=mir"],
     &["-Zunpretty=mir-cfg"],
-    &["-Zthir-unsafeck=yes"],
     &["-Zdump-mir=all", "-Zdump-mir-dataflow"],
     // Sanitizers
     &[

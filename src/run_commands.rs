@@ -869,12 +869,14 @@ pub(crate) fn run_rust_analyzer(
     file: &Path,
     _global_tempdir_path: &Path,
 ) -> CommandOutput {
-    let file_content = std::fs::read_to_string(file).expect("failed to read file ");
+    let file_content =
+        std::fs::read_to_string(file).expect("run_rust_analyzer: failed to read file");
 
     let mut cmd = Command::new(executable)
         .arg("symbols")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .unwrap();
 

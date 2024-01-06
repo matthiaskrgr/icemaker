@@ -10,6 +10,7 @@ use regex::Regex;
 use clap::Parser;
 use tempdir::TempDir;
 
+use crate::ice::Executable;
 use crate::library::{file_has_main, Args};
 use crate::{find_ICE_string, flags};
 
@@ -329,6 +330,104 @@ pub(crate) fn run_rustc_lazy_type_alias(
         output.unwrap(),
         get_cmd_string(&cmd),
         actual_args,
+        crate::Executable::Rustc,
+    )
+}
+
+// check if a file compiles with rustc while it doesnt with RA
+pub(crate) fn run_compare_ra_to_rustc(
+    executable: &str,
+    file: &Path,
+    global_tempdir_path: &PathBuf,
+) -> CommandOutput {
+    let tempdir = TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir").unwrap();
+    let tempdir_path = tempdir.path();
+
+    let file_stem = &format!("_{}", file.file_stem().unwrap().to_str().unwrap())
+        .replace('.', "_")
+        .replace(['[', ']'], "_");
+
+    let file_string = std::fs::read_to_string(file).unwrap_or_default();
+
+    let has_main = std::fs::read_to_string(file)
+        .unwrap_or_default()
+        .contains("fn main(");
+
+    let mut rustc_command = Command::new(Executable::Rustc.path());
+    rustc_command
+        .arg("--crate-type lib")
+        .arg(file)
+        .env("SYSROOT", &*SYSROOT_PATH)
+        // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
+        .arg(format!("-o{}", tempdir_path.display()))
+        .arg("--edition=2021")
+        .arg("-Zwrite-long-types-to-disk=no");
+
+    let rustc_output = prlimit_run_command(&mut rustc_command).unwrap();
+
+    if !std::process::Command::new("cargo")
+        .arg("new")
+        .arg(file_stem)
+        .args(["--vcs", "none"])
+        .arg("--edition=2021")
+        .current_dir(tempdir_path)
+        .output()
+        .expect("failed to exec cargo new")
+        .status
+        .success()
+    {
+        eprintln!(
+            "ERROR: cargo new failed for: '{file_stem}', run_compare_ra_to_rustc() {}:{}:{}",
+            file!(),
+            line!(),
+            column!()
+        );
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::RustAnalyzer,
+        );
+    }
+    let source_path = {
+        let mut sp = tempdir_path.to_owned();
+        sp.push(file_stem);
+        sp.push("src/");
+        sp.push("main.rs");
+        sp
+    };
+
+    // write the content of the file we want to check into tmpcrate/src/main.rs
+    std::fs::write(source_path, file_string).expect("failed to write to file");
+
+    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
+
+    let mut crate_path = tempdir_path.to_owned();
+    crate_path.push(file_stem);
+
+    let mut ra_command = Command::new(Executable::RustAnalyzer.path());
+
+    ra_command.arg("diagnostics").arg(crate_path);
+
+    //dbg!(&command);
+
+    let ra_output = prlimit_run_command(&mut ra_command).unwrap();
+
+    let rustc_status = rustc_output.status.success();
+    let ra_status = ra_output.status.success();
+    // if rustc does not complain while rust-analyzer does, raise an error
+    if rustc_status && !ra_status {
+        eprintln!("\n\n RUST_ALIAS_PARSER DIFFERENCE {}\n\n", file.display());
+    }
+
+    tempdir.close().unwrap();
+    //dbg!(&output);
+    CommandOutput::new(
+        ra_output,
+        get_cmd_string(&ra_command),
+        Vec::new(),
         crate::Executable::Rustc,
     )
 }

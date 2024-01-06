@@ -2921,7 +2921,8 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
     let tempdir = TempDir::new_in(global_tempdir_path, "icemaker_reducing_tempdir").unwrap();
     let tempdir_path = tempdir.path();
 
-    if matches!(executable, Executable::Rustc) && matches!(kind, ICEKind::Ice(_))
+    if matches!(executable, Executable::Rustc | Executable::RustAnalyzer)
+        && matches!(kind, ICEKind::Ice(_))
         || matches!(kind, ICEKind::DoubleIce)
         &&
     // skip OOMs which treereduce cant really handle
@@ -2964,12 +2965,17 @@ pub(crate) fn reduce_ice_code_to_string(ice: ICE, global_tempdir_path: &Path) ->
             "--cpu=60",
         ]);
         trd.arg(&bin);
-
-        if !flags.is_empty() {
-            trd.args(flags);
+        if executable == &Executable::RustAnalyzer {
+            // THIS NEEDS TO BE IN SYNC WITH run_rust_analyzer() arg!!
+            trd.arg("highlight");
+        } else {
+            if !flags.is_empty() {
+                trd.args(flags);
+            }
+            trd.arg("@@.rs");
         }
-        trd.arg("@@.rs");
         trd.current_dir(tempdir_path);
+
         let output = trd.output().unwrap();
         let reduced_file = String::from_utf8_lossy(&output.stdout).to_string();
         let reduced_file_clone = reduced_file.clone();

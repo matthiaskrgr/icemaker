@@ -875,6 +875,7 @@ pub(crate) fn run_rust_analyzer(
     let mut cmd = Command::new("prlimit")
         .args(["--noheadings", "--as=3076000000", "--cpu=30"])
         .arg(executable)
+        // THIS cmd NEEDS TO BE IN SYNC WITH fn reduce_ice_code_to_string() !!
         .arg("highlight")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

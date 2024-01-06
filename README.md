@@ -37,6 +37,11 @@ https://github.com/langston-barrett/tree-splicer code mutator which icemaker can
 
 Trophy case (840+):  
   
+https://github.com/rust-lang/rust-analyzer/issues/16283  
+https://github.com/rust-lang/rust-analyzer/issues/16282  
+https://github.com/rust-lang/rust-analyzer/issues/16281  
+https://github.com/rust-lang/rust-analyzer/issues/16280  
+https://github.com/rust-lang/rust-analyzer/issues/16278  
 https://github.com/rust-lang/rust/issues/119652  
 https://github.com/rust-lang/rust/issues/119633  
 https://github.com/rust-lang/rust-clippy/issues/12101  

@@ -873,7 +873,7 @@ pub(crate) fn run_rust_analyzer(
         std::fs::read_to_string(file).expect("run_rust_analyzer: failed to read file");
 
     let mut cmd = Command::new(executable)
-        .arg("symbols")
+        .arg("highlight")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

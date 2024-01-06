@@ -872,7 +872,9 @@ pub(crate) fn run_rust_analyzer(
     let file_content =
         std::fs::read_to_string(file).expect("run_rust_analyzer: failed to read file");
 
-    let mut cmd = Command::new(executable)
+    let mut cmd = Command::new("prlimit")
+        .args(["--noheadings", "--as=3076000000", "--cpu=30"])
+        .arg(executable)
         .arg("highlight")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

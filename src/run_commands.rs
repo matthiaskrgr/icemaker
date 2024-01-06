@@ -355,21 +355,23 @@ pub(crate) fn run_compare_ra_to_rustc(
 
     let mut rustc_command = Command::new(Executable::Rustc.path());
     rustc_command
-        .arg("--crate-type lib")
+        .arg("--crate-type=lib")
         .arg(file)
         .env("SYSROOT", &*SYSROOT_PATH)
         // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
-        .arg(format!("-o{}", tempdir_path.display()))
-        .arg("--edition=2021")
+        .arg(format!("-o{}/output", tempdir_path.display()))
+        .arg("--edition=2015")
         .arg("-Zwrite-long-types-to-disk=no");
 
     let rustc_output = prlimit_run_command(&mut rustc_command).unwrap();
+
+    //dbg!(&rustc_output);
 
     if !std::process::Command::new("cargo")
         .arg("new")
         .arg(file_stem)
         .args(["--vcs", "none"])
-        .arg("--edition=2021")
+        .arg("--edition=2015")
         .current_dir(tempdir_path)
         .output()
         .expect("failed to exec cargo new")

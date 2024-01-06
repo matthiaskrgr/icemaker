@@ -974,16 +974,11 @@ impl ICE {
             Executable::Clippy => run_clippy(exec_path, file, global_tempdir_path),
             Executable::ClippyFix => run_clippy_fix(exec_path, file, global_tempdir_path),
             Executable::RustFix => run_rustfix(exec_path, file, global_tempdir_path),
-            // Executable::Rustc => run_rustc_lazy_type_alias(exec_path, file, global_tempdir_path),
-            Executable::Rustc => run_rustc(
-                exec_path,
-                file,
-                incremental,
-                compiler_flags,
-                global_tempdir_path,
-            ),
+            Executable::Rustc => run_compare_ra_to_rustc(exec_path, file, global_tempdir_path),
             Executable::Rustdoc => run_rustdoc(exec_path, file, global_tempdir_path),
-            Executable::RustAnalyzer => run_rust_analyzer(exec_path, file, global_tempdir_path),
+            Executable::RustAnalyzer => {
+                run_compare_ra_to_rustc(exec_path, file, global_tempdir_path)
+            }
             Executable::Rustfmt => run_rustfmt(exec_path, file, global_tempdir_path),
             Executable::Miri => run_miri(
                 exec_path,

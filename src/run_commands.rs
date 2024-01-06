@@ -880,9 +880,13 @@ pub(crate) fn run_rust_analyzer(
 
     let stdin = &mut cmd.stdin.as_mut().unwrap();
     stdin.write_all(file_content.as_bytes()).unwrap();
+
+    let output = cmd.wait_with_output().unwrap();
+    //dbg!(&output);
+
     CommandOutput::new(
-        cmd.wait_with_output().unwrap(),
-        get_cmd_string(Command::new("rust-analyer").arg("symbols")),
+        output,
+        get_cmd_string(Command::new("rust-analyser").arg("symbols")),
         Vec::new(),
         crate::Executable::RustAnalyzer,
     )

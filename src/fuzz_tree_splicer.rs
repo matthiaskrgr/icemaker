@@ -22,15 +22,15 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 100, // 10
+        tests: 1000, // 10
         //
         chaos: 10,
-        deletions: 0,
+        deletions: 5,
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
-        max_size: 1048576,
+        max_size: 200_000,
         // do not reparse for now?
-        reparse: 1048576,
+        reparse: 200,
     };
 
     let file_content = std::fs::read_to_string(path)
@@ -76,7 +76,7 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 200, // 10
+        tests: 1000, // 10
         //
         chaos: 10,    // % chance that a chaos mutation will occur
         deletions: 0, //

@@ -366,6 +366,18 @@ pub(crate) fn run_compare_ra_to_rustc(
     let rustc_output = prlimit_run_command(&mut rustc_command).unwrap();
 
     //dbg!(&rustc_output);
+    // SPEEDUP: if rustc already throws errors, abort:
+    if ! rustc_output.status.success() {
+        return CommandOutput::new(
+            std::process::Command::new("true")
+                .output()
+                .expect("failed to run 'true'"),
+            String::new(),
+            Vec::new(),
+            crate::Executable::RustAnalyzer,
+        );
+    }
+
 
     if !std::process::Command::new("cargo")
         .arg("new")

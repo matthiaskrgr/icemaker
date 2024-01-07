@@ -367,7 +367,7 @@ pub(crate) fn run_compare_ra_to_rustc(
 
     //dbg!(&rustc_output);
     // SPEEDUP: if rustc already throws errors, abort:
-    if ! rustc_output.status.success() {
+    if !rustc_output.status.success() {
         return CommandOutput::new(
             std::process::Command::new("true")
                 .output()
@@ -377,7 +377,6 @@ pub(crate) fn run_compare_ra_to_rustc(
             crate::Executable::RustAnalyzer,
         );
     }
-
 
     if !std::process::Command::new("cargo")
         .arg("new")

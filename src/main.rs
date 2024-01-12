@@ -166,7 +166,7 @@ fn check_dir(
                 &Executable::Rustfmt,
                 &Executable::ClippyFix,
                 &Executable::Miri,
-                &Executable::Cranelift,
+                // &Executable::Cranelift,
             ]
         } else {
             vec![

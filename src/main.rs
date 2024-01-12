@@ -165,7 +165,7 @@ fn check_dir(
                 &Executable::Rustdoc,
                 &Executable::Rustfmt,
                 &Executable::ClippyFix,
-                &Executable::Miri,
+                // &Executable::Miri,
                 // &Executable::Cranelift,
             ]
         } else {

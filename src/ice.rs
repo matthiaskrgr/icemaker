@@ -469,65 +469,65 @@ impl Executable {
     pub fn path(&self) -> String {
         match self {
             Executable::Rustc => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustc")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("rustc");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("rustc");
+                p.display().to_string()
             }
             Executable::Clippy => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/clippy-driver")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("clippy-driver");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("clippy-driver");
+                p.display().to_string()
             }
             Executable::ClippyFix => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/clippy-driver")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("clippy-driver");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("clippy-driver");
+                p.display().to_string()
             }
 
             Executable::RustFix => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustc")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("rustc");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("rustc");
+                p.display().to_string()
             }
             Executable::Rustdoc => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustdoc")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("rustdoc");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("rustdoc");
+                p.display().to_string()
             }
             Executable::RustAnalyzer => {
                 let mut p = home::rustup_home().unwrap();
@@ -538,16 +538,16 @@ impl Executable {
                 p.display().to_string()
             }
             Executable::Rustfmt => {
-                if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustfmt")
+                let mut p = home::rustup_home().unwrap();
+                p.push("toolchains");
+                p.push(if *LOCAL_DEBUG_ASSERTIONS {
+                    "local-debug-assertions"
                 } else {
-                    let mut p = home::rustup_home().unwrap();
-                    p.push("toolchains");
-                    p.push("master");
-                    p.push("bin");
-                    p.push("rustfmt");
-                    p.display().to_string()
-                }
+                    "master"
+                });
+                p.push("bin");
+                p.push("rustfmt");
+                p.display().to_string()
             }
             Executable::Miri => {
                 // note: this is actually not what we run in the end, we need to run "cargo miri test"

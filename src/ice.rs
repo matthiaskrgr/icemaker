@@ -470,9 +470,7 @@ impl Executable {
         match self {
             Executable::Rustc => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustc")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -484,9 +482,7 @@ impl Executable {
             }
             Executable::Clippy => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/clippy-driver",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/clippy-driver")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -498,9 +494,7 @@ impl Executable {
             }
             Executable::ClippyFix => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/clippy-driver",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/clippy-driver")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -513,9 +507,7 @@ impl Executable {
 
             Executable::RustFix => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustc")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -527,9 +519,7 @@ impl Executable {
             }
             Executable::Rustdoc => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustdoc",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustdoc")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -549,9 +539,7 @@ impl Executable {
             }
             Executable::Rustfmt => {
                 if *LOCAL_DEBUG_ASSERTIONS {
-                    String::from(
-                        "/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustfmt",
-                    )
+                    String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustfmt")
                 } else {
                     let mut p = home::rustup_home().unwrap();
                     p.push("toolchains");
@@ -572,7 +560,7 @@ impl Executable {
             }
 
             Executable::Cranelift => {
-                String::from("/home/matthias/.rustup/toolchains/local-debug-assertions/bin/rustc")
+                String::from("~/.rustup/toolchains/local-debug-assertions/bin/rustc")
             }
             Executable::Kani => "kani".into(),
             // env vars + -Zcodegen-backend= to the rest of the stuff, similar to cranelift

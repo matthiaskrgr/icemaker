@@ -103,6 +103,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
     // basic stuff, edition 2018
@@ -146,6 +147,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
     // basic stuff, edition 2021
@@ -201,6 +203,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
         "-Zcrate-attr=feature(trait_upcasting)",
+        "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
     // edition 2024

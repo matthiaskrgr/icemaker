@@ -2576,7 +2576,7 @@ fn codegen_tree_splicer_omni() {
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
-        // skip any path that contain "icemaker" because this was probably already generated for fuzzing, no need to use these as input for more fuzzing
+        // skip any paths that contain "icemaker" because this was probably already generated for fuzzing, no need to use these as input for more fuzzing
         .filter(|f| !format!("{:?}", f).contains("icemaker"))
         .map(|f| f.path().to_owned())
         .filter(|pb| !ignore_file_for_splicing(pb))

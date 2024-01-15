@@ -102,7 +102,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
@@ -150,7 +149,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
@@ -188,7 +186,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
-        "-Zcrate-attr=feature(c_str_literals)",
         "-Zcrate-attr=feature(negative_bounds)",
         "-Zcrate-attr=feature(dyn_star)",
         "-Zcrate-attr=feature(pointer_like_trait)",
@@ -196,7 +193,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zstrict-init-checks=yes",
         "-Zcrate-attr=feature(explicit_tail_calls)",
         "-Zcrate-attr=feature(lazy_type_alias)",
-        "-Zcrate-attr=feature(impl_trait_projections)",
         // "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //   "-Ztreat-err-as-bug=3",
@@ -206,7 +202,6 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zinline-mir=yes",
         "-Zinline-mir-threshold=20",
         "-Zpolonius=next",
-        "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(fn_delegation)",
         "-Zlint-mir",
     ],
@@ -428,12 +423,9 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "--emit=mir",
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
-        "-Zcrate-attr=feature(cmpxchg16b_target_feature)",
         "-Zcrate-attr=feature(ermsb_target_feature)",
-        "-Zcrate-attr=feature(f16c_target_feature)",
         "-Zcrate-attr=feature(hexagon_target_feature)",
         "-Zcrate-attr=feature(mips_target_feature)",
-        "-Zcrate-attr=feature(movbe_target_feature)",
         "-Zcrate-attr=feature(powerpc_target_feature)",
         "-Zcrate-attr=feature(riscv_target_feature)",
         "-Zcrate-attr=feature(rtm_target_feature)",
@@ -453,7 +445,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(abi_amdgpu_kernel)",
         "-Zcrate-attr=feature(abi_avr_interrupt)",
         "-Zcrate-attr=feature(abi_c_cmse_nonsecure_call)",
-        "-Zcrate-attr=feature(abi_efiapi)",
         "-Zcrate-attr=feature(abi_msp430_interrupt)",
         "-Zcrate-attr=feature(abi_ptx)",
         "-Zcrate-attr=feature(abi_x86_interrupt)",
@@ -469,11 +460,9 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
         "-Zcrate-attr=feature(alloc_error_handler)",
-        "-Zcrate-attr=feature(arbitrary_enum_discriminant)",
         "-Zcrate-attr=feature(arbitrary_self_types)",
         "-Zcrate-attr=feature(asm_const)",
         "-Zcrate-attr=feature(asm_experimental_arch)",
-        "-Zcrate-attr=feature(asm_sym)",
         "-Zcrate-attr=feature(asm_unwind)",
         "-Zcrate-attr=feature(associated_const_equality)",
         "-Zcrate-attr=feature(associated_type_bounds)",
@@ -533,9 +522,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_try)",
         "-Zcrate-attr=feature(custom_inner_attributes)",
         "-Zcrate-attr=feature(custom_test_frameworks)",
-        "-Zcrate-attr=feature(debugger_visualizer)",
         "-Zcrate-attr=feature(decl_macro)",
-        "-Zcrate-attr=feature(default_alloc_error_handler)",
         "-Zcrate-attr=feature(default_type_parameter_fallback)",
         "-Ztranslate-lang=en_US",
     ],
@@ -574,10 +561,8 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(coroutines)",
         "-Zcrate-attr=feature(coroutine_clone)",
         "-Zcrate-attr=feature(generic_arg_infer)",
-        "-Zcrate-attr=feature(generic_associated_types)",
         "-Zcrate-attr=feature(generic_associated_types_extended)",
         "-Zcrate-attr=feature(generic_const_exprs)",
-        "-Zcrate-attr=feature(half_open_range_patterns)",
         "-Zcrate-attr=feature(if_let_guard)",
         "-Zcrate-attr=feature(imported_main)",
         "-Zcrate-attr=feature(inherent_associated_types)",
@@ -594,10 +579,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Cdebuginfo=2",
         "-Zcrate-attr=feature(inline_const_pat)",
         "-Zcrate-attr=feature(intra_doc_pointers)",
-        "-Zcrate-attr=feature(isa_attribute)",
-        "-Zcrate-attr=feature(label_break_value)",
         "-Zcrate-attr=feature(large_assignments)",
-        "-Zcrate-attr=feature(let_else)",
         "-Zcrate-attr=feature(link_cfg)",
         "-Zcrate-attr=feature(lint_reasons)",
         "-Zcrate-attr=feature(macro_metavar_expr)",
@@ -617,7 +599,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(must_not_suspend)",
         "-Zcrate-attr=feature(naked_functions)",
         "-Zcrate-attr=feature(native_link_modifiers_as_needed)",
-        "-Zcrate-attr=feature(native_link_modifiers_verbatim)",
         "-Zcrate-attr=feature(negative_impls)",
         "-Zcrate-attr=feature(never_type)",
         "-Ztranslate-lang=en_US",
@@ -648,7 +629,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
         "-Zcrate-attr=feature(proc_macro_hygiene)",
-        "-Zcrate-attr=feature(raw_dylib)",
         "-Zcrate-attr=feature(raw_ref_op)",
         "-Zcrate-attr=feature(register_tool)",
         "-Zcrate-attr=feature(repr128)",
@@ -4097,7 +4077,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(abi_amdgpu_kernel)",
         "-Zcrate-attr=feature(abi_avr_interrupt)",
         "-Zcrate-attr=feature(abi_c_cmse_nonsecure_call)",
-        "-Zcrate-attr=feature(abi_efiapi)",
         "-Zcrate-attr=feature(abi_msp430_interrupt)",
         "-Zcrate-attr=feature(abi_ptx)",
         "-Zcrate-attr=feature(abi_x86_interrupt)",
@@ -4167,7 +4146,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(inline_const)",
         "-Zcrate-attr=feature(inline_const_pat)",
         "-Zcrate-attr=feature(intra_doc_pointers)",
-        "-Zcrate-attr=feature(isa_attribute)",
         "-Zcrate-attr=feature(large_assignments)",
         "-Zcrate-attr=feature(let_chains)",
         "-Zcrate-attr=feature(link_cfg)",
@@ -4346,7 +4324,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(inline_const)",
         "-Zcrate-attr=feature(inline_const_pat)",
         "-Zcrate-attr=feature(intra_doc_pointers)",
-        "-Zcrate-attr=feature(isa_attribute)",
         "-Zcrate-attr=feature(large_assignments)",
         "-Zcrate-attr=feature(let_chains)",
         "-Zcrate-attr=feature(link_cfg)",
@@ -4385,7 +4362,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(target_feature_11)",
         "-Zcrate-attr=feature(thread_local)",
         "-Zcrate-attr=feature(trait_alias)",
-        "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(transparent_unions)",
         "-Zcrate-attr=feature(trivial_bounds)",
         "-Zcrate-attr=feature(try_blocks)",
@@ -4525,7 +4501,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(inline_const)",
         "-Zcrate-attr=feature(inline_const_pat)",
         "-Zcrate-attr=feature(intra_doc_pointers)",
-        "-Zcrate-attr=feature(isa_attribute)",
         "-Zcrate-attr=feature(large_assignments)",
         "-Zcrate-attr=feature(let_chains)",
         "-Zcrate-attr=feature(link_cfg)",
@@ -4564,7 +4539,6 @@ pub(crate) static MIRI_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(target_feature_11)",
         "-Zcrate-attr=feature(thread_local)",
         "-Zcrate-attr=feature(trait_alias)",
-        "-Zcrate-attr=feature(trait_upcasting)",
         "-Zcrate-attr=feature(transparent_unions)",
         "-Zcrate-attr=feature(trivial_bounds)",
         "-Zcrate-attr=feature(try_blocks)",
@@ -4676,7 +4650,9 @@ mod tests {
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
-            cmd.args(*batch_of_flags).arg("dummy.rs");
+            cmd.args(*batch_of_flags)
+                .arg("dummy.rs")
+                .arg("-Dstable_features");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;
@@ -4757,7 +4733,9 @@ mod tests {
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
-            cmd.args(*batch_of_flags).arg("dummy.rs");
+            cmd.args(*batch_of_flags)
+                .arg("dummy.rs")
+                .arg("-Dstable_features");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;

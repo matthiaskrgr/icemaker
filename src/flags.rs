@@ -186,7 +186,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
         "-Zcrate-attr=feature(transmute_generic_consts)",
         "-Zcrate-attr=feature(fn_ptr_trait)",
-        "-Zcrate-attr=feature(negative_bounds)",
+        //  "-Zcrate-attr=feature(negative_bounds)",
         "-Zcrate-attr=feature(dyn_star)",
         "-Zcrate-attr=feature(pointer_like_trait)",
         "-Zcrate-attr=feature(generic_const_items)",
@@ -360,7 +360,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "--emit=mir",
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
-        "-Zcrate-attr=feature(abi_unadjusted)",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(anonymous_lifetime_in_impl_trait)",
         "-Zcrate-attr=feature(generic_assert)",
@@ -391,7 +390,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(doc_notable_trait)",
         "-Zcrate-attr=feature(dropck_eyepatch)",
         "-Zcrate-attr=feature(fundamental)",
-        "-Zcrate-attr=feature(link_llvm_intrinsics)",
         "-Zcrate-attr=feature(linkage)",
         "-Ztranslate-lang=en_US",
     ],
@@ -403,9 +401,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "--emit=mir",
         "-Zalways-encode-mir",
         "-Cdebuginfo=2",
-        "-Zcrate-attr=feature(rustc_allow_const_fn_unstable)",
         "-Zcrate-attr=feature(rustc_private)",
-        "-Zcrate-attr=feature(rustdoc_internals)",
         "-Zcrate-attr=feature(start)",
         "-Zcrate-attr=feature(structural_match)",
         "-Zcrate-attr=feature(unboxed_closures)",
@@ -617,7 +613,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(non_exhaustive_omitted_patterns_lint)",
         "-Zcrate-attr=feature(object_safe_for_dispatch)",
         "-Zcrate-attr=feature(optimize_attribute)",
-        "-Zcrate-attr=feature(platform_intrinsics)",
         "-Ztranslate-lang=en_US",
     ],
     &[
@@ -4652,7 +4647,8 @@ mod tests {
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
             cmd.args(*batch_of_flags)
                 .arg("dummy.rs")
-                .arg("-Dstable_features");
+                .arg("-Dstable_features")
+                .arg("-Dinternal_features");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;
@@ -4693,7 +4689,10 @@ mod tests {
             assert!(rustfile_path.is_file());
             assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
-            cmd.args(*batch_of_flags).arg("dummy.rs");
+            cmd.args(*batch_of_flags)
+                .arg("dummy.rs")
+                .arg("-Dstable_features")
+                .arg("-Dinternal_features");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;
@@ -4735,7 +4734,8 @@ mod tests {
             let mut cmd = std::process::Command::new(Executable::Rustc.path());
             cmd.args(*batch_of_flags)
                 .arg("dummy.rs")
-                .arg("-Dstable_features");
+                .arg("-Dstable_features")
+                .arg("-Dinternal_features");
 
             let output = cmd.output();
             let status = output.as_ref().unwrap().status;

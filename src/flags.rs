@@ -138,6 +138,10 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(explicit_tail_calls)",
         "-Zcrate-attr=feature(lazy_type_alias)",
         "-Zcrate-attr=feature(generic_const_items)",
+        "-Zcrate-attr=feature(generic_arg_infer)",
+        "-Zcrate-attr=feature(generic_assert)",
+        "-Zcrate-attr=feature(generic_associated_types_extended)",
+        "-Zcrate-attr=feature(generic_const_exprs)",
         //     "-Zcrate-attr=feature(effects)",
         // "-Clto=off", // rustc_codegen_gcc
         //    "-Ztreat-err-as-bug=3",
@@ -238,6 +242,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_waker)",
         "-Zcrate-attr=feature(async_for_loop)",
         "-Zcrate-attr=feature(lifetime_capture_rules_2024)",
+        "-Zcrate-attr=feature(impl_trait_in_assoc_type)",
+        "-Zcrate-attr=feature(impl_trait_in_fn_trait_return)",
         "-Zlint-mir",
         // need codegen
         "-Zcodegen-backend=cranelift",

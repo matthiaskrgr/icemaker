@@ -978,7 +978,7 @@ impl ICE {
                 exec_path,
                 file,
                 incremental,
-                &compiler_flags,
+                compiler_flags,
                 global_tempdir_path,
             ),
             Executable::Rustdoc => run_rustdoc(exec_path, file, global_tempdir_path),
@@ -1796,6 +1796,8 @@ fn find_ICE_string(
             .lines()
             .chain(std::io::Cursor::new(&output.stderr).lines())
             .filter_map(|line| line.ok())
+            // skip empty lines
+            .filter(|line| !line.trim().is_empty())
             .find(|l| l.contains("prlimit"));
         if let Some(term_res) = termination_reason {
             if term_res.contains("killed") {
@@ -1826,6 +1828,8 @@ fn find_ICE_string(
             let lines = std::io::Cursor::new(executable_output)
                 .lines()
                 .map_while(Result::ok)
+                // skip empty lines
+                .filter(|line| !line.trim().is_empty())
                 // FPs
                 .filter(|line| !line.contains("pub const SIGSEGV"))
                  // the checked code itself might contain something like RUST_BACKTRACE=... :
@@ -1848,6 +1852,8 @@ fn find_ICE_string(
                     let ub_line = std::io::Cursor::new(executable_output)
                     .lines()
                     .map_while(Result::ok)
+                    // skip empty lines
+                    .filter(|line| !line.trim().is_empty())
                     // filter out FPs
                     .filter(|line| !line.contains("pub const SIGSEGV") )
                     .find(|line| {

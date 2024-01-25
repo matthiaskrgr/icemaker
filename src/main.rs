@@ -1318,7 +1318,6 @@ impl ICE {
             // the last one should be the full combination of flags
             let last = args3.iter().collect::<Vec<&&str>>();
 
-            //            dbg!(&flag_combinations);
             let has_main = file_has_main(&file);
             let flags_orig = compiler_flags.iter().cloned();
             let flags_orig = if has_main {
@@ -1373,7 +1372,11 @@ impl ICE {
                         // remove one flag at a time, but only if ice still reproduces
 
                         let mut start_flags: Vec<&&str> =
-                            flags_orig.iter().map(|x| x).collect::<Vec<_>>();
+                            if matches!(executable, Executable::ClippyFix) {
+                                last.clone()
+                            } else {
+                                flags_orig.iter().map(|x| x).collect::<Vec<_>>()
+                            };
                         if !has_main && !start_flags.iter().any(|f| f.contains("crate-type=lib")) {
                             start_flags.push(&&"--crate-type=lib");
                         }

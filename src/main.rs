@@ -1409,8 +1409,49 @@ impl ICE {
                                     .unwrap();
                                     output
                                 } else {
+                                    let rustc_flags = start_flags_one_removed
+                                        .iter()
+                                        .filter(|flag| ***flag != "-ocodegen");
+
+                                    let file_content =
+                                        std::fs::read_to_string(file).unwrap_or_default();
+
+                                    // we also need to do all this crap of removing features that are already contained in the file here;
+                                    // do we actually, shouldnt this be done automatically??
+
+                                    // if a file has #![feature(foo)] and we pass "-Zcrate-attr=feature(foo)" in addition to that, that may cause an error
+                                    let regex = Regex::new(r"\[feature\(.*\)\]").unwrap();
+                                    // extract all the used feature gates
+                                    let features_enabled_in_file = regex
+                                        .find_iter(&file_content)
+                                        .map(|x| x.as_str())
+                                        .map(|s| s.strip_prefix("[feature(").unwrap_or(s))
+                                        .map(|s| s.strip_suffix(")]").unwrap_or(s))
+                                        .flat_map(|s| s.split(','))
+                                        .filter(|s| !s.is_empty())
+                                        // remove surrounding whitespaces etc
+                                        .map(|s| s.trim())
+                                        .map(|s| {
+                                            s.trim_matches(|c| ['(', ')', '[', ']'].contains(&c))
+                                        })
+                                        .collect::<Vec<&str>>();
+
+                                    // if a rustc flag specifies a feature that is already contained in the file, skip the rustc flag to avoid duplicate features:
+                                    let rustc_flags = rustc_flags
+                                        .filter(|flag| {
+                                            // no feature flag, keep
+                                            !flag.contains("-Zcrate-attr=feature(")
+                                                ||
+                                                // feature flag, only keep if not specified in file already
+                                                 flag.contains("-Zcrate-attr=feature(")
+                                                    && !features_enabled_in_file
+                                                        .iter()
+                                                        .any(|fif| flag.contains(fif))
+                                        })
+                                        .copied();
+
                                     // remove -o flags
-                                    let args = start_flags_one_removed.iter().filter(|flag| {
+                                    let args = rustc_flags.filter(|flag| {
                                         !(flag.starts_with("-o") || flag.contains("dump-mir-dir"))
                                     });
 
@@ -1439,14 +1480,16 @@ impl ICE {
                                         format!("-Zdump-mir-dir={}", tempdir_path.display());
 
                                     let mut cmd = Command::new(exec_path);
-                                    cmd.arg(file).args(args).arg(output_file).arg(dump_mir_dir);
+                                    //                             dbg!(&args);
+                                    cmd.arg(file).args(args).arg(dump_mir_dir);
+                                    // dbg!(&cmd);
 
                                     let output = prlimit_run_command(&mut cmd).unwrap();
                                     tempdir5.close().unwrap();
                                     output
                                 };
-                                // std::thread::sleep(std::time::Duration::from_secs(1));
-                                //   dbg!(&output);
+                                //    std::thread::sleep(std::time::Duration::from_secs(1));
+                                // dbg!(&output);
 
                                 let found_error3 = find_ICE_string(file, executable, output);
 

@@ -1374,9 +1374,13 @@ impl ICE {
 
                         let mut start_flags: Vec<&&str> =
                             flags_orig.iter().map(|x| x).collect::<Vec<_>>();
+                        if !has_main && !start_flags.iter().any(|f| f.contains("crate-type=lib")) {
+                            start_flags.push(&&"--crate-type=lib");
+                        }
+
                         let mut start_flags_previous_iter = start_flags.clone();
                         let mut initial = true;
-                        //      eprintln!("start_flags outside loop {:?}", start_flags);
+                        //      eprintln!("start_flags outside loop {:?}", starut_flags);
                         // stop if we can't reduce any further
                         let mut reduced_flags: bool = false;
 
@@ -1482,14 +1486,14 @@ impl ICE {
                                     let mut cmd = Command::new(exec_path);
                                     //                             dbg!(&args);
                                     cmd.arg(file).args(args).arg(dump_mir_dir);
-                                    // dbg!(&cmd);
+                                    //  dbg!(&cmd);
 
                                     let output = prlimit_run_command(&mut cmd).unwrap();
                                     tempdir5.close().unwrap();
                                     output
                                 };
                                 //    std::thread::sleep(std::time::Duration::from_secs(1));
-                                // dbg!(&output);
+                                //  dbg!(&output);
 
                                 let found_error3 = find_ICE_string(file, executable, output);
 

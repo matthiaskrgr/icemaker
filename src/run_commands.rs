@@ -976,6 +976,7 @@ pub(crate) fn run_rustdoc(
     )
 }
 
+#[allow(unused)]
 pub(crate) fn run_rust_analyzer(
     executable: &str,
     file: &Path,

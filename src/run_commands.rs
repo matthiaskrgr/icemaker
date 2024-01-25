@@ -336,7 +336,7 @@ pub(crate) fn run_rustc_lazy_type_alias(
 
 // check if a file compiles with rustc while it doesnt with RA
 pub(crate) fn run_compare_ra_to_rustc(
-    executable: &str,
+    _executable: &str,
     file: &Path,
     global_tempdir_path: &PathBuf,
 ) -> CommandOutput {
@@ -348,10 +348,6 @@ pub(crate) fn run_compare_ra_to_rustc(
         .replace(['[', ']'], "_");
 
     let file_string = std::fs::read_to_string(file).unwrap_or_default();
-
-    let has_main = std::fs::read_to_string(file)
-        .unwrap_or_default()
-        .contains("fn main(");
 
     let mut rustc_command = Command::new(Executable::Rustc.path());
     rustc_command

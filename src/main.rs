@@ -1318,10 +1318,6 @@ impl ICE {
             // the last one should be the full combination of flags
             let last = args3.iter().collect::<Vec<&&str>>();
 
-            let mut flag_combinations = get_flag_combination(args3);
-            flag_combinations.push(last.clone());
-            let flag_combinations = flag_combinations;
-
             //            dbg!(&flag_combinations);
             let has_main = file_has_main(&file);
             let flags_orig = compiler_flags.iter().cloned();
@@ -1389,12 +1385,12 @@ impl ICE {
                         {
                             start_flags_previous_iter = start_flags.clone();
                             // dbg!("loop");
-                            for (i, f) in start_flags.clone().iter().enumerate() {
+                            for (i, _f) in start_flags.clone().iter().enumerate() {
                                 //     dbg!("for");
                                 //   eprintln!("START FLAGS {}", start_flags.len());
                                 let mut start_flags_one_removed = start_flags.clone();
                                 // remove one of the flags
-                                let removed = start_flags_one_removed.remove(i);
+                                let _removed = start_flags_one_removed.remove(i);
                                 //   dbg!(removed);
                                 // check if we still ice
 
@@ -1418,8 +1414,9 @@ impl ICE {
                                         !(flag.starts_with("-o") || flag.contains("dump-mir-dir"))
                                     });
 
-                                    let no_codegen = !start_flags_one_removed
+                                    let codegen: bool = start_flags_one_removed
                                         .iter()
+                                        // -ocodegen means we DO want codegen, for Cranelift for example
                                         .any(|flag| *flag == &"-ocodegen");
 
                                     let tempdir5 = TempDir::new_in(

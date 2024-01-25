@@ -1323,6 +1323,15 @@ impl ICE {
             let flag_combinations = flag_combinations;
 
             //            dbg!(&flag_combinations);
+            let has_main = file_has_main(&file);
+            let flags_orig = compiler_flags.iter().cloned();
+            let flags_orig = if has_main {
+                flags_orig
+                    .chain(std::iter::once("--crate-type=lib"))
+                    .collect::<Vec<_>>()
+            } else {
+                flags_orig.collect::<Vec<_>>()
+            };
 
             match executable {
                 Executable::Rustc
@@ -1362,57 +1371,114 @@ impl ICE {
                     // remove the tempdir
                     tempdir.close().unwrap();
 
+                    // iterate and with each iteration, remove one unneeded flag
+
                     if found_error2.is_some() {
-                        // walk through the flag combinations and save the first (and smallest) one that reproduces the ice
-                        flag_combinations.iter().any(|flag_combination| {
-                            //  dbg!(&flag_combination);
+                        // remove one flag at a time, but only if ice still reproduces
 
-                            // check if we have to timeout
-                            // use limit * 2 to be a bit more generous since bisecting can take time
-                            if thread_start.elapsed().as_secs() > SECONDS_LIMIT * 2 {
-                                // break from the any()
-                                return true;
+                        let mut start_flags: Vec<&&str> =
+                            flags_orig.iter().map(|x| x).collect::<Vec<_>>();
+                        let mut start_flags_last_iter = start_flags.clone();
+                        let mut initial = true;
+                        //     eprintln!("start_flags outside loop {:?}", start_flags);
+                        // stop if we can't reduce any further
+                        let mut reduced_flags: bool = false;
+
+                        while initial
+                            || (!start_flags.is_empty()) && start_flags != start_flags_last_iter
+                        {
+                            //         dbg!("loop");
+                            for (i, f) in start_flags.clone().iter().enumerate() {
+                                //             dbg!("for");
+                                //             eprintln!("START FLAGS {}", start_flags.len());
+                                let mut start_flags_one_removed = start_flags.clone();
+                                // remove one of the flags
+                                let removed = start_flags_one_removed.remove(i);
+                                //              dbg!(removed);
+                                // check if we still ice
+
+                                let output = if matches!(executable, Executable::ClippyFix) {
+                                    let (output, _somestr, _flags) = run_clippy_fix_with_args(
+                                        &executable.path(),
+                                        file,
+                                        &&start_flags_one_removed
+                                            .iter()
+                                            .map(|x| **x)
+                                            .collect::<Vec<_>>(),
+                                        global_tempdir_path,
+                                    )
+                                    .unwrap();
+                                    output
+                                } else {
+                                    // remove -o flags
+                                    let args = start_flags_one_removed.iter().filter(|flag| {
+                                        !(flag.starts_with("-o") || flag.contains("dump-mir-dir"))
+                                    });
+
+                                    let no_codegen = !start_flags_one_removed
+                                        .iter()
+                                        .any(|flag| *flag == &"-ocodegen");
+
+                                    let tempdir5 = TempDir::new_in(
+                                        global_tempdir_path,
+                                        "rustc_testrunner_tmpdir",
+                                    )
+                                    .unwrap();
+                                    let tempdir_path = tempdir5.path();
+                                    let output_file = format!(
+                                        "-o{}/file1",
+                                        if no_codegen {
+                                            "doesnotexist".into()
+                                        } else {
+                                            tempdir_path.display().to_string()
+                                        }
+                                    );
+                                    let dump_mir_dir =
+                                        format!("-Zdump-mir-dir={}", tempdir_path.display());
+
+                                    let mut cmd = Command::new(exec_path);
+                                    cmd.arg(file).args(args).arg(output_file).arg(dump_mir_dir);
+
+                                    let output = prlimit_run_command(&mut cmd).unwrap();
+                                    tempdir5.close().unwrap();
+                                    output
+                                };
+
+                                //            dbg!(&output);
+
+                                let found_error3 = find_ICE_string(file, executable, output);
+
+                                // we still have an error, yay
+                                // save the flags with one removed as our new starting point
+                                if found_error3.is_some() {
+                                    assert!(start_flags != start_flags_one_removed);
+                                    start_flags = start_flags_one_removed;
+                                    eprintln!("removed {:?}", removed);
+                                    //         eprintln!("new start_flags {:?}", &start_flags);
+                                    // restart the loop as we removed a flag
+                                    reduced_flags = true;
+                                    break;
+                                } else {
+                                    // we found nothing, continue
+                                }
+                                start_flags_last_iter = start_flags.clone();
                             }
-
-                            let output = if matches!(executable, Executable::ClippyFix) {
-                                let (output, _somestr, _flags) = run_clippy_fix_with_args(
-                                    &executable.path(),
-                                    file,
-                                    &flag_combination.iter().map(|x| **x).collect::<Vec<_>>(),
-                                    global_tempdir_path,
-                                )
-                                .unwrap();
-                                output
-                            } else {
-                                let tempdir5 =
-                                    TempDir::new_in(global_tempdir_path, "rustc_testrunner_tmpdir")
-                                        .unwrap();
-                                let tempdir_path = tempdir5.path();
-                                let output_file = format!("-o{}/file1", tempdir_path.display());
-                                let dump_mir_dir =
-                                    format!("-Zdump-mir-dir={}", tempdir_path.display());
-
-                                let mut cmd = Command::new(exec_path);
-                                cmd.arg(file)
-                                    .args(flag_combination.iter())
-                                    .arg(output_file)
-                                    .arg(dump_mir_dir);
-                                let output = prlimit_run_command(&mut cmd).unwrap();
-                                tempdir5.close().unwrap();
-                                output
-                            };
-
-                            let found_error3 = find_ICE_string(file, executable, output);
-                            // remove the tempdir
-                            //  tempdir.close().unwrap();
-                            if found_error3.is_some() {
-                                // save the flags that the ICE repros with
-                                bad_flags = flag_combination.clone();
-                                true
-                            } else {
-                                false
-                            }
-                        });
+                            initial = false;
+                            bad_flags = start_flags.clone();
+                        }
+                        //  bad_flags = start_flags;
+                        /*
+                        // let found_error3 = find_ICE_string(file, executable, output);
+                         // remove the tempdir
+                         //  tempdir.close().unwrap();
+                         let wtf = if found_error3.is_some() {
+                             // save the flags that the ICE repros with
+                             // bad_flags = start_flags.iter().collect::<Vec<_>>();
+                             true
+                         } else {
+                             false
+                         };
+                          */
 
                         // find out if this is a beta/stable/nightly regression
                     } else {

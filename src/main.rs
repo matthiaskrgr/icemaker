@@ -1378,24 +1378,27 @@ impl ICE {
 
                         let mut start_flags: Vec<&&str> =
                             flags_orig.iter().map(|x| x).collect::<Vec<_>>();
-                        let mut start_flags_last_iter = start_flags.clone();
+                        let mut start_flags_previous_iter = start_flags.clone();
                         let mut initial = true;
-                        //     eprintln!("start_flags outside loop {:?}", start_flags);
+                        //      eprintln!("start_flags outside loop {:?}", start_flags);
                         // stop if we can't reduce any further
                         let mut reduced_flags: bool = false;
 
                         while initial
-                            || (!start_flags.is_empty()) && start_flags != start_flags_last_iter
+                            || (!start_flags.is_empty()) && start_flags != start_flags_previous_iter
                         {
-                            //         dbg!("loop");
+                            start_flags_previous_iter = start_flags.clone();
+                            // dbg!("loop");
                             for (i, f) in start_flags.clone().iter().enumerate() {
-                                //             dbg!("for");
-                                //             eprintln!("START FLAGS {}", start_flags.len());
+                                //     dbg!("for");
+                                //   eprintln!("START FLAGS {}", start_flags.len());
                                 let mut start_flags_one_removed = start_flags.clone();
                                 // remove one of the flags
                                 let removed = start_flags_one_removed.remove(i);
-                                //              dbg!(removed);
+                                //   dbg!(removed);
                                 // check if we still ice
+
+                                // TODO tempdiring is broken????
 
                                 let output = if matches!(executable, Executable::ClippyFix) {
                                     let (output, _somestr, _flags) = run_clippy_fix_with_args(
@@ -1427,11 +1430,13 @@ impl ICE {
                                     let tempdir_path = tempdir5.path();
                                     let output_file = format!(
                                         "-o{}/file1",
-                                        if no_codegen {
-                                            "doesnotexist".into()
-                                        } else {
-                                            tempdir_path.display().to_string()
-                                        }
+                                        tempdir_path.display() /*
+                                                                  if no_codegen {
+                                                                   "doesnotexist".into()
+                                                               } else {
+                                                                   tempdir_path.display().to_string()
+                                                               }
+                                                               */
                                     );
                                     let dump_mir_dir =
                                         format!("-Zdump-mir-dir={}", tempdir_path.display());
@@ -1443,8 +1448,8 @@ impl ICE {
                                     tempdir5.close().unwrap();
                                     output
                                 };
-
-                                //            dbg!(&output);
+                                // std::thread::sleep(std::time::Duration::from_secs(1));
+                                //   dbg!(&output);
 
                                 let found_error3 = find_ICE_string(file, executable, output);
 
@@ -1453,18 +1458,26 @@ impl ICE {
                                 if found_error3.is_some() {
                                     assert!(start_flags != start_flags_one_removed);
                                     start_flags = start_flags_one_removed;
-                                    eprintln!("removed {:?}", removed);
-                                    //         eprintln!("new start_flags {:?}", &start_flags);
+                                    //       eprintln!("removed {:?}", removed);
+                                    //     eprintln!("new start_flags (flags left) {:?}", &start_flags);
                                     // restart the loop as we removed a flag
                                     reduced_flags = true;
                                     break;
                                 } else {
                                     // we found nothing, continue
                                 }
-                                start_flags_last_iter = start_flags.clone();
+                                //start_flags_last_iter = start_flags.clone();
                             }
                             initial = false;
-                            bad_flags = start_flags.clone();
+                            // eprintln!("Setting bad_flags == ");
+                            bad_flags = if reduced_flags {
+                                start_flags_previous_iter.clone()
+                            } else {
+                                start_flags.clone()
+                            };
+                        }
+                        if !reduced_flags {
+                            eprintln!("FAILED TO REDUCE ANY FLAGS");
                         }
                         //  bad_flags = start_flags;
                         /*
@@ -1500,7 +1513,7 @@ impl ICE {
             }
 
             let seconds_elapsed = thread_start.elapsed().as_secs();
-            if seconds_elapsed > (SECONDS_LIMIT) {
+            if seconds_elapsed > (SECONDS_LIMIT * 10) {
                 print!("\r");
                 println!(
                     "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",
@@ -1592,7 +1605,7 @@ impl ICE {
         // print a warning if a file takes longer than X to process
         // @TODO this only reports if the file finishes running, if we are stuck, we wont
         let seconds_elapsed = thread_start.elapsed().as_secs();
-        if seconds_elapsed > (SECONDS_LIMIT) {
+        if seconds_elapsed > (SECONDS_LIMIT * 10) {
             print!("\r");
             println!(
                 "{}: {:?} {} ran for more ({} seconds) than {} seconds, killed!   \"{}\"",

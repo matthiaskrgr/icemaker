@@ -28,16 +28,16 @@ for file in `find . | grep \.rs$` ;do ; echo $file; clippy-driver $file |& grep 
 but later I decided to RIIR and add support for rustc, rustdoc, nicer output, finding UB via miri and broken lint suggestions etc...  
 
 Shout-outs and related projects  
-https://github.com/jruderman/fuzz-rustc for getting me 80mb of fuzzing code  
-https://github.com/dwrensha/fuzz-rustc which I could use to generate more output  
-https://github.com/Nilstrieb/cargo-minimize testcase reduction  
-https://github.com/langston-barrett/treereduce testcase reducion  
-https://github.com/langston-barrett/tree-splicer code mutator which icemaker can use to generate more code  
+http://github.com/jruderman/fuzz-rustc for getting me 80mb of fuzzing code  
+http://github.com/dwrensha/fuzz-rustc which I could use to generate more output  
+http://github.com/Nilstrieb/cargo-minimize testcase reduction  
+http://github.com/langston-barrett/treereduce testcase reducion  
+http://github.com/langston-barrett/tree-splicer code mutator which icemaker can use to generate more code  
 
 
-Trophy case (840+):  
-
-https://github.com/rust-lang/rust/pull/120329  
+Trophy case (930+):  -a
+  
+https://github.com/rust-lang/rust/issues/120397  
 https://github.com/rust-lang/rustfmt/issues/6043  
 https://github.com/rust-lang/rust/issues/120343  
 https://github.com/rust-lang/rust/issues/120337  

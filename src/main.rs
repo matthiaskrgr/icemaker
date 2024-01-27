@@ -1462,27 +1462,13 @@ impl ICE {
                                         !(flag.starts_with("-o") || flag.contains("dump-mir-dir"))
                                     });
 
-                                    let codegen: bool = start_flags_one_removed
-                                        .iter()
-                                        // -ocodegen means we DO want codegen, for Cranelift for example
-                                        .any(|flag| *flag == &"-ocodegen");
-
                                     let tempdir5 = TempDir::new_in(
                                         global_tempdir_path,
                                         "rustc_testrunner_tmpdir",
                                     )
                                     .unwrap();
                                     let tempdir_path = tempdir5.path();
-                                    let output_file = format!(
-                                        "-o{}/file1",
-                                        tempdir_path.display() /*
-                                                                  if no_codegen {
-                                                                   "doesnotexist".into()
-                                                               } else {
-                                                                   tempdir_path.display().to_string()
-                                                               }
-                                                               */
-                                    );
+                                    // do we need ot tempdir outputfile?
                                     let dump_mir_dir =
                                         format!("-Zdump-mir-dir={}", tempdir_path.display());
 

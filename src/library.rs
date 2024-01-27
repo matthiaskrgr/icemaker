@@ -121,7 +121,7 @@ pub fn file_has_main(file: &dyn AsRef<std::path::Path>) -> bool {
     }
 }
 
-pub fn get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str>> {
+pub fn _get_flag_combination<'a, 'b>(flags: &'a [&'b str]) -> Vec<Vec<&'a &'b str>> {
     // get the power set : [a, b, c] => [a], [b], [c], [a,b], [a,c], [b,c], [a,b,c]
 
     // optimization: only check the first 5000 combinations to avoid OOM, usually that is good enough...

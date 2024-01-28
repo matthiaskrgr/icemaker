@@ -2526,17 +2526,6 @@ fn codegen_git_original_dirs() {
         let hash = split.next().unwrap();
         let path = split.next().unwrap();
 
-        let obj = hash;
-
-        let stdout = std::process::Command::new("git")
-            .arg("cat-file")
-            .arg("-p")
-            .arg(obj)
-            .output()
-            .expect("git cat-file -p <obj> failed")
-            .stdout;
-        // the file content
-        let text = String::from_utf8(stdout).unwrap();
         let path_path = PathBuf::from(path);
         let file_path = path_path.file_name().unwrap();
         let dir = path_path.parent().unwrap();
@@ -2547,16 +2536,31 @@ fn codegen_git_original_dirs() {
                 std::fs::create_dir_all(dir).expect("failed to create directories");
             }
 
-            let final_path = format!("{}/{}", dir.display(), file_path.to_str().unwrap());
+            let actual_file_path: String =
+                format!("{}/{}", dir.display(), file_path.to_str().unwrap());
 
-            std::fs::write(&final_path, text).unwrap_or_else(|_| {
-                panic!("failed to write to file: '{final_path}'");
-            });
-        } else {
-            eprintln!(
-                "not writing file {}",
-                format_args!("{}/{}", dir.display(), file_path.to_str().unwrap())
-            );
+            if !&std::path::PathBuf::from(&actual_file_path).exists() {
+                let obj = hash;
+
+                let stdout = std::process::Command::new("git")
+                    .arg("cat-file")
+                    .arg("-p")
+                    .arg(obj)
+                    .output()
+                    .expect("git cat-file -p <obj> failed")
+                    .stdout;
+                // the file content
+                let text = String::from_utf8(stdout).unwrap();
+
+                std::fs::write(&actual_file_path, text).unwrap_or_else(|_| {
+                    panic!("failed to write to file: '{actual_file_path}'");
+                });
+            } else {
+                eprintln!(
+                    "not writing file {}",
+                    format_args!("{}/{}", dir.display(), file_path.to_str().unwrap())
+                );
+            }
         }
     })
 }

@@ -2630,6 +2630,7 @@ fn codegen_tree_splicer() {
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
+        .filter(|f| !f.path().display().to_string().contains(".git"))
         .map(|f| f.path().to_owned())
         .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();
@@ -2700,6 +2701,7 @@ fn codegen_tree_splicer_omni() {
         .filter(|f| f.path().extension() == Some(OsStr::new("rs")))
         // skip any paths that contain "icemaker" because this was probably already generated for fuzzing, no need to use these as input for more fuzzing
         .filter(|f| !format!("{:?}", f).contains("icemaker"))
+        .filter(|f| !f.path().display().to_string().contains(".git"))
         .map(|f| f.path().to_owned())
         .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();

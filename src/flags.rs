@@ -235,6 +235,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(used_with_arg)",
         "-Zcrate-attr=feature(wasm_abi)",
         "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(const_refs_to_static)",
+        "-Zcrate-attr=feature(unnamed_fields)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -427,6 +429,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(used_with_arg)",
         "-Zcrate-attr=feature(wasm_abi)",
         "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(const_refs_to_static)",
+        "-Zcrate-attr=feature(unnamed_fields)",
         // <features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -619,6 +623,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(used_with_arg)",
         "-Zcrate-attr=feature(wasm_abi)",
         "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(const_refs_to_static)",
+        "-Zcrate-attr=feature(unnamed_fields)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -825,6 +831,8 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(used_with_arg)",
         "-Zcrate-attr=feature(wasm_abi)",
         "-Zcrate-attr=feature(yeet_expr)",
+        "-Zcrate-attr=feature(const_refs_to_static)",
+        "-Zcrate-attr=feature(unnamed_fields)",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

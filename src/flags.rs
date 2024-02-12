@@ -4270,7 +4270,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
     &[
         "-Zcrate-attr=feature(std_internals)",
         "-Zcrate-attr=feature(stdio_makes_pipe)",
-        "-Zcrate-attr=feature(stdsimd)",
         "-Zcrate-attr=feature(step_trait)",
         "-Zcrate-attr=feature(strict_provenance)",
         "-Zcrate-attr=feature(strict_provenance_atomic_ptr)",

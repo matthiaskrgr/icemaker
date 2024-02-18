@@ -1928,10 +1928,11 @@ fn find_ICE_string(
     for text in [&output.stdout, &output.stderr] {
         let text = String::from_utf8(text.clone()).unwrap_or_default();
         if text.contains("deadlock detected") {
-            eprintln!("\nDEADLOCK\n\n{text}\n\n\n\n");
+            eprintln!("\nDEADLOCK\n");
+            eprintln!("{}", input_file.display());
+            eprintln!("\n\n{text}\n\n\n\n");
         }
-    }
-    */
+    } */
 
     [&output.stdout, &output.stderr]
         .into_iter()

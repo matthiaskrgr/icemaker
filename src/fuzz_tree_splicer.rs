@@ -22,7 +22,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 1000, // 10
+        tests: 500, // 10
         //
         chaos: 10,
         deletions: 5,
@@ -65,7 +65,7 @@ pub(crate) fn splice_file_from_set(
 ) -> Vec<String> {
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
 
-    const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..30;
+    const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..10;
     let random_inter_splices = rng.gen_range(INTER_SPLICES_RANGE);
     let random_seed = rng.gen::<u8>() as u64;
 
@@ -76,9 +76,9 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 1000, // 10
+        tests: 30, // 10
         //
-        chaos: 10,    // % chance that a chaos mutation will occur
+        chaos: 30,    // % chance that a chaos mutation will occur
         deletions: 0, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),

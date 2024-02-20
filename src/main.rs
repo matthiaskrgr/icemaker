@@ -2639,8 +2639,7 @@ fn codegen_tree_splicer() {
     // shuffle the vec
     files.shuffle(&mut thread_rng());
 
-    // dir to put the files in
-    std::fs::create_dir("icemaker").expect("could not create icemaker dir");
+    let dir_name = create_fuzzing_target_dir(&FuzzOutputDirType::Icemaker);
 
     /*    let mut parser = Parser::new();
        // rust!
@@ -2677,8 +2676,10 @@ fn codegen_tree_splicer() {
             let h = hasher.finalize();
             let hash = format!("{:X}", h);
 
-            let mut file = std::fs::File::create(format!("icemaker/{hash}.rs"))
-                .expect("could not create file");
+            let mut file_path = dir_name.clone();
+            file_path.push(format!("{hash}.rs"));
+            let mut file = std::fs::File::create(file_path).expect("could not create file");
+
             file.write_all(file_content.as_bytes())
                 .expect("failed to write to file");
         });
@@ -2708,7 +2709,7 @@ fn codegen_tree_splicer_omni() {
         .collect::<Vec<PathBuf>>();
 
     // dir to put the files in
-    std::fs::create_dir("icemaker_omni").expect("could not create icemaker_omni dir");
+    let dir_name = create_fuzzing_target_dir(&FuzzOutputDirType::IcemakerOmni);
 
     let mut parser = Parser::new();
     // rust!
@@ -2760,12 +2761,37 @@ fn codegen_tree_splicer_omni() {
             let hash = format!("{:X}", h);
 
             counter.fetch_add(1, Ordering::SeqCst);
-
-            let mut file = std::fs::File::create(format!("icemaker_omni/{hash}.rs"))
-                .expect("could not create file");
+            let mut file_path = dir_name.clone();
+            file_path.push(format!("{hash}.rs"));
+            let mut file = std::fs::File::create(file_path).expect("could not create file");
             file.write_all(file_content.as_bytes())
                 .expect("failed to write to file");
         });
+}
+
+enum FuzzOutputDirType {
+    Icemaker,
+    IcemakerOmni,
+}
+
+fn create_fuzzing_target_dir(kind: &FuzzOutputDirType) -> PathBuf {
+    for i in 1..100 {
+        let name = match kind {
+            FuzzOutputDirType::Icemaker => format!("icemaker_{i}"),
+            FuzzOutputDirType::IcemakerOmni => format!("icemaker_omni_{i}"),
+        };
+        let path = PathBuf::from(&name);
+        if !path.is_dir() {
+            eprintln!("About to create dir '{name}'");
+            std::fs::create_dir(&path).expect("failed to create fuzz target dir");
+            let path = path
+                .canonicalize()
+                .expect("create_fuzzing_target_dir failed to canonicalize :(");
+            return path;
+        }
+    }
+
+    unreachable!("create_fuzzing_target_dir failed to find suitable dir name");
 }
 
 fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {

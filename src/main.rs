@@ -2146,12 +2146,15 @@ fn find_ICE_string(
                             } else {
                                  line
                             }})
-                        // get the lonest ICE line 
+                        // get the lonest ICE line, assuming  more text == more information == more interesting
                         .max_by_key(|line| {
                             // EXCEPTION: "error: internal compiler error: no errors encountered even though `delay_span_bug` issued" is usually longer than the actual ice line, so artifically decrease weight for this case
                             if delay_span_bug_regex.is_match(line) {
                                 "internal compiler error".len()
-                            } else {
+                            } else if line.contains("internal compiler error") {
+                                // artificially increase weight??
+                                line.len() + 20
+                            }else {
                              line.len()
                             }
                         }

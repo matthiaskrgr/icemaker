@@ -635,8 +635,6 @@ pub(crate) fn run_clippy_fix(
     // write the content of the file we want to check into tmpcrate/src/main.rs
     std::fs::write(source_path, file_string).expect("failed to write to file");
 
-    // we should have everything prepared for the miri invocation now: execute "cargo miri run"
-
     let mut crate_path = tempdir_path.to_owned();
     crate_path.push(file_stem);
 
@@ -664,6 +662,7 @@ pub(crate) fn run_clippy_fix(
 
     // grab the output from the clippy-fix command to get the lints that we ran so we can bisect the offending lint later on
     let lint_output = String::from_utf8(output.clone().stderr).unwrap();
+
     let mut clippy_lint_lines = lint_output
         .lines()
         .filter(|l| l.contains("https://rust-lang.github.io/rust-clippy/master/index.html#"))

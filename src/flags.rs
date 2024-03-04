@@ -5172,7 +5172,6 @@ pub(crate) static RUSTC_ALLOW_BY_DEFAULT_LINTS: &[&str] = &[
     "-Wunused-macro-rules",
     "-Wunused-qualifications",
     "-Wunused-results",
-    "-Wunused-tuple-struct-fields",
     "-Wvariant-size-differences",
 ];
 #[cfg(test)]
@@ -5181,12 +5180,68 @@ mod tests {
         DEFAULT_RUSTFLAGS, EXCEPTIONS, EXPENSIVE_RUSTFLAGS, MIRIFLAGS, MIRI_EXCEPTIONS,
         MIRI_RUSTFLAGS,
     };
-    use crate::ice::*;
+    use crate::{ice::*, RUSTC_ALLOW_BY_DEFAULT_LINTS};
     use std::fs::File;
     use std::io::Write;
     use tempdir::TempDir;
 
     const DUMMY_FILE_CONTENT: &str = "pub fn main() {}\n";
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn RUSTC_ALLOW_BY_DEFAULT_LINTS_are_valid() {
+        // rustc testrunner might override LD_LIBRARY_PATH with a path for nightly toolchain,
+        // which then makes the master toolchain look there and crash
+        //
+        // cargo might set that for doc tests or proc macros or whatever
+        // another workaround is to always compile the crate with master toolchain instead of nightly
+        std::env::remove_var("LD_LIBRARY_PATH");
+        // make sure we don't have invalid rustc flags
+        for (i, lint) in RUSTC_ALLOW_BY_DEFAULT_LINTS
+            .iter()
+            // skip incr comp here, needs to be special cased!
+            .enumerate()
+        {
+            // check that a flag does not contain spaces :/
+            assert!(!lint.contains(' '), "{}", lint);
+
+            let tempdir = TempDir::new(&i.to_string()).expect("failed to create tempdir!");
+            let tempdir_path = tempdir.path();
+            let rustfile_path = tempdir_path.join("file.rs");
+            let mut rustfile = File::create(&rustfile_path).unwrap();
+            writeln!(rustfile, "{DUMMY_FILE_CONTENT}").unwrap();
+            assert!(rustfile_path.is_file());
+            assert!(std::path::PathBuf::from(Executable::Rustc.path()).is_file());
+            let mut cmd = std::process::Command::new(Executable::Rustc.path());
+            cmd.arg(*lint)
+                .arg("dummy.rs")
+                .arg("-Dstable_features")
+                .arg("-Dinternal_features");
+
+            let output = cmd.output();
+            let output = output.as_ref().unwrap();
+            let stderr = String::from_utf8(output.stderr.clone()).unwrap();
+            let stdout = String::from_utf8(output.stdout.clone()).unwrap();
+
+            if stdout.contains("renamed") || stderr.contains("renamed") {
+                eprintln!("!!!!!  PROBLEM WITH '{lint}' !!!!");
+
+                eprintln!("{stdout}");
+                eprintln!("{stderr}");
+
+                panic!("aborting due to bad lint");
+            }
+
+            let status = output.status;
+            if !status.success() {
+                dbg!(&cmd);
+                dbg!(&output);
+                panic!("bad exit status!")
+            }
+
+            assert!(output.status.success());
+        }
+    }
 
     #[test]
     fn default_rustc_flags_are_valid() {

@@ -5132,6 +5132,9 @@ pub(crate) static CLIPPYLINTS: &[&str] = &[
     //.arg("-Wclippy::internal")
 ];
 
+/*
+for i in `rustc -Whelp | grep "^.*allow  "  -o | awk '{print $1}'` ; do ; echo "\"-W${i}\"," ; done
+*/
 pub(crate) static RUSTC_ALLOW_BY_DEFAULT_LINTS: &[&str] = &[
     "-Wabsolute-paths-not-starting-with-crate",
     "-Wbox-pointers",
@@ -5149,11 +5152,10 @@ pub(crate) static RUSTC_ALLOW_BY_DEFAULT_LINTS: &[&str] = &[
     "-Wmissing-copy-implementations",
     "-Wmissing-debug-implementations",
     "-Wmissing-docs",
+    "-Wmultiple-supertrait-upcastable",
     "-Wmust-not-suspend",
     "-Wnon-ascii-idents",
     "-Wnon-exhaustive-omitted-patterns",
-    "-Wnoop-method-call",
-    "-Wpointer-structural-match",
     "-Wrust-2021-incompatible-closure-captures",
     "-Wrust-2021-incompatible-or-patterns",
     "-Wrust-2021-prefixes-incompatible-syntax",
@@ -5161,6 +5163,8 @@ pub(crate) static RUSTC_ALLOW_BY_DEFAULT_LINTS: &[&str] = &[
     "-Wsingle-use-lifetimes",
     "-Wtrivial-casts",
     "-Wtrivial-numeric-casts",
+    "-Wunit-bindings",
+    "-Wunnameable-types",
     "-Wunreachable-pub",
     "-Wunsafe-code",
     "-Wunsafe-op-in-unsafe-fn",

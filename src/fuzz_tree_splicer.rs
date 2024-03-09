@@ -79,6 +79,12 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     // TODO just return Iterator here
     splice(splicer_cfg, &hm)
         .map(|f| String::from_utf8(f).unwrap_or_default())
+        // ignore files that are likely to trigger FPs
+        .filter(|content| {
+            !IN_CODE_FP_KEYWORDS
+                .iter()
+                .any(|fp_keyword| content.contains(fp_keyword))
+        })
         .collect::<Vec<String>>()
 }
 
@@ -128,6 +134,12 @@ pub(crate) fn splice_file_from_set(
     // TODO tree splicer sometimes just hangs.
     splice(splicer_cfg, hmap)
         .map(|f| String::from_utf8(f).unwrap_or_default())
+        // ignore files that are likely to trigger FPs
+        .filter(|content| {
+            !IN_CODE_FP_KEYWORDS
+                .iter()
+                .any(|fp_keyword| content.contains(fp_keyword))
+        })
         .collect::<Vec<String>>()
 }
 

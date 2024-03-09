@@ -1864,7 +1864,6 @@ fn find_ICE_string(
         "#![no_core]",
         "#[rustc_symbol_name]",
         "break rust",
-        "feature(lang_items)",
         "#[rustc_variance]",
         "qemu: uncaught target signal",
         "core_intrinsics",     // feature(..)
@@ -1874,8 +1873,10 @@ fn find_ICE_string(
         "span_delayed_bug_from_inside_query",
         "#[rustc_variance]",
         "rustc_layout_scalar_valid_range_end", // rustc attr
-        "rustc_attrs",
-        "staged_api",
+        "rustc_attrs",                         // [  ]
+        "staged_api",                          // feature(..)
+        "lang_items",                          // feature(..)
+        "#[rustc_intrinsic]",
     ];
 
     let interestingness = {

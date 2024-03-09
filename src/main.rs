@@ -1856,29 +1856,6 @@ fn find_ICE_string(
     executable: &Executable,
     output: Output,
 ) -> Option<(String, ICEKind)> {
-    const IN_CODE_FP_KEYWORDS: &[&str] = &[
-        "panicked at",
-        "RUST_BACKTRACE=",
-        "(core dumped)",
-        "mir!",
-        "#![no_core]",
-        "#[rustc_symbol_name]",
-        "break rust",
-        "#[rustc_variance]",
-        "qemu: uncaught target signal",
-        "core_intrinsics",     // feature(..)
-        "platform_intrinsics", // feature(..)
-        "::SIGSEGV",
-        "SIGSEGV::",
-        "span_delayed_bug_from_inside_query",
-        "#[rustc_variance]",
-        "rustc_layout_scalar_valid_range_end", // rustc attr
-        "rustc_attrs",                         // [  ]
-        "staged_api",                          // feature(..)
-        "lang_items",                          // feature(..)
-        "#[rustc_intrinsic]",
-    ];
-
     let interestingness = {
         let file_text: &str = &std::fs::read_to_string(input_file).unwrap_or_default();
 

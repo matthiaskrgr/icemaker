@@ -5,6 +5,29 @@ use rand::Rng;
 use tree_sitter::{Parser, Tree};
 use tree_splicer::splice::{splice, Config};
 
+pub(crate) const IN_CODE_FP_KEYWORDS: &[&str] = &[
+    "panicked at",
+    "RUST_BACKTRACE=",
+    "(core dumped)",
+    "mir!",
+    "#![no_core]",
+    "#[rustc_symbol_name]",
+    "break rust",
+    "#[rustc_variance]",
+    "qemu: uncaught target signal",
+    "core_intrinsics",     // feature(..)
+    "platform_intrinsics", // feature(..)
+    "::SIGSEGV",
+    "SIGSEGV::",
+    "span_delayed_bug_from_inside_query",
+    "#[rustc_variance]",
+    "rustc_layout_scalar_valid_range_end", // rustc attr
+    "rustc_attrs",                         // [  ]
+    "staged_api",                          // feature(..)
+    "lang_items",                          // feature(..)
+    "#[rustc_intrinsic]",
+];
+
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
@@ -59,6 +82,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
+// omni
 pub(crate) fn splice_file_from_set(
     //  path: &PathBuf,
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
@@ -76,9 +100,9 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 30, // 10
+        tests: 10, // 10
         //
-        chaos: 30,    // % chance that a chaos mutation will occur
+        chaos: 10,    // % chance that a chaos mutation will occur
         deletions: 0, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),

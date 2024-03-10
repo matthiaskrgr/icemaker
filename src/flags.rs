@@ -4571,20 +4571,16 @@ pub(crate) static MIRIFLAGS: &[&[&str]] = &[
     // with mir opt level
     &[
         "-Zmir-opt-level=5",
-        "-Zmiri-check-number-validity",
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
-        "-Zmiri-tag-raw-pointers",
         "-Zmiri-tree-borrows",
         "-Cdebug-assertions",
         "-O",
     ],
     // and without
     &[
-        //"-Zmiri-check-number-validity", // default
         "-Zmiri-strict-provenance",
         "-Zmiri-symbolic-alignment-check",
-        // "-Zmiri-tag-raw-pointers", // default
         "-Zmiri-mute-stdout-stderr",
         "-Zmiri-retag-fields",
         "-Zmiri-tree-borrows",

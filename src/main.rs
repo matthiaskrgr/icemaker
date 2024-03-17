@@ -773,6 +773,7 @@ fn main() {
 
     let args = Args::parse();
 
+    // if we have a --global-tempdir-path passed, create all tempdirs in there, otherwise use TempDir default which is /tmp/
     let global_tempdir = if let Some(ref custom_tempdir_path) = args.global_tempdir_path {
         let mut custom_tmpdir = std::path::PathBuf::from(&custom_tempdir_path);
         let dir_display = custom_tmpdir.display();

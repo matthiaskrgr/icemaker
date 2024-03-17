@@ -1812,6 +1812,7 @@ static KEYWORDS_GENERIC_ICE: Lazy<Vec<Regex>> = Lazy::new(|| {
     "^LLVM ERROR",
     "Miri caused an ICE during evaluation.",
     "^thread '.*' panicked at",
+    "thread 'rustc query cycle handler' panicked at",
     "^error: internal compiler error: no errors encountered even though `span_delayed_bug` issued$",
     "^error: internal compiler error",
     "^query stack during panic",
@@ -1910,7 +1911,8 @@ fn find_ICE_string(
             eprintln!("{}", input_file.display());
             eprintln!("\n\n{text}\n\n\n\n");
         }
-    } */
+    }
+     */
 
     [&output.stdout, &output.stderr]
         .into_iter()

@@ -1811,6 +1811,7 @@ static KEYWORDS_CLIPPYFIX_FAILURE: Lazy<Vec<Regex>> = Lazy::new(|| {
 static KEYWORDS_GENERIC_ICE: Lazy<Vec<Regex>> = Lazy::new(|| {
     [
     "^LLVM ERROR",
+    "rustc-LLVM ERROR",
     "Miri caused an ICE during evaluation.",
     "^thread '.*' panicked at",
     "thread 'rustc query cycle handler' panicked at",

@@ -817,6 +817,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
+        "-Clink-dead-code=true",
     ],
     /* rustc codegen gcc
     &["--edition=2021"],

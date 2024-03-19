@@ -106,10 +106,10 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 10, // 10
+        tests: 30, // 10
         //
-        chaos: 10,    // % chance that a chaos mutation will occur
-        deletions: 0, //
+        chaos: 30,    // % chance that a chaos mutation will occur
+        deletions: 5, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,

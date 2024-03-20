@@ -5174,6 +5174,14 @@ mod tests {
 
     const DUMMY_FILE_CONTENT: &str = "pub fn main() {}\n";
 
+    fn sleep_half_a_second() {
+        use std::{thread, time};
+
+        let sleep_time = time::Duration::from_millis(500); // half a second
+
+        thread::sleep(sleep_time);
+    }
+
     #[test]
     #[allow(non_snake_case)]
     fn RUSTC_ALLOW_BY_DEFAULT_LINTS_are_valid() {
@@ -5227,6 +5235,7 @@ mod tests {
             }
 
             assert!(output.status.success());
+            sleep_half_a_second()
         }
     }
 
@@ -5271,6 +5280,7 @@ mod tests {
                 panic!("bad exit status!")
             }
             assert!(output.as_ref().unwrap().status.success());
+            sleep_half_a_second()
         }
     }
 
@@ -5315,6 +5325,7 @@ mod tests {
                 panic!("bad exit status!")
             }
             assert!(output.as_ref().unwrap().status.success());
+            sleep_half_a_second()
         }
     }
     #[test]
@@ -5358,6 +5369,7 @@ mod tests {
                 panic!("bad exit status!")
             }
             assert!(output.as_ref().unwrap().status.success());
+            sleep_half_a_second()
         }
     }
 
@@ -5429,6 +5441,7 @@ mod tests {
                 output.status.success(),
                 "miri flags bad: '{batch_of_flags:?}'\n\noutput. {output:?}"
             );
+            sleep_half_a_second()
         }
     }
 }

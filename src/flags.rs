@@ -234,6 +234,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(deref_patterns)",
+        "-Zcrate-attr=feature(postfix_match)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -425,6 +426,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(deref_patterns)",
+        "-Zcrate-attr=feature(postfix_match)",
         // <features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -616,6 +618,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(deref_patterns)",
+        "-Zcrate-attr=feature(postfix_match)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -821,6 +824,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
         "-Zcrate-attr=feature(deref_patterns)",
+        "-Zcrate-attr=feature(postfix_match)",
         "-Clink-dead-code=true",
     ],
     /* rustc codegen gcc
@@ -1056,6 +1060,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
+        "-Zcrate-attr=feature(postfix_match)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -1246,6 +1251,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
+        "-Zcrate-attr=feature(postfix_match)",
         // <features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -1437,6 +1443,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
+        "-Zcrate-attr=feature(postfix_match)",
         // </features>
         "-Zprint-vtable-sizes",
         "-Zunstable-options",
@@ -1641,6 +1648,7 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(yeet_expr)",
         "-Zcrate-attr=feature(const_refs_to_static)",
         "-Zcrate-attr=feature(unnamed_fields)",
+        "-Zcrate-attr=feature(postfix_match)",
         "-Clink-dead-code=true",
         "-Zverify-llvm-ir=yes",
     ],

@@ -1089,19 +1089,23 @@ impl ICE {
         // rustc sets 101 if it crashed
         let exit_status = cmd_output.status.code().unwrap_or(0);
 
-        let mut found_error: Option<(String, ICEKind)> =
+        let mut found_error: Option<(String, ICEKind, Vec<String>)> =
             find_ICE_string(file, executable, cmd_output);
 
         // if rustdoc crashes on a file that does not compile, turn this into a ICEKind::RustdocFrailness
         #[allow(clippy::single_match)]
         match (&found_error, executable) {
-            (Some((errstring, ICEKind::Ice(_))), Executable::Rustdoc) => {
+            (Some((errstring, ICEKind::Ice(_), query_stack)), Executable::Rustdoc) => {
                 if !file_compiles(
                     &file.to_path_buf(),
                     &Executable::Rustc.path(),
                     global_tempdir_path,
                 ) {
-                    found_error = Some((errstring.clone(), ICEKind::Ice(Interestingness::Boring)));
+                    found_error = Some((
+                        errstring.clone(),
+                        ICEKind::Ice(Interestingness::Boring),
+                        query_stack.to_vec(),
+                    ));
                 }
             }
             _ => {}
@@ -1115,7 +1119,7 @@ impl ICE {
 
         // this is basically an unprocessed ICE, we know we have crashed, but we have not reduced the flags yet.
         // prefer return this over returning an possible hang while minimizing flags later
-        let raw_ice = if let Some((ice_msg, icekind)) = found_error.clone() {
+        let raw_ice = if let Some((ice_msg, icekind, query_stack)) = found_error.clone() {
             let ice = ICE {
                 regresses_on: Regression::Master,
                 needs_feature: uses_feature,
@@ -1128,6 +1132,7 @@ impl ICE {
                 error_reason: ice_msg.clone(),
                 ice_msg,
                 executable: Executable::Rustc,
+                query_stack,
                 kind: icekind,
             };
             Some(ice)
@@ -1197,7 +1202,7 @@ impl ICE {
 
         // incremental ices don't need to have their flags reduced
         if incremental && found_error.is_some() {
-            let (mut found_error, kind) = found_error.unwrap();
+            let (mut found_error, kind, query_stack) = found_error.unwrap();
             if found_error.len() > ice_msg.len() {
                 ice_msg = found_error.clone();
             } else {
@@ -1221,6 +1226,7 @@ impl ICE {
                 error_reason: found_error,
                 ice_msg,
                 executable: executable.clone(),
+                query_stack,
                 kind,
             };
             //  dbg!(&ice);
@@ -1234,7 +1240,7 @@ impl ICE {
         }
 
         let mut ret = None;
-        if let Some((mut error_reason, ice_kind)) = found_error {
+        if let Some((mut error_reason, ice_kind, query_stack)) = found_error {
             let ice_kind = if matches!(ice_kind, ICEKind::Ub(..)) {
                 if miri_finding_is_potentially_interesting {
                     ICEKind::Ub(UbKind::Interesting)
@@ -1280,7 +1286,7 @@ impl ICE {
                             .collect::<String>()
                     );
                 }
-                if let Some((mut err_reason, icekind)) = found_error0 {
+                if let Some((mut err_reason, icekind, query_stack)) = found_error0 {
                     if err_reason.len() > ice_msg.len() {
                         ice_msg = err_reason.clone();
                     } else {
@@ -1295,6 +1301,7 @@ impl ICE {
                         error_reason: err_reason,
                         ice_msg,
                         executable: Executable::Rustc,
+                        query_stack,
                         kind: icekind,
                     };
                     PRINTER.log(PrintMessage::IceFound {
@@ -1584,6 +1591,7 @@ impl ICE {
                     error_reason: String::from("HANG"),
                     ice_msg: "HANG".into(),
                     executable: executable.clone(),
+                    query_stack: Vec::new(),
                     kind: ICEKind::Hang(seconds_elapsed),
                 };
                 PRINTER.log(PrintMessage::IceFound {
@@ -1621,6 +1629,7 @@ impl ICE {
                 error_reason,
                 ice_msg: ice_msg.clone(),
                 executable: executable.clone(),
+                query_stack,
                 kind: ice_kind,
                 //cmd,
             };
@@ -1677,6 +1686,7 @@ impl ICE {
                 error_reason: String::from("HANG"),
                 ice_msg,
                 executable: executable.clone(),
+                query_stack: Vec::new(),
                 kind: ICEKind::Hang(seconds_elapsed),
             };
             ret = Some(ret_hang);
@@ -1858,7 +1868,38 @@ fn find_ICE_string(
     input_file: &Path,
     executable: &Executable,
     output: Output,
-) -> Option<(String, ICEKind)> {
+) -> Option<(String, ICEKind, Vec<String>)> {
+    let mut query_stack: Vec<String> = Vec::new();
+    let mut inside_query_stack = false;
+
+    #[inline]
+    fn get_query_stack(
+        line: &String,
+        query_stack: &mut Vec<String>,
+        inside_query_stack: &mut bool,
+    ) {
+        const MAX_LENGTH: usize = 150;
+        if line.starts_with("query stack during panic:") {
+            query_stack.push(line.chars().take(MAX_LENGTH).collect::<String>());
+            *inside_query_stack = true;
+        } else if line.starts_with("end of query stack") {
+            query_stack.push(line.chars().take(MAX_LENGTH).collect::<String>());
+            *inside_query_stack = false;
+            // if the query_stack is empty, clear it
+
+            if query_stack
+                == &[
+                    String::from("query stack during panic:"),
+                    String::from("end of query stack"),
+                ]
+            {
+                query_stack.clear();
+            }
+        } else if *inside_query_stack && line.starts_with('#') {
+            query_stack.push(line.chars().take(MAX_LENGTH).collect::<String>());
+        }
+    }
+
     let interestingness = {
         let file_text: &str = &std::fs::read_to_string(input_file).unwrap_or_default();
 
@@ -1895,10 +1936,10 @@ fn find_ICE_string(
         if let Some(term_res) = termination_reason {
             if term_res.contains("killed") {
                 // runtime limit
-                return Some((term_res.to_owned(), ICEKind::OOM));
+                return Some((term_res.to_owned(), ICEKind::OOM, Vec::new()));
             } else {
                 /* assume timeout */
-                return Some((term_res.to_owned(), ICEKind::Hang(123)));
+                return Some((term_res.to_owned(), ICEKind::Hang(123), Vec::new()));
             }
         }
     }
@@ -2025,6 +2066,8 @@ fn find_ICE_string(
                         .lines()
                         .map_while(Result::ok)
                         .find(|line| {
+                                                        get_query_stack(line, &mut query_stack, &mut inside_query_stack);
+
                             KEYWORDS_GENERIC_ICE
                                 .iter()
                                 .any(|regex| regex.is_match(line)) || line.contains("left == right") || line.contains("left != right") 
@@ -2090,6 +2133,7 @@ fn find_ICE_string(
                     let ice = lines
                         // collect all lines which might be ICE messages
                         .filter(|line| {
+                            get_query_stack(line, &mut query_stack, &mut inside_query_stack);
                             let is_double_ice =  keywords_double_panic_ice.iter().any(|kw| line.contains(kw));
                             if is_double_ice { double_ice = true }
 
@@ -2158,10 +2202,9 @@ fn find_ICE_string(
                 ICEKind::Ice(_) => ICEKind::Ice(Interestingness::Boring),
                 other => other,
             };
-
-            (txt, new_icekind)
+            (txt, new_icekind, query_stack)
         } else {
-            (txt, icekind)
+            (txt, icekind, query_stack)
         }
 
 
@@ -2818,7 +2861,7 @@ fn tree_splice_incr_fuzz(global_tempdir_path: &Path) {
     fn fuzz_icr_file(
         original_file_path: &PathBuf,
         global_tempdir_path: &Path,
-    ) -> Vec<(String, ICEKind)> {
+    ) -> Vec<(String, ICEKind, Vec<String>)> {
         // content of the original file
         let file_content =
             std::fs::read_to_string(original_file_path).expect("failed to read file");

@@ -30,6 +30,8 @@ pub struct ICE {
     // the full command that we used to reproduce the crash
     //cmd: String,
     pub executable: Executable,
+    // query stack of the ice, if any
+    pub query_stack: Vec<String>,
     // what kind of ice is this?
     pub kind: ICEKind,
 }

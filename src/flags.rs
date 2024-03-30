@@ -1692,7 +1692,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(multiple_supertrait_upcastable)",
         "-Zcrate-attr=feature(negative_impls)",
         "-Zcrate-attr=feature(never_type)",
-        "-Zcrate-attr=feature(pointer_is_aligned)",
         "-Zcrate-attr=feature(unboxed_closures)",
         "-Zcrate-attr=feature(unsized_fn_params)",
         "-Zcrate-attr=feature(with_negative_coherence)",

@@ -1755,7 +1755,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(try_trait_v2)",
         "-Zcrate-attr=feature(try_with_capacity)",
         "-Zcrate-attr=feature(tuple_trait)",
-        "-Zcrate-attr=feature(unchecked_math)",
         "-Zcrate-attr=feature(unsize)",
         "-Zcrate-attr=feature(utf8_chunks)",
         "-Zcrate-attr=feature(vec_pop_if)",

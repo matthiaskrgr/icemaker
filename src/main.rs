@@ -1384,10 +1384,10 @@ impl ICE {
                             if matches!(executable, Executable::ClippyFix) {
                                 last.clone()
                             } else {
-                                flags_orig.iter().map(|x| x).collect::<Vec<_>>()
+                                flags_orig.iter().collect::<Vec<_>>()
                             };
                         if !has_main && !start_flags.iter().any(|f| f.contains("crate-type=lib")) {
-                            start_flags.push(&&"--crate-type=lib");
+                            start_flags.push(&"--crate-type=lib");
                         }
 
                         let mut start_flags_previous_iter = start_flags.clone();
@@ -1416,7 +1416,7 @@ impl ICE {
                                     let (output, _somestr, _flags) = run_clippy_fix_with_args(
                                         &executable.path(),
                                         file,
-                                        &&start_flags_one_removed
+                                        &start_flags_one_removed
                                             .iter()
                                             .map(|x| **x)
                                             .collect::<Vec<_>>(),

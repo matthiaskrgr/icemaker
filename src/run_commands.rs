@@ -155,6 +155,7 @@ pub(crate) fn run_rustc(
     cmd.args(rustc_flags);
 
     cmd.current_dir(format!("{tempdir_path}"));
+    cmd.arg("-Zwrite-long-types-to-disk=no");
 
     //dbg!(&cmd);
 
@@ -204,6 +205,7 @@ pub(crate) fn run_rustc_incremental(
             // avoid error: the generated executable for the input file  .. onflicts with the existing directory..
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
+            .arg("-Zwrite-long-types-to-disk=no")
             .arg("-Zincremental-verify-ich=yes")
             .arg(&dump_mir_dir)
             // also enable debuginfo for incremental, since we are codegenning anyway
@@ -483,6 +485,7 @@ pub(crate) fn run_rustc_incremental_with_two_files(
             .arg(format!("-o{}/{}", tempdir_path.display(), i))
             .arg(format!("-Cincremental={}", tempdir_path.display()))
             .arg("-Zincremental-verify-ich=yes")
+            .arg("-Zwrite-long-types-to-disk=no")
             .arg(&dump_mir_dir)
             // also enable debuginfo for incremental, since we are codegenning anyway
             .arg("-Cdebuginfo=2")
@@ -534,6 +537,7 @@ pub(crate) fn run_clippy(
         .arg(file)
         .args(flags::CLIPPYLINTS)
         .args(flags::RUSTC_ALLOW_BY_DEFAULT_LINTS)
+        .arg("-Zwrite-long-types-to-disk=no")
         .arg("-Zunstable-options")
         .arg("--edition=2024")
         .arg("-Zvalidate-mir")
@@ -958,6 +962,7 @@ pub(crate) fn run_rustdoc(
         .arg("-Wrustdoc::missing-crate-level-docs")
         .arg("-Wrustdoc::missing-doc-code-examples")
         .arg("-Wrustdoc::private-doc-tests")
+        .arg("-Zwrite-long-types-to-disk=no")
         .arg("--show-type-layout")
         .args(["-o", "/dev/null"])
         .current_dir(global_tempdir_path);
@@ -1577,6 +1582,9 @@ pub(crate) fn run_marker(
 pub(crate) fn prlimit_run_command(
     new_command: &mut std::process::Command,
 ) -> std::result::Result<Output, std::io::Error> {
+    // THIS SHOULD ONLY DO THE ABSOLUTE MINIMUM
+    // do not add any additional flags here to the cmd
+
     // deconstruct our previous Command and wrap it by a "prlimit run ..."
     if cfg!(feature = "ci") {
         // return as is

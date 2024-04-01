@@ -461,6 +461,7 @@ fn check_dir(
                 .filter(|opt_ice| opt_ice.is_some())
                 .map(|ice| ice.unwrap())
                 .map(|ice| {
+                    // note: we may panic here (inside the thread) if we run out of disk space and thus failt to write further ICEs to disk
                     let ice_json =
                         serde_json::to_string_pretty(&ice).expect("failed ot jsonify ICE");
                     let errors_tmp = Arc::clone(errors_json_tmp);

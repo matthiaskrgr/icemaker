@@ -1375,11 +1375,9 @@ impl ICE {
                     // remove the tempdir
                     tempdir.close().unwrap();
 
-                    // iterate and with each iteration, remove one unneeded flag
-
+                    // iterate and with each iteration, remove one unneeded flag and check if the ICE still reproduces
                     if found_error2.is_some() {
                         // remove one flag at a time, but only if ice still reproduces
-
                         let mut start_flags: Vec<&&str> =
                             if matches!(executable, Executable::ClippyFix) {
                                 last.clone()
@@ -1392,22 +1390,20 @@ impl ICE {
 
                         let mut start_flags_previous_iter = start_flags.clone();
                         let mut initial = true;
-                        //      eprintln!("start_flags outside loop {:?}", starut_flags);
+
                         // stop if we can't reduce any further
                         let mut reduced_flags: bool = false;
 
                         while initial
                             || (!start_flags.is_empty()) && start_flags != start_flags_previous_iter
                         {
-                            start_flags_previous_iter = start_flags.clone();
-                            // dbg!("loop");
+                            start_flags_previous_iter.clone_from(&start_flags);
                             for (i, _f) in start_flags.clone().iter().enumerate() {
-                                //     dbg!("for");
-                                //   eprintln!("START FLAGS {}", start_flags.len());
+                                //   eprintln!("for loop: START FLAGS {}", start_flags.len());
                                 let mut start_flags_one_removed = start_flags.clone();
                                 // remove one of the flags
                                 let _removed = start_flags_one_removed.remove(i);
-                                //   dbg!(removed);
+                                // dbg!(removed);
                                 // check if we still ice
 
                                 // TODO tempdiring is broken????
@@ -1425,6 +1421,7 @@ impl ICE {
                                     .unwrap();
                                     output
                                 } else {
+                                    // rustc?
                                     let rustc_flags = start_flags_one_removed
                                         .iter()
                                         .filter(|flag| ***flag != "-ocodegen");
@@ -1484,6 +1481,7 @@ impl ICE {
                                     let mut cmd = Command::new(exec_path);
                                     //                             dbg!(&args);
                                     cmd.arg(file).args(args).arg(dump_mir_dir);
+                                    cmd.current_dir(tempdir_path);
                                     //  dbg!(&cmd);
 
                                     let output = prlimit_run_command(&mut cmd).unwrap();

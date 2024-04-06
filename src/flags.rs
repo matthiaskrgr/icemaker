@@ -826,6 +826,7 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(deref_patterns)",
         "-Zcrate-attr=feature(postfix_match)",
         "-Zcrate-attr=feature(mut_ref)",
+        "-Zcrate-attr=feature(ref_pat_everywhere)",
         "-Clink-dead-code=true",
     ],
     /* rustc codegen gcc

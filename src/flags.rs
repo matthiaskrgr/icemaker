@@ -72,11 +72,11 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2015
     &[
-        "-Zmir-opt-level=5",
-        "-Zmir-opt-level=3",
-        "-Zmir-opt-level=2",
-        "-Zmir-opt-level=1",
         "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=5",
         "-Zunsound-mir-opts",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(anonymous_lifetime_in_impl_trait)",
@@ -263,11 +263,11 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2018
     &[
-        "-Zmir-opt-level=5",
-        "-Zmir-opt-level=3",
-        "-Zmir-opt-level=2",
-        "-Zmir-opt-level=1",
         "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=5",
         "-Zunsound-mir-opts",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(anonymous_lifetime_in_impl_trait)",
@@ -454,11 +454,11 @@ static DEFAULT_RUSTFLAGS: &[&[&str]] = &[
     ],
     // basic stuff, edition 2021
     &[
-        "-Zmir-opt-level=5",
-        "-Zmir-opt-level=3",
-        "-Zmir-opt-level=2",
-        "-Zmir-opt-level=1",
         "-Zmir-opt-level=0",
+        "-Zmir-opt-level=1",
+        "-Zmir-opt-level=2",
+        "-Zmir-opt-level=3",
+        "-Zmir-opt-level=5",
         "-Zunsound-mir-opts",
         "-Zcrate-attr=feature(abi_vectorcall)",
         "-Zcrate-attr=feature(anonymous_lifetime_in_impl_trait)",

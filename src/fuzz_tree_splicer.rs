@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use rand::Rng;
 use tree_sitter::{Parser, Tree};
-use tree_splicer::splice::{splice, Config};
+use tree_splicer::splice::{Config, Splicer};
 
 pub(crate) const IN_CODE_FP_KEYWORDS: &[&str] = &[
     "panicked at",
@@ -45,7 +45,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 500, // 10
+        // tests: 500, // 10
         //
         chaos: 10,
         deletions: 5,
@@ -66,7 +66,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
 
     let mut parser = Parser::new();
     // rust!
-    parser.set_language(tree_sitter_rust::language()).unwrap();
+    parser.set_language(&tree_sitter_rust::language()).unwrap();
 
     let tree = parser.parse(&file_content, None);
 
@@ -75,9 +75,8 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         path.display().to_string(),
         (file_content.into_bytes(), tree.unwrap()),
     );
-
     // TODO just return Iterator here
-    splice(splicer_cfg, &hm)
+    Splicer::new(splicer_cfg, &hm)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         // ignore files that are likely to trigger FPs
         .filter(|content| {
@@ -85,6 +84,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
                 .iter()
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
+        .take(20)
         .collect::<Vec<String>>()
 }
 
@@ -106,7 +106,7 @@ pub(crate) fn splice_file_from_set(
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
-        tests: 30, // 10
+        //tests: 30, // 10
         //
         chaos: 30,    // % chance that a chaos mutation will occur
         deletions: 5, //
@@ -132,7 +132,7 @@ pub(crate) fn splice_file_from_set(
     // TODO just return Iterator here
 
     // TODO tree splicer sometimes just hangs.
-    splice(splicer_cfg, hmap)
+    Splicer::new(splicer_cfg, hmap)
         .map(|f| String::from_utf8(f).unwrap_or_default())
         // ignore files that are likely to trigger FPs
         .filter(|content| {
@@ -140,6 +140,7 @@ pub(crate) fn splice_file_from_set(
                 .iter()
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
+        .take(30)
         .collect::<Vec<String>>()
 }
 
@@ -157,5 +158,5 @@ pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
         || content.contains("break rust")
         || (content.contains("failure-status: 101") && content.contains("known-bug"))
         // if the file is in an "icemaker" dir, do not use it for fuzzing...
-        || file.display().to_string().contains("icemaker")
+        || file.display().to_string().contains("icemaker") || !content.lines().any(|line| line.chars().nth(1000).is_some())
 }

@@ -25,9 +25,9 @@ serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 sha2 = "0.10"
 tempdir = "0.3"
-tree-sitter = "0.20"
-tree-sitter-rust =  { git = "https://github.com/tree-sitter/tree-sitter-rust", branch = "master" }
-tree-splicer = "0.4.0"
+tree-sitter = {git = "https://github.com/tree-sitter/tree-sitter"}
+tree-sitter-rust = {path = "../tree-sitter-rust"}
+tree-splicer = {path = "../tree-splicer/crates/tree-splicer"}
 walkdir = "2.3.1"
 
 [profile.release]

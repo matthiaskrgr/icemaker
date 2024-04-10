@@ -2740,7 +2740,7 @@ fn codegen_tree_splicer_omni() {
 
     let mut parser = Parser::new();
     // rust!
-    parser.set_language(tree_sitter_rust::language()).unwrap();
+    parser.set_language(&tree_sitter_rust::language()).unwrap();
 
     println!("parsing {} files..", files.len());
 

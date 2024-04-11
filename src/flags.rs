@@ -1863,6 +1863,12 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-ocodegen",
         "-Zverify-llvm-ir=yes",
     ],
+    &[
+        "-ocodegen",
+        "-Cdebuginfo=2",
+        "-Zsanitizer=kcfi",
+        "-Cpanic=abort",
+    ],
     // chalk is not ready yet, but polonius?
     /*
     &["-Zchalk"],

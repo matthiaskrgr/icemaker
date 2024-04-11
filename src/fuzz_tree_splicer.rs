@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
-use std::time::{Duration, Instant};
+use std::path::{Path, PathBuf};
+use std::time::{Instant};
 
 use rand::Rng;
 use tree_sitter::{Parser, Tree};
@@ -46,6 +46,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         "slice_file: random_inter_splices: '{random_inter_splices}', random_seed: '{random_seed}', path: {pd} "
     );
 
+    let tests = 500;
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
@@ -84,7 +85,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         eprintln!("'{}' needed more than 60 seconds", path.to_str().unwrap());
     }
     // TODO just return Iterator here
-    let max_tries = 10;
+    let max_tries = tests;
     Splicer::new(splicer_cfg, &hm)
         .enumerate()
         .map(|(i, f)| (i, String::from_utf8(f).unwrap_or_default()))
@@ -96,13 +97,13 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
         .map(|(_, x)| x)
-        .take(300)
+        .take(tests)
         .collect::<Vec<String>>()
 }
 
 // omni
 pub(crate) fn splice_file_from_set(
-    path: &PathBuf,
+    path: &Path,
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
     let now = Instant::now();
@@ -117,13 +118,14 @@ pub(crate) fn splice_file_from_set(
         "slice_file: random_inter_splices: '{random_inter_splices}', random_seed: '{random_seed}'"
     );
 
+    let tests = 30;
     let splicer_cfg: Config = Config {
         inter_splices: random_inter_splices,
         seed: random_seed,
         //tests: 30, // 10
         //
-        chaos: 30,    // % chance that a chaos mutation will occur
-        deletions: 5, //
+        chaos: 30,     // % chance that a chaos mutation will occur
+        deletions: 10, //
         node_types: tree_splicer::node_types::NodeTypes::new(tree_sitter_rust::NODE_TYPES).unwrap(),
         language: tree_sitter_rust::language(),
         max_size: 1048576,
@@ -149,7 +151,7 @@ pub(crate) fn splice_file_from_set(
         eprintln!("'{}' needed more than 60 seconds", path.to_str().unwrap());
     }
 
-    let max_tries = 10;
+    let max_tries = tests;
     // TODO tree splicer sometimes just hangs.
     Splicer::new(splicer_cfg, hmap)
         .enumerate()
@@ -163,7 +165,7 @@ pub(crate) fn splice_file_from_set(
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
         .map(|(_, x)| x)
-        .take(30)
+        .take(tests)
         .collect::<Vec<String>>()
 }
 

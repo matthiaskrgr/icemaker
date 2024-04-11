@@ -2662,7 +2662,6 @@ fn codegen_tree_splicer() {
         .map(|f| f.path().to_owned())
         .filter(|pb| !ignore_file_for_splicing(pb))
         .collect::<Vec<PathBuf>>();
-
     // shuffle the vec
     files.shuffle(&mut thread_rng());
 
@@ -2739,6 +2738,8 @@ fn codegen_tree_splicer_omni() {
     let dir_name = create_fuzzing_target_dir(&FuzzOutputDirType::IcemakerOmni);
 
     let mut parser = Parser::new();
+    parser.set_timeout_micros(10_000_000);
+
     // rust!
     parser.set_language(&tree_sitter_rust::language()).unwrap();
 
@@ -2770,7 +2771,7 @@ fn codegen_tree_splicer_omni() {
 
     files
         .par_iter()
-        .map(|_path| {
+        .map(|path| {
             //  eprintln!("{}", path.display());
             // fuzz_tree_splicer::splice_file(&hmap)
             PRINTER.log(PrintMessage::Progress {
@@ -2778,7 +2779,7 @@ fn codegen_tree_splicer_omni() {
                 total_number_of_files: total,
                 file_name: String::new(),
             });
-            fuzz_tree_splicer::splice_file_from_set(/* path , */ &hmap)
+            fuzz_tree_splicer::splice_file_from_set(path, &hmap)
         })
         .flatten()
         .for_each(|file_content| {

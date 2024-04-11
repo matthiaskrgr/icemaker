@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::time::{Duration, Instant};
 
 use rand::Rng;
 use tree_sitter::{Parser, Tree};
@@ -31,6 +32,9 @@ pub(crate) const IN_CODE_FP_KEYWORDS: &[&str] = &[
 // read a file from a path and splice-fuzz it returning a set of String that we built from it
 // pub(crate) fn splice_file(hm: &HashMap<String, (Vec<u8>, Tree)>) -> Vec<String> {
 pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
+    //dbg!(&path);
+    let now = Instant::now();
+
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
 
     const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..30;
@@ -53,7 +57,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         language: tree_sitter_rust::language(),
         max_size: 200_000,
         // do not reparse for now?
-        reparse: 200,
+        reparse: 2000000,
     };
 
     let file_content = std::fs::read_to_string(path)
@@ -65,6 +69,7 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
     }
 
     let mut parser = Parser::new();
+    parser.set_timeout_micros(10_000_000);
     // rust!
     parser.set_language(&tree_sitter_rust::language()).unwrap();
 
@@ -75,24 +80,33 @@ pub(crate) fn splice_file(path: &PathBuf) -> Vec<String> {
         path.display().to_string(),
         (file_content.into_bytes(), tree.unwrap()),
     );
+    if now.elapsed().as_secs() > 60 {
+        eprintln!("'{}' needed more than 60 seconds", path.to_str().unwrap());
+    }
     // TODO just return Iterator here
+    let max_tries = 10;
     Splicer::new(splicer_cfg, &hm)
-        .map(|f| String::from_utf8(f).unwrap_or_default())
+        .enumerate()
+        .map(|(i, f)| (i, String::from_utf8(f).unwrap_or_default()))
+        .take_while(|(i, _)| i < &max_tries)
         // ignore files that are likely to trigger FPs
-        .filter(|content| {
+        .filter(|(_i, content)| {
             !IN_CODE_FP_KEYWORDS
                 .iter()
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
-        .take(20)
+        .map(|(_, x)| x)
+        .take(300)
         .collect::<Vec<String>>()
 }
 
 // omni
 pub(crate) fn splice_file_from_set(
-    //  path: &PathBuf,
+    path: &PathBuf,
     hmap: &HashMap<String, (Vec<u8>, Tree)>,
 ) -> Vec<String> {
+    let now = Instant::now();
+
     let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
 
     const INTER_SPLICES_RANGE: std::ops::Range<usize> = 2..10;
@@ -131,15 +145,24 @@ pub(crate) fn splice_file_from_set(
 
     // TODO just return Iterator here
 
+    if now.elapsed().as_secs() > 60 {
+        eprintln!("'{}' needed more than 60 seconds", path.to_str().unwrap());
+    }
+
+    let max_tries = 10;
     // TODO tree splicer sometimes just hangs.
     Splicer::new(splicer_cfg, hmap)
-        .map(|f| String::from_utf8(f).unwrap_or_default())
+        .enumerate()
+        .map(|(i, f)| (i, String::from_utf8(f).unwrap_or_default()))
         // ignore files that are likely to trigger FPs
-        .filter(|content| {
+        .take_while(|(i, _)| i < &max_tries)
+        .filter(|(_i, content)| {
+            //tries = dbg!(tries) + 1;
             !IN_CODE_FP_KEYWORDS
                 .iter()
                 .any(|fp_keyword| content.contains(fp_keyword))
         })
+        .map(|(_, x)| x)
         .take(30)
         .collect::<Vec<String>>()
 }
@@ -158,5 +181,5 @@ pub(crate) fn ignore_file_for_splicing(file: &PathBuf) -> bool {
         || content.contains("break rust")
         || (content.contains("failure-status: 101") && content.contains("known-bug"))
         // if the file is in an "icemaker" dir, do not use it for fuzzing...
-        || file.display().to_string().contains("icemaker") || !content.lines().any(|line| line.chars().nth(1000).is_some())
+        || file.display().to_string().contains("icemaker") || content.lines().any(|line| line.chars().nth(1000).is_some())
 }

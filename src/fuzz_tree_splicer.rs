@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::time::{Instant};
+use std::time::Instant;
 
 use rand::Rng;
 use tree_sitter::{Parser, Tree};

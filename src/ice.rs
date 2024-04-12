@@ -64,6 +64,7 @@ impl Default for ICEKind {
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub enum Interestingness {
+    VeryInteresting,
     #[default]
     Interesting,
     Boring,
@@ -103,6 +104,7 @@ impl ICE {
     // print a ICE to stdout or something
     pub(crate) fn to_printable(&self) -> ICEDisplay {
         let kind = match self.kind {
+            ICEKind::Ice(Interestingness::VeryInteresting) => "ICE!".red(),
             ICEKind::Ice(Interestingness::Interesting) => "ICE".red(),
             ICEKind::Ice(Interestingness::Boring) => "ice".normal(),
             ICEKind::Ub(UbKind::Interesting) => "UB".green(),

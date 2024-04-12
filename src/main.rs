@@ -943,6 +943,8 @@ impl ICE {
         silent: bool,
         global_tempdir_path: &PathBuf,
     ) -> Option<Self> {
+        // potentially very intersting?
+
         // convert IntoIterator<Item &&str> to &[&str]
         let compiler_flags = &compiler_flags.into_iter().cloned().collect::<Vec<&str>>()[..];
 
@@ -1070,12 +1072,39 @@ impl ICE {
         let stderr = String::from_utf8_lossy(&cmd_output.stderr);
         let mut lines_iter = stderr.lines();
 
+        //potentially_very_interesting
+        let mut pviopt = None;
+
         let mut ice_msg = lines_iter
             .find(|line| {
                 line.contains("panicked at") || line.contains("error: internal compiler error: ")
             })
             .unwrap_or_default()
             .to_string();
+
+        if stderr
+            .lines()
+            .nth(0)
+            .map(|line| line.contains(&ice_msg))
+            .is_some()
+        {
+            pviopt = Some(Interestingness::VeryInteresting);
+        }
+
+        // iff potentially_very_interesting is Some, map Interesting to VeryInterestinge else return whatever else we had
+        fn pvi(
+            prev_intr: ICEKind,
+            potentially_very_interesting: Option<Interestingness>,
+        ) -> ICEKind {
+            if matches!(prev_intr, ICEKind::Ice(Interestingness::Interesting))
+                && potentially_very_interesting.is_some()
+            {
+                ICEKind::Ice(Interestingness::VeryInteresting)
+            } else {
+                prev_intr
+            }
+        }
+
         if ice_msg.contains("panicked at") {
             // the panick message is actually on the next line
             let panic_msg = lines_iter
@@ -1084,6 +1113,7 @@ impl ICE {
             // reconstruct the old one-line panic msg, somewhat
             ice_msg = format!(r#"{ice_msg} '{panic_msg}'"#);
         }
+        drop(lines_iter);
 
         ice_msg = ice_msg.replace("error: internal compiler error:", "ICE:");
 
@@ -1121,6 +1151,7 @@ impl ICE {
         // this is basically an unprocessed ICE, we know we have crashed, but we have not reduced the flags yet.
         // prefer return this over returning an possible hang while minimizing flags later
         let raw_ice = if let Some((ice_msg, icekind, query_stack)) = found_error.clone() {
+            let icekind = pvi(icekind, pviopt);
             let ice = ICE {
                 regresses_on: Regression::Master,
                 needs_feature: uses_feature,

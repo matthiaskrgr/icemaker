@@ -1739,7 +1739,6 @@ static EXPENSIVE_RUSTFLAGS: &[&[&str]] = &[
         "-Zcrate-attr=feature(slice_from_ptr_range)",
         "-Zcrate-attr=feature(slice_index_methods)",
         "-Zcrate-attr=feature(slice_ptr_get)",
-        "-Zcrate-attr=feature(slice_ptr_len)",
         "-Zcrate-attr=feature(slice_range)",
         "-Zcrate-attr=feature(strict_provenance)",
         "-Zcrate-attr=feature(trusted_fused)",

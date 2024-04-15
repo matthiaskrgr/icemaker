@@ -577,7 +577,7 @@ fn check_dir(
     }
     let diff_path = reports_dir.join("errors.diff");
     let mut file =
-        std::fs::File::create(diff_path).expect("report.to_disk() failed to create file");
+        std::fs::File::create(&diff_path).expect("report.to_disk() failed to create file");
     file.write_all(diff.as_bytes())
         .expect("failed to write report");
 
@@ -587,6 +587,8 @@ fn check_dir(
         .collect::<Vec<&ICE>>();
     // TODO do the same for removed ices?
     println!("NEW ICES:\n{new_ices:#?}");
+
+    println!("diff was written to {}", diff_path.display());
 
     if args.skip_report {
         eprintln!("Skipping reports as asked via --skip-report");
